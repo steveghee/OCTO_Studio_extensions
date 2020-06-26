@@ -1,0 +1,27 @@
+.bouncerElement {
+	display: block;
+	height: 100%;
+	width: 100%;
+}
+
+.bouncerWidget {
+	margin: auto;
+	width: 198px;
+	height: 54px;
+	border-radius: 5px;
+	background-color: #DDDDDD;
+	padding: 3px;
+	opacity: 0.5;
+}
+
+.bouncerButton {
+	border-style: none;
+	margin: 0;
+	padding: 0;
+	width: 48px;
+	height: 48px;
+}
+
+.bouncerButton[disabled] {
+	opacity: 0.5;
+}

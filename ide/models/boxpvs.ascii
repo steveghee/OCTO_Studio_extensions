@@ -1,0 +1,17 @@
+<PV_FILE type="PVS" version="0302">
+<section_index>
+  <internal_section type="2"/>
+</section_index>
+<section_structure>
+  <component name="box">
+    <shape_source file_name="box.ol"/>
+  </component>
+  <component name="lid">
+    <shape_source file_name="lid.ol"/>
+  </component>
+  <component name="asm">
+    <component_instance index="1" id="1"/>
+    <component_instance index="2" id="2"/>
+  </component>
+</section_structure>
+</PV_FILE>

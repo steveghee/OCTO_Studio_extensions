@@ -1,0 +1,17 @@
+<PV_FILE type="PVS" version="0302">
+<section_index>
+  <internal_section type="2"/>
+</section_index>
+<section_structure>
+  <component name="rbox">
+    <shape_source file_name="rbox.ol"/>
+  </component>
+  <component name="rlid">
+    <shape_source file_name="rlid.ol"/>
+  </component>
+  <component name="asm">
+    <component_instance index="1" id="1"/>
+    <component_instance index="2" id="2"/>
+  </component>
+</section_structure>
+</PV_FILE>

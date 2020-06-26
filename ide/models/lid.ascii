@@ -1,0 +1,86 @@
+DIV-OL09A 
+ header {
+  sectionCount { 3 }
+  section { 0, -1 }
+  section { 1, -1 }
+  section { -1, -1 }
+  version {
+    flags { 3 }
+    majorVersion { 9 }
+    minorVersion { 2 }
+  }
+ }
+ section {
+  sectionNumber { 0 }
+  material (0) {
+    ambientColor { 0, 0, 0 }
+    diffuseColor { 1, 1, 1 }
+    specularColor { 0, 0, 0 }
+    specularPower { 10 }
+    emissiveColor { 0, 0, 0 }
+    opacity { 1 }
+  }
+  texture (0) {
+    imageMap { "plain.png" }
+    detailMap {  }
+    matrixSet { 0 }
+    minify { 0 }
+    magnify { 0 }
+    clampU { 1 }
+    clampV { 1 }
+  }
+  appearance (0) {
+    name { "cube" }
+    material { 0 }
+    diffuseTexture { 0 }
+    diffuseModulate { 0 }
+    opacityTexture { -1 }
+    environmentTexture { -1 }
+    bumpTexture { -1 }
+  }
+  body {
+    bodyType { 0 }
+    boundingBox { -0.45, -0.45, -0.0065, 0.45, 0.45, -0.0065 }
+    matrixSet { 0 }
+    regionCount { 1 }
+    region { 0 }
+  }
+ }
+ section {
+  sectionNumber { 1 }
+  region (0) {
+    shell {
+      wireframeCount { 0 }
+      face {
+        appearance { 0 }
+        surface { -1 }
+        surfaceSense { 0 }
+        loopCount { 0 }
+        polyform {
+          vertexType { 5 }
+          vertexCount { 4 }
+          vertex (0) { -0.45, 0.45, -0.0065, 0, 0, 1, 0, 1 }
+          vertex (1) { -0.45, -0.45, -0.0065, 0, 0, 1, 0, 0 }
+          vertex (2) { 0.45, -0.45, -0.0065, 0, 0, 1, 1, 0 }
+          vertex (3) { 0.45, 0.45, -0.0065, 0, 0, 1, 1, 1 }
+          lod {
+            switchIn { 0 }
+            switchOut { -1 }
+            transition { 0 }
+            referenceSet { 0 }
+            mesh {
+              decalOffset { 0 }
+              appearance { 0 }
+              appearanceLock { 0 }
+              renderPlane { 0 }
+              vertexType { 5 }
+              tristrip {
+                3, 0, 2, 1
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+ }

@@ -1,0 +1,134 @@
+DIV-OL09A 
+ header {
+  sectionCount { 3 }
+  section { 0, -1 }
+  section { 1, -1 }
+  section { -1, -1 }
+  version {
+    flags { 3 }
+    majorVersion { 9 }
+    minorVersion { 2 }
+  }
+ }
+ section {
+  sectionNumber { 0 }
+  material (0) {
+    ambientColor { 0, 0, 0 }
+    diffuseColor { 1, 0, 0 }
+    specularColor { 0, 0, 0 }
+    specularPower { 10 }
+    emissiveColor { 0, 0, 0 }
+    opacity { 1 }
+  }
+  texture (0) {
+    imageMap { "plain.png" }
+    detailMap {  }
+    matrixSet { 0 }
+    minify { 0 }
+    magnify { 0 }
+    clampU { 1 }
+    clampV { 1 }
+  }
+  appearance (0) {
+    name { "cube" }
+    material { 0 }
+    diffuseTexture { 0 }
+    diffuseModulate { 1 }
+    opacityTexture { -1 }
+    environmentTexture { -1 }
+    bumpTexture { -1 }
+  }
+  body {
+    bodyType { 0 }
+    boundingBox { -0.5, -0.5, -0.0165, 0.5, 0.5, -0.0065 }
+    matrixSet { 0 }
+    regionCount { 1 }
+    region { 0 }
+  }
+ }
+ section {
+  sectionNumber { 1 }
+  region (0) {
+    shell {
+      wireframeCount { 0 }
+      face {
+        appearance { 0 }
+        surface { -1 }
+        surfaceSense { 0 }
+        loopCount { 0 }
+        polyform {
+          vertexType { 5 }
+          vertexCount { 28 }
+          vertex (0)  { -0.5,  0.5, -0.0165, -1, 0, 0, -1, 1 }
+          vertex (1)  { -0.5, -0.5, -0.0165, -1, 0, 0, -1, 0 }
+          vertex (2)  { -0.5, -0.5, -0.0065, -1, 0, 0, 0, 0 }
+          vertex (3)  { -0.5,  0.5, -0.0065, -1, 0, 0, 0, 1 }
+          vertex (4)  {  0.5,  0.5, -0.0065, 1, 0, 0, 1, 1 }
+          vertex (5)  {  0.5, -0.5, -0.0065, 1, 0, 0, 1, 0 }
+          vertex (6)  {  0.5, -0.5, -0.0165, 1, 0, 0, 2, 0 }
+          vertex (7)  {  0.5,  0.5, -0.0165, 1, 0, 0, 2, 1 }
+          vertex (8)  { -0.5,  0.5, -0.0065, 0, 0, 1, 0, 1 }
+          vertex (9)  { -0.45,  0.45, -0.0065, 0, 0, 1, 0.05, 0.95 }
+          vertex (10) {  0.45,  0.45, -0.0065, 0, 0, 1, 0.95, 0.95 }
+          vertex (11) {  0.5,  0.5, -0.0065, 0, 0, 1, 1, 1 }
+          vertex (12) { -0.5, -0.5, -0.0065, 0, 0, 1, 0, 0 }
+          vertex (13) { -0.45, -0.45, -0.0065, 0, 0, 1, 0.05, 0.05 }
+          vertex (14) {  0.5, -0.5, -0.0065, 0, 0, 1, 1, 0 }
+          vertex (15) {  0.45, -0.45, -0.0065, 0, 0, 1, 0.95, 0.05 }
+          vertex (16) { -0.5, -0.5, -0.0065, 0, -1, 0, 0, 0 }
+          vertex (17) { -0.5, -0.5, -0.0165, 0, -1, 0, 0, -1 }
+          vertex (18) {  0.5, -0.5, -0.0165, 0, -1, 0, 1, -1 }
+          vertex (19) {  0.5, -0.5, -0.0065, 0, -1, 0, 1, 0 }
+          vertex (20) { -0.5,  0.5, -0.0165, 0, 1, 0, 0, 2 }
+          vertex (21) { -0.5,  0.5, -0.0065, 0, 1, 0, 0, 1 }
+          vertex (22) {  0.5,  0.5, -0.0065, 0, 1, 0, 1, 1 }
+          vertex (23) {  0.5,  0.5, -0.0165, 0, 1, 0, 1, 2 }
+          vertex (24) { -0.5, -0.5, -0.0165, 0, 0, -1, 0, 3 }
+          vertex (25) { -0.5,  0.5, -0.0165, 0, 0, -1, 0, 2 }
+          vertex (26) {  0.5,  0.5, -0.0165, 0, 0, -1, 1, 2 }
+          vertex (27) {  0.5, -0.5, -0.0165, 0, 0, -1, 1, 3 }
+          lod {
+            switchIn { 0 }
+            switchOut { -1 }
+            transition { 0 }
+            referenceSet { 0 }
+            mesh {
+              decalOffset { 0 }
+              appearance { 0 }
+              appearanceLock { 0 }
+              renderPlane { 0 }
+              vertexType { 5 }
+              tristrip {
+                3, 0, 2, 1
+              }
+              tristrip {
+                7, 4, 6, 5
+              }
+              tristrip {
+                11, 8, 10, 9
+              }
+              tristrip {
+                8, 12, 9, 13
+              }
+              tristrip {
+                12, 14, 13, 15
+              }
+              tristrip {
+                14, 11, 15, 10
+              }
+              tristrip {
+                19, 16, 18, 17
+              }
+              tristrip {
+                23, 20, 22, 21
+              }
+              tristrip {
+                27, 24, 26, 25
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+ }
