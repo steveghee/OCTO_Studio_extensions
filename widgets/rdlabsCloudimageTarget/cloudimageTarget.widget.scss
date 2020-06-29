@@ -1,0 +1,48 @@
+
+.targetGuide.imagemark .targetGuideText {
+    background-image     : url(../extensions/images/cloudimage_phantom.png);
+    background-repeat    : no-repeat;
+    background-attachment: fixed;
+    background-position  : center;
+}
+
+.targetGuide.imagemark .bracket-top-left {
+    border  : solid 3px #6fb449;
+    position: absolute;
+    width : calc((8vw + 8vh) / 2);
+    height: calc((8vw + 8vh) / 2);
+    top   : 6vh;
+    left  : 8vw;
+    border-right : none;
+    border-bottom: none; 
+}
+.targetGuide.imagemark .bracket-top-right {
+    border  : solid 3px #6fb449;
+    position: absolute;
+    width : calc((8vw + 8vh) / 2);
+    height: calc((8vw + 8vh) / 2);
+    top  : 6vh;
+    right: 8vw;
+    border-left  : none;
+    border-bottom: none; 
+}
+.targetGuide.imagemark .bracket-bottom-right {
+    border  : solid 3px #6fb449;
+    position: absolute;
+    width : calc((8vw + 8vh) / 2);
+    height: calc((8vw + 8vh) / 2);
+    bottom: 6vh;
+    right : 8vw;
+    border-left: none;
+    border-top : none; 
+}
+.targetGuide.imagemark .bracket-bottom-left {
+    border  : solid 3px #6fb449;
+    position: absolute;
+    width : calc((8vw + 8vh) / 2);
+    height: calc((8vw + 8vh) / 2);
+    bottom: 6vh;
+    left  : 8vw;
+    border-right: none;
+    border-top  : none; 
+}
