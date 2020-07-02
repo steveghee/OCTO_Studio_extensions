@@ -140,11 +140,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         });
             
         scope.disconnecting = function(panel,transition) {
-          console.log('disconnecting');        
           scope.data.disabled = transition.incoming != undefined;  
         }
         scope.disconnected = function(panel) {
-          console.log('disconnected');        
           scope.data.disabled = true;  
           scope.data.affects  = undefined;
         }
@@ -228,7 +226,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               let base = scope.$parent.view.wdg[scope.data.id];
               //base.visible = false;
               scope.renderer.setProperties(scope.data.id,{hidden:true});
-console.log('hidden '+scope.data.id);
+              
               var affects = scope.affectsField.split(',');  
               affects.forEach(function(a) {  
                 var wname   = a.trim();
