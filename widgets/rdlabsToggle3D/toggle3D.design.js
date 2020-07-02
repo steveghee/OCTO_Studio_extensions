@@ -103,6 +103,7 @@ function twxToggle3D() {
             name: 'x',
            label: 'ves-ar-extension:X Coordinate',
         datatype: 'number',
+         default: 0,  
  isBindingSource: false,
  isBindingTarget: true,
        showInput: true
@@ -111,6 +112,7 @@ function twxToggle3D() {
             name: 'y',
            label: 'ves-ar-extension:Y Coordinate',
         datatype: 'number',
+         default: 0,  
  isBindingSource: false,
  isBindingTarget: true,
        showInput: true
@@ -119,6 +121,7 @@ function twxToggle3D() {
             name: 'z',
            label: 'ves-ar-extension:Z Coordinate',
         datatype: 'number',
+         default: 0,  
  isBindingSource: false,
  isBindingTarget: true,
        showInput: true
@@ -127,6 +130,7 @@ function twxToggle3D() {
             name: 'rx',
            label: 'ves-ar-extension:X Rotation',
         datatype: 'number',
+         default: 0,  
  isBindingSource: false,
  isBindingTarget: true,
        showInput: true
@@ -135,6 +139,16 @@ function twxToggle3D() {
             name: 'ry',
            label: 'ves-ar-extension:Y Rotation',
         datatype: 'number',
+         default: 0,  
+ isBindingSource: false,
+ isBindingTarget: true,
+       showInput: true
+      },
+      {
+            name: 'rz',
+           label: 'ves-ar-extension:Z Rotation',
+        datatype: 'number',
+         default: 0,  
  isBindingSource: false,
  isBindingTarget: true,
        showInput: true
