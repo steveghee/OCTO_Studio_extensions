@@ -96,7 +96,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               }
             }
 
-            context.fillText(line, tx, ty);
+            context.fillText(line, tx, ty - lineHeight / 2);
 
           }
           
@@ -110,13 +110,19 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             let canvas = document.createElement("canvas");
             let ctx    = canvas.getContext("2d");
             
-      
             // work out size/dims of the canvas
+            let scaleH      = scope.data.height / 0.04
             var aspect      = wdg.width / wdg.height;
-            canvas.width    = 512 * aspect;
-            canvas.height   = 512 ;
+            canvas.width    = 512 * scaleH * aspect;
+            canvas.height   = 512 * scaleH ;
             let imageWidth  = canvas.width  - 96;
             let imageHeight = canvas.height - 96;
+            
+            let s96  =  96 * scaleH; // scaled x margin for image
+            let s170 = 170 * scaleH; // scaled y margin for image
+            let s220 = 220 * scaleH; // scaled y offset for text
+            let s40  =  40 * scaleH; // scaled y offset for text
+            let s24  =  24 * scaleH; // scaled x margin offset for text
             
             // we need to center this image, so lets see what shape it is
             let ibase   = imageWidth / imageHeight;
@@ -139,10 +145,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             
               ctx.font = "bold 70px Segoe";                      // only works with some tricky stuff see Styles for more information
               var tx   = canvas.width/2; // if the button is square, center the text, otherwise draw to the right of the image
-              var ty   = 512-40; // if centered, draw below the image
+              var ty   = canvas.height - s40; // if centered, draw below the image
       
               // we may need to adjust y to take multi-line into account e..g if there are 2 lines, we need to move y(start) up 
-              singleline(text,tx,ty,512-48,70,ctx);
+              singleline(text,tx,ty,canvas.width-48,70,ctx);
             }
             var newimg = canvas.toDataURL() + '#edge=clamp';  
             

@@ -84,7 +84,7 @@ function twxToggleButton3D() {
             name: 'buttonColor',
            label: 'ves-ar-extension:Button Color',
         datatype: 'color',
-         default: 'rgba(40, 40, 210, 1);',
+         default: 'rgba(38,97,148,1);',
  isBindingTarget: true,
       },
       {

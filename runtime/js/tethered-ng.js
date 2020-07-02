@@ -216,21 +216,26 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           }, 1);
 
         };
-        var hide = function(){
-          $timeout(function () {
+        var hide = function(force) {
+            
+          scope.data.pending = undefined;  
+          if (force != undefined || scope.data.affects != undefined) $timeout(function () {
                    
             // if we are not attached (yet) then just hide
-            if (scope.data.affects === undefined) {
+                   
+            if (force || !twx.app.isPreview() && scope.data.affects === undefined) {
                 
               let base = scope.$parent.view.wdg[scope.data.id];
-              base.visible = false;
-              
+              //base.visible = false;
+              scope.renderer.setProperties(scope.data.id,{hidden:true});
+console.log('hidden '+scope.data.id);
               var affects = scope.affectsField.split(',');  
               affects.forEach(function(a) {  
                 var wname   = a.trim();
                 var subject = scope.$parent.view.wdg[wname];
                 if (subject != undefined) {
-                  subject.visible = false;
+                    //subject.visible = false;
+                    scope.renderer.setProperties(wname,{hidden:true});
                 }
               });
                
@@ -253,15 +258,26 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             };
           }
         });
-            
+                
         // make sure we are triggered when the page is ready    
+        /*    
         scope.$root.$on("$ionicView.afterEnter", function (event) {
                         
           // kick off the next phase...
-          if (scope.data.visible === true) show();           
-          else                             hide();           
+          if (scope.data.visible === true) show(true);           
+          else                             hide(true);           
           
           updateTethered();
+        });
+        */    
+        scope.$root.$on('modelLoaded', function(evt, arg) { 
+          if (arg === scope.data.id) {              
+            // kick off the next phase...
+            if (scope.data.visible === true) show(true);           
+            else                             hide(true);           
+          
+            updateTethered();
+          }
         });
 
       }

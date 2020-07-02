@@ -415,8 +415,9 @@ function tetheredHelper(renderer, interval, panels, offset) {
           }
         
           /**/
-          if (transition.tweend >= 1) 
+          if (transition.tweend >= 1) {
             tobj.renderer.setProperties (panel.name,{hidden:true});
+          }
           /**/
         }
       
@@ -455,8 +456,6 @@ function tetheredHelper(renderer, interval, panels, offset) {
   }
   
 }
-
-if (exports != undefined) exports.tetheredHelper = tetheredHelper;
 
 
 

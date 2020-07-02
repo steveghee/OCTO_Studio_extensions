@@ -100,28 +100,35 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           background.onload = function() {
             let canvas = document.createElement("canvas");
             let aspectLimit = 1.5;  
-            let imageWidth  = 172;
-      
+            
             // work out size/dims of the canvas
-            var aspect = wdg.width / wdg.height;
-            canvas.width  = 512 * aspect;
-            canvas.height = 512 ;
+            let scaleH    = scope.data.height / 0.04
+            let imageWidth= scaleH * 172;
+            var aspect    = wdg.width / wdg.height;
+            canvas.width  = 512 * scaleH * aspect;
+            canvas.height = 512 * scaleH;
       
+            let s96  =  96 * scaleH; // scaled x margin for image
+            let s170 = 170 * scaleH; // scaled y margin for image
+            let s220 = 220 * scaleH; // scaled y offset for text
+            let s40  =  40 * scaleH; // scaled y offset for text
+            let s24  =  24 * scaleH; // scaled x margin offset for text
+            
             let ctx = canvas.getContext("2d");
-            var ix = aspect>aspectLimit?96:(canvas.width/2)-(imageWidth/2);  // if the button is wide, draw the image to the left, otherwise center it
-            var iy = 170;
+            var ix = aspect>aspectLimit?s96:(canvas.width/2)-(imageWidth/2);  // if the button is wide, draw the image to the left, otherwise center it
+            var iy = s170;
             ctx.drawImage(background, ix, iy, imageWidth,imageWidth);
       
             ctx.textAlign = aspect>aspectLimit?"left":"center";
             ctx.fillStyle = rgb2hex(wdg.fontColor); //pass in font color prop
             
             ctx.font = "bold 70px Segoe";                      // only works with some tricky stuff see Styles for more information
-            var tx = aspect>aspectLimit?ix+220:canvas.width/2; // if the button is square, center the text, otherwise draw to the right of the image
-            var ty = aspect>aspectLimit?310:512-40; // if centered, draw below the image
+            var tx = aspect>aspectLimit?ix+s220:canvas.width/2; // if the button is square, center the text, otherwise draw to the right of the image
+            var ty = aspect>aspectLimit?(canvas.height/2)+55:canvas.height-s40; // if centered, draw below the image
       
             // we may need to adjust y to take multi-line into account e..g if there are 2 lines, we need to move y(start) up 
-            multiline(text,tx,ty,aspect>aspectLimit?canvas.width-tx-12:512-20,70,ctx);
-      
+            multiline(text,tx,ty,aspect>aspectLimit?canvas.width-tx-12:canvas.width-s24,70,ctx);
+            
             var newimg = canvas.toDataURL() + '#edge=clamp';  
             
             //wdg.src = newimg; // need to save it back to src property becuase the texture will updated with the last set Image if you change for example colors
