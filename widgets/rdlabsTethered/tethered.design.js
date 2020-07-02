@@ -5,7 +5,13 @@ function twxTethered() {
     label    : '3D Panel',
     
     category : 'ar',
-    groups    : ['Containers'],
+    groups   : ['Containers'],
+    
+    isVisibleInPalette: function(scope) {
+      let projectSettings = scope.$root.currentProject || {};
+      return (projectSettings.projectType === 'eyewear');
+    },
+   
 
     properties: [
       {
