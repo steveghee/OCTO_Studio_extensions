@@ -195,12 +195,15 @@ function twxNavigator() {
 
     runtimeTemplate: function (props, twxWidgetEl, fullOriginalDoc, $, projectSettings) {
       var forholo = (projectSettings.projectType === 'eyewear');
+      var tml1 = '<div ng-repeat="obj in helper.tunnel_objects"><twx-dt-model id="{{obj.name}}" x="0" y="0" z="0" opacity="1.0" rx="0" ry="0" rz="0" src="{{obj.src}}" hidden="true" shader="fogged"></twx-dt-model></div>';
+      var tml2 = '<div ng-repeat="obj in helper.nav_objects"><twx-dt-model id="{{obj.name}}" x="0" y="0" z="0" opacity="1.0" rx="0" ry="0" rz="0" sx="1" sy="1" sz="1" src="{{obj.src}}" hidden="true"></twx-dt-model></div>';
+      var tml3 = '<div ng-repeat="obj in helper.nav_images"><twx-dt-image id="{{obj.name}}" x="0" y="0" z="0" opacity="1.0" rx="-90" ry="0" rz="0" sx="1" sy="1" sz="1" height="0.5" width="0.5" src="{{obj.src}}" hidden="true" shader="pinger"></twx-dt-image></div>';
       var ctrl = '<div ng-navigator class="navigatorWidget" id-field="' + props.widgetId + '" isholo-field=' + forholo +
       ' step-field={{me.steps}} shader-field="me.shader" extend-field={{me.extent}} visible-field={{me.visible}}'+
       ' auto-field={{me.auto}} cutoff-field={{me.cutoff}} affects-field={{me.affects}}'+
       ' head-field={{me.head}} feet-field={{me.head}} device-field={{me.device}} feetsrc-field={{me.feetSrc}}'+
       ' tunnelcolor-field={{me.tunnelColor}} feetcolor-field={{me.feetColor}} delegate-field="delegate"></div>';
-      return ctrl;
+      return tml1+tml2+tml3+ctrl;
     },
     
     delegate: function () {
