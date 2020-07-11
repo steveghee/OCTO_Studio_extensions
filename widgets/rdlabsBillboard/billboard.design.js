@@ -9,12 +9,6 @@ function twxBillboard() {
 
     properties: [
       {
-        name: 'class',
-        label: 'Class',
-        datatype: 'string',
-        default: ''
-      },
-      {
         name: 'auto',
         label: 'Auto',
         datatype: 'boolean',
@@ -69,16 +63,32 @@ function twxBillboard() {
       angularModules: ['billboard-ng']
     },
 
-
     designTemplate: function () {
       return '<div class="billboardWidget">Remember to Enable Tracking Events</div>';
     },
 
     runtimeTemplate: function (props) {
-      var tmpl = '<div ng-billboard class="ng-hide billboardWidget ' + props.class + '" angle-field={{me.angle}} offset-field={{me.offset}} auto-field={{me.auto}} affects-field={{me.affects}} delegate-field="delegate"></div>';
+      var tmpl = '<div ng-billboard class="billboardWidget" angle-field={{me.angle}} offset-field={{me.offset}} auto-field={{me.auto}} affects-field={{me.affects}} delegate-field="delegate"></div>';
       return tmpl;
+    },
+    
+    delegate: function () {
+
+      //
+      // called on init!
+      // lets force enabletrackingevents ON
+      //
+      this.init = function(element, widgetCtrl) {
+        let view = widgetCtrl.element().closest('twx-dt-view')
+        var root = angular.element(view).data('_widgetController');
+        if (root != undefined)
+          root.setProp('enabletrackingevents', true);
+      }
+      
+      return this;
     }
-  }
+
+  },
 }
 
 twxAppBuilder.widget('twxBillboard', twxBillboard);

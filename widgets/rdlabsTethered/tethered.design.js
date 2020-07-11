@@ -246,7 +246,6 @@ function twxTethered() {
       }
       
       this.widgetAdded = function(widgetCtrl, dropTarget) {
-        console.log(dropTarget);
       }
       
       // called when a widgets properties are altered
