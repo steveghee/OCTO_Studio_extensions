@@ -499,7 +499,8 @@ function Vector4() {
     this.W = function() { return this.v[3] }
 
     this.FromString = function (str) {
-        var pcs = str.split(',');
+        var pcs = str.split(',');                // split by comman
+        if (pcs.length < 3) pcs = str.split(' ');// try spaces
         this.v[0] = parseFloat(pcs[0]);
         this.v[1] = parseFloat(pcs[1]);
         this.v[2] = parseFloat(pcs[2]);

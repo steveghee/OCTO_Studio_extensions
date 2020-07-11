@@ -9,14 +9,6 @@ function twxNavigator() {
     
     properties: [
       {
-            name: 'affects',
-           label: 'Contains',
-        datatype: 'string',
-         default: '',
- isBindingTarget: true,
-       showInput: true
-      },
-      {
             name: 'extent',
            label: 'Offset',
         datatype: 'Number',
@@ -48,25 +40,6 @@ function twxNavigator() {
            label: 'Color',
         datatype: 'select',
          default: "1,1,0",
- isBindingTarget: true,
-       isVisible: false,
-          editor: 'select',
-         options: [
-            {label: 'Red'      , value: "1,0,0"},
-            {label: 'Green'    , value: "0,1,0"},
-            {label: 'Blue'     , value: "0,0,1"},
-            {label: 'Yellow'   , value: "1,1,0"},
-            {label: 'Black' ,    value: "0,0,0"},
-            {label: 'White'    , value: "1,1,1"},
-            {label: 'Magenta',   value: "1,0,1"},
-            {label: 'Turquiose', value: "0,1,1"},
-                  ],
-      },
-      {
-            name: 'feetColor',
-           label: 'Feet Color',
-        datatype: 'select',
-         default: "0,1,0",
  isBindingTarget: true,
        isVisible: false,
           editor: 'select',
@@ -134,6 +107,25 @@ function twxNavigator() {
  isBindingTarget: true
       },
       {
+            name: 'feetColor',
+           label: 'Feet Color',
+        datatype: 'select',
+         default: "0,1,0",
+ isBindingTarget: true,
+       isVisible: true,
+          editor: 'select',
+         options: [
+            {label: 'Red'      , value: "1,0,0"},
+            {label: 'Green'    , value: "0,1,0"},
+            {label: 'Blue'     , value: "0,0,1"},
+            {label: 'Yellow'   , value: "1,1,0"},
+            {label: 'Black' ,    value: "0,0,0"},
+            {label: 'White'    , value: "1,1,1"},
+            {label: 'Magenta',   value: "1,0,1"},
+            {label: 'Turquiose', value: "0,1,1"},
+                  ],
+      },
+      {
             name: 'feetSrc',
            label: 'Image for feet',
         datatype: 'resource_url',
@@ -176,8 +168,24 @@ function twxNavigator() {
         datatype: 'boolean',
          default: true,
  isBindingTarget: true
+      },
+      {
+            name: 'poi',
+           label: 'Selected',
+        datatype: 'Number',
+         default: 0,
+ isBindingSource: false,
+ isBindingTarget: true,
+       showInput: true,
+      },
+      {
+            name: 'poidata',
+           label: 'ves-basic-web-widgets-extension:Data',
+        datatype: 'infotable',
+ isBindingTarget: true,
+ isBindingSource: false,
+       isVisible: true
       }
-    
     ],
 
     events: [
@@ -239,7 +247,7 @@ function twxNavigator() {
       var tml3 = '<div ng-repeat="obj in helper.nav_images"><twx-dt-image id="{{obj.name}}" x="0" y="0" z="0" opacity="1.0" rx="-90" ry="0" rz="0" sx="1" sy="1" sz="1" height="0.5" width="0.5" src="{{obj.src}}" hidden="true"></twx-dt-image></div>\n';
       var ctrl = '<div ng-navigator class="navigatorWidget" id-field="' + props.widgetId + '" isholo-field=' + forholo +
       ' step-field={{me.steps}} shader-field="me.shader" extent-field={{me.extent}} visible-field={{me.visible}}'+
-      ' auto-field={{me.auto}} cutoff-field={{me.cutoff}} affects-field={{me.affects}} floor-field={{me.floor}}'+
+      ' auto-field={{me.auto}} cutoff-field={{me.cutoff}} floor-field={{me.floor}} poidata-field="me.poidata" poi-field={{me.poi}}'+
       ' head-field={{me.head}} feet-field={{me.head}} feetsrc-field={{me.feetSrc}} '+(forholo?'device-field={{me.holotarget}}':'device-field={{me.device}}')+
       ' tunnelcolor-field={{me.tunnelColor}} feetcolor-field={{me.feetColor}} delegate-field="delegate"></div>\n';
       return shade+tml1+tml2+tml3+ctrl;

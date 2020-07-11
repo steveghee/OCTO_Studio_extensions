@@ -15,7 +15,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
       scope: {
         idField          : '@',  
         stepsField       : '@',
-        affectsField     : '@',
         tunnelcolorField : '@',
         tunnelsrcField   : '@',
         deviceField      : '@',
@@ -29,6 +28,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         cutoffField      : '@',
         extentField      : '@',
         floorField       : '@',
+        poidataField     : '=',
+        poiField         : '@',
         delegateField    : '='
       },
       template: '<div></div>',
@@ -37,7 +38,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         var lastUpdated = 'unknown';
         scope.data = {  
                          id: undefined,
-                    affects: undefined, 
+                    poidata: undefined,
+                poiselected: -1,
                       steps: 15,
                        auto: true,
                       force: false,
@@ -119,14 +121,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           }, 1);
         };
 
-        scope.$watch('affectsField', function () {
-          // get the list of names
-          if (scope.affectsField != undefined && scope.affectsField.length > 0) {
-              
-//            scope.data.pending = scope.affectsField.split(',');
-          }
-        });
-            
         scope.entered = function(h,d) {
           scope.$parent.fireEvent('arrived');
         }
@@ -199,6 +193,29 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         //
         //
         //
+        scope.$watch('poidataField', function () {
+          scope.data.poidata = scope.poidataField != undefined ? JSON.parse(scope.poidataField) : undefined;
+        });
+        scope.$watch('poiField', function () {
+          scope.data.poiselected = scope.poiField != undefined ? parseInt(scope.poiField) : -1;
+          scope.data.poidata = scope.poidataField ;
+          if (scope.data.navigator   != undefined && 
+              scope.data.poidata     != undefined && 
+              scope.data.poiselected >= 0         && 
+              scope.data.poiselected < scope.data.poidata.length) {
+          
+            //build the locator
+            let selrow = scope.data.poidata[scope.data.poiselected];
+            var locator = { position: new Vector4().FromString(selrow.pos),
+                                gaze: new Vector4().FromString(selrow.gaze),
+                                  up: new Vector4().FromString(selrow.up) };
+            scope.data.navigator.setAt(locator).show();
+          }                     
+        });
+            
+        //
+        //
+        //
         scope.$watch('visibleField', function () {
                      
           scope.data.visible = (scope.visibleField != undefined && scope.visibleField === 'true') ? true :false ;
@@ -232,8 +249,22 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               hide();
             };
             delegate.capture = function () {
-              if (scope.data.navigator != undefined) 
+              if (scope.data.navigator != undefined) {
                 scope.data.navigator.setAtCurrent().show();
+                  
+                // async, we get the new value and add to the poidata table
+                // this is a bidorectional bind, so others can register interest and get the value
+                $timeout(function() {
+                  var newloc = scope.data.navigator.get();
+                  // and add it to the data
+                  if (scope.data.poidata === undefined) scope.data.poidata = [];
+                  scope.data.poidata.push({ pos:newloc.position.ToString(), 
+                                           gaze:newloc.gaze.ToString(), 
+                                             up:newloc.up.ToString()});
+                  // and set the shared output
+                  scope.poidataField = scope.data.poidata;
+                },1);
+              }
             };
           }
         });
