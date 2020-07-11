@@ -210,8 +210,8 @@ function spatialHelper(renderer, tunnel, targets) {
     var p2 = pg.Scale(2).Sub(p0);
     
     // this is the same for all, so calculate this once
-    var foggedshade = this.color != undefined ? 'fogged;r f '+this.color[0]+';g f '+this.color[1]+';b f '+this.color[2] 
-                                              : 'fogged';
+    var navfoggedshade = this.color != undefined ? 'navfogged;r f '+this.color[0]+';g f '+this.color[1]+';b f '+this.color[2] 
+                                              : 'navfogged';
     
     // here we go : classic cubic bezier spline curve
     //
@@ -246,7 +246,7 @@ function spatialHelper(renderer, tunnel, targets) {
       // if we get close (within 0.5m) start fading
       //
       
-      this.renderer.setProperties(img,{ shader: foggedshade, 
+      this.renderer.setProperties(img,{ shader: navfoggedshade, 
                                        opacity: (gd - 0.5), 
                                         hidden: !this.showTunnel }); 
         
@@ -265,17 +265,20 @@ function spatialHelper(renderer, tunnel, targets) {
     
     if (!this.isHololens && this.target.fname != undefined && this.showTunnel) {
       var tcol      = this.target.color != undefined ? this.target.color : this.color;
-      var pingshade = twx.app.isPreview() ? "Default" :
-                      tcol != undefined ? 'pinger;rings f 5;r f '+tcol[0]+';g f '+tcol[1]+';b f '+tcol[2]+';direction f -1;fade f '+(1 - (pgd - 0.5)) 
-                                        : 'pinger;rings f 5;r f 0;g f 1;b f 0;direction f -1;fade f '+(1 - (pgd - 0.5));
-      this.renderer.setProperties (this.target.fname,{ shader:pingshade, 
-                                                       hidden:false});
+      var pingshade = //twx.app.isPreview() ? "Default" :
+                      tcol != undefined ? 'navpinger;rings f 5;r f '+tcol[0]+';g f '+tcol[1]+';b f '+tcol[2]+';direction f -1;fade f '+(1 - (pgd - 0.5)) 
+                                        : 'navpinger;rings f 5;r f 0;g f 1;b f 0;direction f -1;fade f '+(1 - (pgd - 0.5));
+      this.renderer.setProperties (this.target.fname,{ shader: pingshade,  
+                                                       hidden: false});
     }
     return pgd;
   }
   
   this._toggleTunnel = function(force) {
   
+    var navfoggedshade = //twx.app.isPreview() ? "Default" : 
+                         "navfoggedLit";  
+                      
     // override if allowed
     this.showTunnel = force != undefined ? force 
                                          : !this.showTunnel;
@@ -285,38 +288,38 @@ function spatialHelper(renderer, tunnel, targets) {
       this.tunneling = this.showTunnel;
  
       if (this.target.tname != undefined) 
-      this.renderer.setProperties (this.target.tname,{shader: twx.app.isPreview() ? "Default" : "foggedLit", 
+      this.renderer.setProperties (this.target.tname,{shader: navfoggedshade, 
                                                       hidden: false });
       if (this.target.callback != undefined)
         this.target.callback({hidden:false});
       
       if (this.target.fname != undefined) {
         var tcol      = this.target.color != undefined ? this.target.color : this.color;
-        var pingshade = twx.app.isPreview() ? "Default" :
-                        tcol != undefined ? 'pinger;rings f 5;r f '+tcol[0]+';g f '+tcol[1]+';b f '+tcol[2]+';direction f -1'
-                                          : 'pinger;rings f 5;r f 0;g f 1;b f 0;direction f -1';
+        var pingshade = //twx.app.isPreview() ? "Default" :
+                        tcol != undefined ? 'navpinger;rings f 5;r f '+tcol[0]+';g f '+tcol[1]+';b f '+tcol[2]+';direction f -1'
+                                          : 'navpinger;rings f 5;r f 0;g f 1;b f 0;direction f -1';
                                                 
-        this.renderer.setProperties (this.target.fname,{shader: twx.app.isPreview() ? "Default" : pingshade,    
+       this.renderer.setProperties (this.target.fname,{shader: pingshade,    
                                                         hidden:false });
       }
       if (this.target.hname != undefined) 
-      this.renderer.setProperties (this.target.hname,{shader: twx.app.isPreview() ? "Default" :"foggedLit",    
-                                                      hidden:false });
+      this.renderer.setProperties (this.target.hname,{shader: navfoggedshade,    
+                                                      hidden: false });
     
     } else {
     
       if (this.target.tname != undefined) 
-      this.renderer.setProperties (this.target.tname,{shader:twx.app.isPreview() ? "Default" :"foggedLit", 
-                                                      hidden:true});
+      this.renderer.setProperties (this.target.tname,{shader: navfoggedshade, 
+                                                      hidden: true});
       if (this.target.callback != undefined)
         this.target.callback({hidden:true});
         
       if (this.target.fname != undefined) 
-        this.renderer.setProperties (this.target.fname,{shader:twx.app.isPreview() ? "Default" : "pinger",    
-                                                        hidden:true});
+        this.renderer.setProperties (this.target.fname,{shader :twx.app.isPreview() ? "Default" : "navpinger",    
+                                                        hidden :true});
       if (this.target.hname != undefined) 
-        this.renderer.setProperties (this.target.hname,{shader:twx.app.isPreview() ? "Default" : "foggedLit",    
-                                                        hidden:true});
+        this.renderer.setProperties (this.target.hname,{shader: navfoggedshade,    
+                                                        hidden: true});
     }
   }
   
@@ -350,7 +353,7 @@ function spatialHelper(renderer, tunnel, targets) {
     if (this.target.tname != undefined) {
       this.renderer.setTranslation(this.target.tname,ep.v[0],ep.v[1],ep.v[2]);
       this.renderer.setRotation   (this.target.tname,es.attitude, es.heading, es.bank);
-      this.renderer.setProperties (this.target.tname,{shader:twx.app.isPreview() ? "Default" : "foggedLit", 
+      this.renderer.setProperties (this.target.tname,{shader:twx.app.isPreview() ? "Default" : "navfoggedLit", 
                                                       hidden:false});
     }
     if (this.target.callback != undefined) {
@@ -360,7 +363,7 @@ function spatialHelper(renderer, tunnel, targets) {
     if (this.target.hname != undefined) {
       this.renderer.setTranslation(this.target.hname,hp.v[0],hp.v[1],hp.v[2]);
       this.renderer.setRotation   (this.target.hname,es.attitude, es.heading, es.bank);
-      this.renderer.setProperties (this.target.hname,{shader:twx.app.isPreview() ? "Default" :"foggedLit", 
+      this.renderer.setProperties (this.target.hname,{shader:twx.app.isPreview() ? "Default" :"navfoggedLit", 
                                                       hidden:false});
     }
 
@@ -377,9 +380,9 @@ function spatialHelper(renderer, tunnel, targets) {
       var fp  = new Vector4().Set3(ep.v[0], - this.floorOffset, ep.v[2]).Add(hg.Scale(0.5));
       
       var tcol      = this.target.color != undefined ? this.target.color : this.color;
-      var pingshade = twx.app.isPreview() ? "Default" :
-                      tcol != undefined ? 'pinger;rings f 5;r f '+tcol[0]+';g f '+tcol[1]+';b f '+tcol[2]+';direction f -1'
-                                        : 'pinger;rings f 5;r f 0;g f 1;b f 0;direction f -1';
+      var pingshade = //twx.app.isPreview() ? "Default" :
+                      tcol != undefined ? 'navpinger;rings f 5;r f '+tcol[0]+';g f '+tcol[1]+';b f '+tcol[2]+';direction f -1'
+                                        : 'navpinger;rings f 5;r f 0;g f 1;b f 0;direction f -1';
 
       this.renderer.setTranslation(this.target.fname, fp.v[0],      fp.v[1],     fp.v[2] ); 
       this.renderer.setRotation   (this.target.fname, esf.attitude, esf.heading, esf.bank);
@@ -443,7 +446,7 @@ function spatialHelper(renderer, tunnel, targets) {
                            rx="0" ry="0" rz="0" 
                            src="{{obj.src}}" 
                            hidden="true"
-                           shader="fogged"
+                           shader="navfogged"
                            >
   </twx-dt-model>
 </div>
@@ -463,7 +466,7 @@ function spatialHelper(renderer, tunnel, targets) {
                            height="0.5" width="0.5"
                            src="{{obj.src}}" 
                            hidden="false"
-                           shader="pinger"
+                           shader="navpinger"
                            >
   </twx-dt-model>
 </div>
