@@ -9,14 +9,6 @@ function twxNavigator() {
     
     properties: [
       {
-            name: 'auto',
-           label: 'Following',
-        datatype: 'boolean',
- isBindingSource: false,
- isBindingTarget: true,
-       showInput: true
-      },
-      {
             name: 'affects',
            label: 'Contains',
         datatype: 'string',
@@ -89,6 +81,9 @@ function twxNavigator() {
             {label: 'Turquiose', value: "0,1,1"},
                   ],
       },
+      //
+      // if we are targeting tablet devices, we show the following
+      //
       {
             name: 'device',
            label: 'Device',
@@ -96,7 +91,7 @@ function twxNavigator() {
          default: '',
  isBindingTarget: true,
        isVisible: function(props, $scope) {
-                    let projectSettings = $scope.$root.currentProject || {};
+                    let projectSettings = $scope.$root.projectSettings || {};
                     return (projectSettings.projectType != 'eyewear');
                   },
           editor: 'select',
@@ -107,6 +102,23 @@ function twxNavigator() {
             {label: 'iPhone portrait' , value: "extensions/images/navphonp.pvz"}
                   ],
       },
+      //
+      // otherwise, if the target is hololens, we show a different control
+      //
+      {
+            name: 'holotarget',
+           label: 'Holo target',
+        datatype: 'resource_url',
+  resource_image: true,
+ allowedPatterns: ['.pvz'],
+ isBindingTarget: true,
+       isVisible: function(props, $scope) {
+                    let projectSettings = $scope.$root.projectSettings || {};
+                    return (projectSettings.projectType === 'eyewear');
+                  },
+      },
+      
+      //
       {
             name: 'head',
            label: 'Show head',
@@ -151,12 +163,12 @@ function twxNavigator() {
        showInput: true
       },
       {
-            name: 'shader',
-           label: 'Shader',
-        datatype: 'string',
-         default: '',
+            name: 'auto',
+           label: 'Auto-cutoff',
+        datatype: 'boolean',
+ isBindingSource: false,
  isBindingTarget: true,
-       isVisible: false
+       showInput: true
       },
       {
             name: 'visible',
@@ -169,14 +181,14 @@ function twxNavigator() {
     ],
 
     events: [
-        {
-            name: 'arrived',
-            label: 'Arrived'
-        },
-        {
-            name: 'departed',
-            label: 'Departed'
-        }
+      {
+        name: 'arrived',
+        label: 'Arrived'
+      },
+      {
+        name: 'departed',
+        label: 'Departed'
+      }
     ],
 
     services: [
@@ -202,7 +214,7 @@ function twxNavigator() {
 
 
     designTemplate: function () {
-      return '<twx-dt-model id="#widgetId#" src="/extensions/images/ipad.pvz" opacity="1" hidden="false" scale="{{me.scale}}" x="{{me.x}}" y="{{me.y}}" z="{{me.z}}" rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" decal="{{me.decal}}" shader="{{me.shader}}""></twx-dt-model><div class="tetheredWidget">Remember to Enable Tracking Events</div>';
+      return '<twx-dt-model id="#widgetId#" src="../extensions/images/ipad.pvz" opacity="1" hidden="false" scale="{{me.scale}}" x="{{me.x}}" y="{{me.y}}" z="{{me.z}}" rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" decal="{{me.decal}}" ></twx-dt-model><div class="tetheredWidget"></div>';
     },
 
     runtimeTemplate: function (props, twxWidgetEl, fullOriginalDoc, $, projectSettings) {
@@ -224,11 +236,11 @@ function twxNavigator() {
                           : vs0g+ps0g+vs1g+ps1g+vs2g+ps2g;
       var tml1 = '<div ng-repeat="obj in helper.tunnel_objects"><twx-dt-model id="{{obj.name}}" x="0" y="0" z="0" opacity="1.0" rx="0" ry="0" rz="0" src="{{obj.src}}" hidden="true" shader="fogged"></twx-dt-model></div>\n';
       var tml2 = '<div ng-repeat="obj in helper.nav_objects"><twx-dt-model id="{{obj.name}}" x="0" y="0" z="0" opacity="1.0" rx="0" ry="0" rz="0" sx="1" sy="1" sz="1" src="{{obj.src}}" hidden="true"></twx-dt-model></div>\n';
-      var tml3 = '<div ng-repeat="obj in helper.nav_images"><twx-dt-image id="{{obj.name}}" x="0" y="0" z="0" opacity="1.0" rx="-90" ry="0" rz="0" sx="1" sy="1" sz="1" height="0.5" width="0.5" src="{{obj.src}}" hidden="true" shader="navpinger"></twx-dt-image></div>\n';
+      var tml3 = '<div ng-repeat="obj in helper.nav_images"><twx-dt-image id="{{obj.name}}" x="0" y="0" z="0" opacity="1.0" rx="-90" ry="0" rz="0" sx="1" sy="1" sz="1" height="0.5" width="0.5" src="{{obj.src}}" hidden="true"></twx-dt-image></div>\n';
       var ctrl = '<div ng-navigator class="navigatorWidget" id-field="' + props.widgetId + '" isholo-field=' + forholo +
       ' step-field={{me.steps}} shader-field="me.shader" extent-field={{me.extent}} visible-field={{me.visible}}'+
       ' auto-field={{me.auto}} cutoff-field={{me.cutoff}} affects-field={{me.affects}} floor-field={{me.floor}}'+
-      ' head-field={{me.head}} feet-field={{me.head}} device-field={{me.device}} feetsrc-field={{me.feetSrc}}'+
+      ' head-field={{me.head}} feet-field={{me.head}} feetsrc-field={{me.feetSrc}} '+(forholo?'device-field={{me.holotarget}}':'device-field={{me.device}}')+
       ' tunnelcolor-field={{me.tunnelColor}} feetcolor-field={{me.feetColor}} delegate-field="delegate"></div>\n';
       return shade+tml1+tml2+tml3+ctrl;
     },

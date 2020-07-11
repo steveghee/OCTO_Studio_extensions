@@ -200,7 +200,7 @@ function twxTethered() {
 
 
     designTemplate: function () {
-      return '<twx-dt-model id="#widgetId#" src="/extensions/images/holoPlate.pvz" opacity="1" hidden="false" scale="{{me.scale}}" x="{{me.x}}" y="{{me.y}}" z="{{me.z}}" rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" decal="{{me.decal}}" shader="{{me.shader}}""></twx-dt-model><div class="tetheredWidget">Remember to Enable Tracking Events</div>';
+      return '<twx-dt-model id="#widgetId#" src="/extensions/images/holoPlate.pvz" opacity="1" hidden="false" scale="{{me.scale}}" x="{{me.x}}" y="{{me.y}}" z="{{me.z}}" rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" decal="{{me.decal}}" shader="{{me.shader}}""></twx-dt-model><div class="tetheredWidget"></div>';
     },
 
     runtimeTemplate: function (props, twxWidgetEl, fullOriginalDoc, $, projectSettings) {

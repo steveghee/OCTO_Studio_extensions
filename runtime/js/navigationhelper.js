@@ -211,7 +211,7 @@ function spatialHelper(renderer, tunnel, targets) {
     
     // this is the same for all, so calculate this once
     var navfoggedshade = this.color != undefined ? 'navfogged;r f '+this.color[0]+';g f '+this.color[1]+';b f '+this.color[2] 
-                                              : 'navfogged';
+                                                 : 'navfogged';
     
     // here we go : classic cubic bezier spline curve
     //
@@ -265,7 +265,7 @@ function spatialHelper(renderer, tunnel, targets) {
     
     if (!this.isHololens && this.target.fname != undefined && this.showTunnel) {
       var tcol      = this.target.color != undefined ? this.target.color : this.color;
-      var pingshade = //twx.app.isPreview() ? "Default" :
+      var pingshade = twx.app.isPreview() ? "Default" :
                       tcol != undefined ? 'navpinger;rings f 5;r f '+tcol[0]+';g f '+tcol[1]+';b f '+tcol[2]+';direction f -1;fade f '+(1 - (pgd - 0.5)) 
                                         : 'navpinger;rings f 5;r f 0;g f 1;b f 0;direction f -1;fade f '+(1 - (pgd - 0.5));
       this.renderer.setProperties (this.target.fname,{ shader: pingshade,  
@@ -276,7 +276,7 @@ function spatialHelper(renderer, tunnel, targets) {
   
   this._toggleTunnel = function(force) {
   
-    var navfoggedshade = //twx.app.isPreview() ? "Default" : 
+    var navfoggedshade = twx.app.isPreview() ? "Default" : 
                          "navfoggedLit";  
                       
     // override if allowed
@@ -295,7 +295,7 @@ function spatialHelper(renderer, tunnel, targets) {
       
       if (this.target.fname != undefined) {
         var tcol      = this.target.color != undefined ? this.target.color : this.color;
-        var pingshade = //twx.app.isPreview() ? "Default" :
+        var pingshade = twx.app.isPreview() ? "Default" :
                         tcol != undefined ? 'navpinger;rings f 5;r f '+tcol[0]+';g f '+tcol[1]+';b f '+tcol[2]+';direction f -1'
                                           : 'navpinger;rings f 5;r f 0;g f 1;b f 0;direction f -1';
                                                 
@@ -380,7 +380,7 @@ function spatialHelper(renderer, tunnel, targets) {
       var fp  = new Vector4().Set3(ep.v[0], - this.floorOffset, ep.v[2]).Add(hg.Scale(0.5));
       
       var tcol      = this.target.color != undefined ? this.target.color : this.color;
-      var pingshade = //twx.app.isPreview() ? "Default" :
+      var pingshade = twx.app.isPreview() ? "Default" :
                       tcol != undefined ? 'navpinger;rings f 5;r f '+tcol[0]+';g f '+tcol[1]+';b f '+tcol[2]+';direction f -1'
                                         : 'navpinger;rings f 5;r f 0;g f 1;b f 0;direction f -1';
 

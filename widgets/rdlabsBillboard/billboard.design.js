@@ -64,7 +64,7 @@ function twxBillboard() {
     },
 
     designTemplate: function () {
-      return '<div class="billboardWidget">Remember to Enable Tracking Events</div>';
+      return '<div class="billboardWidget"></div>';
     },
 
     runtimeTemplate: function (props) {
@@ -88,7 +88,7 @@ function twxBillboard() {
       return this;
     }
 
-  },
+  }
 }
 
 twxAppBuilder.widget('twxBillboard', twxBillboard);
