@@ -26,8 +26,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         autoField        : '@',
         visibleField     : '@',
         isholoField      : '@',
+        cutoffField      : '@',
         extentField      : '@',
-        shaderField      : '=',
+        floorField       : '@',
         delegateField    : '='
       },
       template: '<div></div>',
@@ -42,6 +43,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                       force: false,
                      isholo: false,
                      extent: 0.45,
+                     cutoff: 0.5,
+                      floor: 0,
                   navigator: undefined,
                        args: undefined,
                 tunnelColor: undefined,
@@ -73,7 +76,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           };
           
           scope.data.navigator = new spatialHelper(scope.renderer,tunnel,targets)
-                                 .Cutoff(scope.data.cufoff,scope.data.auto);
+                                 .Cutoff(scope.data.cutoff, scope.data.auto, scope.entered, scope.exited);
           
           scope.$root.helper = scope.data.navigator;
         }
@@ -124,6 +127,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           }
         });
             
+        scope.entered = function(h,d) {
+          scope.$parent.fireEvent('arrived');
+        }
+        scope.exited = function(h,d) {
+          scope.$parent.fireEvent('departed');
+        }
+
         //////////////////////////////////////////////////////////////////////
         //setup stuff    
         //
@@ -134,18 +144,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         // not updated too often, so handle as a group    
         //
         //
-        scope.$watchGroup(['idField', 'stepsField', 'cutoffField', 'tunnelColorField', 'tunnelSrcField', 'isholoField'], function () {
+        scope.$watchGroup(['idField', 'stepsField', 'tunnelColorField', 'tunnelSrcField', 'isholoField'], function () {
           scope.data.id          = (scope.idField          != undefined) ? scope.idField : undefined;
           scope.data.steps       = (scope.stepsField       != undefined) ? parseFloat(scope.stepsField) : 15;                 
-          scope.data.cutoff      = (scope.cutoffField      != undefined) ? parseFloat(scope.cutoffField) : 0.5;                 
           scope.data.tunnelColor = (scope.tunnelcolorField != undefined) ? scope.tunnelcolorField.split(',') : [1,1,0];
           scope.data.tunnelSrc   = (scope.tunnelsrcField   != undefined && scope.tunnelsrcField != '') ? scope.tunnelsrcField : 'extensions/images/navSphere.pvz';
-          
-          scope.data.isholo = (scope.isholoField != undefined) ? isbool(scope.isholoField) : false;
-          if (scope.data.isholo && !twx.app.isPreview()) {
-            scope.shaderField = "foggedLit";
-          }
-                
+          scope.data.isholo      = (scope.isholoField      != undefined) ? isbool(scope.isholoField) : false;
         });
 
         scope.$watchGroup(['deviceField', 'headField', 'feetField', 'feetColorField'], function () {
@@ -154,18 +158,33 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           scope.data.head      = (scope.headField != undefined) ? isbool(scope.headField) : false;                 
           scope.data.feet      = (scope.feetField != undefined && isbool(scope.feetField)) ? scope.feetsrcField   : undefined;                 
           scope.data.feetColor = (scope.feetcolorField != undefined) ? scope.feetcolorField.split(',') : [0,1,0];                 
-          
-          scope.data.isholo = (scope.isholoField != undefined) ? isbool(scope.isholoField) : false;
-          if (scope.data.isholo && !twx.app.isPreview()) {
-            scope.shaderField = "foggedLit";
-          }
-                
         });
+            
         //
         // z offset from head   
         //
         scope.$watch('extentField', function () {
-          scope.data.extent = scope.extentField;                 
+          scope.data.extent = (scope.extentField != undefined) ? parseFloat(scope.extentField) : 0.45;                 
+        });
+            
+        //
+        // height offset of feet from virtual floor (tracking.y = 0)
+        //
+        scope.$watch('floorField', function () {
+          scope.data.floor = (scope.floorField != undefined) ? parseFloat(scope.floorField) : 0;                 
+          if (scope.data.navigator != undefined) {
+            scope.data.navigator.floorOffset = scope.data.floor;
+          }
+        });
+            
+        //    
+        // distance at which we trigger enter/exit crossing events    
+        //
+        scope.$watch('cutoffField', function () {
+          scope.data.cutoff = (scope.cutoffField != undefined) ? parseFloat(scope.cutoffField) : 0.5;                 
+          if (scope.data.navigator != undefined) {
+            scope.data.navigator.Cutoff(scope.data.cutoff, scope.data.auto, scope.entered, scope.exited);
+          }
         });
 
         //
@@ -196,6 +215,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           }
         
         };
+        
+        
         var hide = function(force) {
             
           if (scope.data.navigator != undefined) 
