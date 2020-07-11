@@ -247,7 +247,10 @@ function twxNavigator() {
       this.beforeDestroy = function (element, widgetCtrl) {
       }
       
+      //
       // called on init!
+      // lets force enabletrackingevents ON
+      //
       this.init = function(element, widgetCtrl) {
         let view = widgetCtrl.element().closest('twx-dt-view')
         var root = angular.element(view).data('_widgetController');
@@ -261,12 +264,13 @@ function twxNavigator() {
       }
       
       this.widgetAdded = function(widgetCtrl, dropTarget) {
-        console.log(dropTarget);
       }
       
+      //
       // called when a widgets properties are altered
+      //
       this.widgetUpdated = function (widgetCtrl, currentProps, changedProps, oldProps) {
-          
+      /*          
         if(changedProps.height) {
           let newScale = changedProps.height;
           let oldScale = (oldProps.width) ? oldProps.width.value : 1;
@@ -279,7 +283,7 @@ function twxNavigator() {
           
           widgetCtrl.setProp('scale', newScale + ' ' + oldScale + ' 1');
         }
-
+      */
       };
 
       return this;

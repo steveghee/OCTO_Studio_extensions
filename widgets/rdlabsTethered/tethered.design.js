@@ -231,8 +231,15 @@ function twxTethered() {
       this.beforeDestroy = function (element, widgetCtrl) {
       }
       
+      //
       // called on init!
+      // lets force enabletrackingevents ON
+      //
       this.init = function(element, widgetCtrl) {
+        let view = widgetCtrl.element().closest('twx-dt-view')
+        var root = angular.element(view).data('_widgetController');
+        if (root != undefined)
+          root.setProp('enabletrackingevents', true);
       }
       
       this.widgetCreated = function(widgetCtrl) {
