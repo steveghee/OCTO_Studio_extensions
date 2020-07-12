@@ -15,15 +15,17 @@ function twxNavigator() {
          default: 0.45,
  isBindingSource: false,
  isBindingTarget: true,
-       showInput: true,
+       showInput: false,
+       isVisible: false
       },
       {
             name: 'floor',
            label: 'Floor Offset',
         datatype: 'Number',
-         default: 0.45,
+         default: 0,
  isBindingTarget: true,
-       showInput: true,
+       showInput: false,
+       isVisible: false
       },
       {
             name: 'tunnelSrc',
@@ -170,6 +172,14 @@ function twxNavigator() {
  isBindingTarget: true
       },
       {
+            name: 'poidata',
+           label: 'ves-basic-web-widgets-extension:Data',
+        datatype: 'infotable',
+ isBindingTarget: true,
+ isBindingSource: false,
+       isVisible: true
+      },
+      {
             name: 'poi',
            label: 'Selected',
         datatype: 'Number',
@@ -185,14 +195,6 @@ function twxNavigator() {
  isBindingSource: true,
  isBindingTarget: false,
        showInput: false,
-      },
-      {
-            name: 'poidata',
-           label: 'ves-basic-web-widgets-extension:Data',
-        datatype: 'infotable',
- isBindingTarget: true,
- isBindingSource: false,
-       isVisible: true
       }
     ],
 

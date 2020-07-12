@@ -75,7 +75,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               device: scope.data.device,
                 head: scope.data.head === true ? 'extensions/images/navhead.pvz' : undefined,
                 feet: scope.data.feet,
-               color: scope.data.feetColor
+               color: scope.data.feetColor,
+         floorOffset: scope.data.floor
           };
           
           scope.data.navigator = new spatialHelper(scope.renderer,tunnel,targets)
@@ -168,7 +169,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         scope.$watch('floorField', function () {
           scope.data.floor = (scope.floorField != undefined) ? parseFloat(scope.floorField) : 0;                 
           if (scope.data.navigator != undefined) {
-            scope.data.navigator.floorOffset = scope.data.floor;
+            scope.data.navigator.Offset(scope.data.floor);
           }
         });
             

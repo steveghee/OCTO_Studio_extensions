@@ -25,7 +25,7 @@ function spatialHelper(renderer, tunnel, targets) {
   this.target.tdist = this.target.extent != undefined ? this.target.extent : 0.45;
   this.target.fname = this.target.feet   != undefined ? "feet"   : undefined;
   this.target.hname = this.target.head   != undefined ? "head"   : undefined;
-  this.floorOffset  = 0;
+  this.target.floor = this.target.floorOffset != undefined ? this.target.floorOffset : 0;
   
   this.cutoff       = 0.5;
   this.autoCutoff   = false;
@@ -162,7 +162,7 @@ function spatialHelper(renderer, tunnel, targets) {
   //
   // set the height offset 
   //
-  this.Offset = function(offset) { this.offset = offset; return this; }
+  this.Offset = function(offset) { this.target.floor = offset; return this; }
   
   //
   // set the cutoff distance.  if auto is true, helper will hide itself
@@ -377,7 +377,7 @@ function spatialHelper(renderer, tunnel, targets) {
       var r90 = new Matrix4().Rotate([1,0,0],-90,true).Multiply(em.m);
       var esf = r90.ToEuler(true);
       // feet are positioned 0.5m back from the target
-      var fp  = new Vector4().Set3(ep.v[0], - this.floorOffset, ep.v[2]).Add(hg.Scale(0.5));
+      var fp  = new Vector4().Set3(ep.v[0], - this.target.floor, ep.v[2]).Add(hg.Scale(0.5));
       
       var tcol      = this.target.color != undefined ? this.target.color : this.color;
       var pingshade = twx.app.isPreview() ? "Default" :
