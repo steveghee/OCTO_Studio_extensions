@@ -179,6 +179,14 @@ function twxNavigator() {
        showInput: true,
       },
       {
+            name: 'value',
+           label: 'Value',
+        datatype: 'infotable',
+ isBindingSource: true,
+ isBindingTarget: false,
+       showInput: false,
+      },
+      {
             name: 'poidata',
            label: 'ves-basic-web-widgets-extension:Data',
         datatype: 'infotable',
@@ -189,6 +197,14 @@ function twxNavigator() {
     ],
 
     events: [
+      {
+        name: 'marked',
+        label: 'Marked'
+      },
+      {
+        name: 'activated',
+        label: 'Activated'
+      },
       {
         name: 'arrived',
         label: 'Arrived'
@@ -247,7 +263,7 @@ function twxNavigator() {
       var tml3 = '<div ng-repeat="obj in helper.nav_images"><twx-dt-image id="{{obj.name}}" x="0" y="0" z="0" opacity="1.0" rx="-90" ry="0" rz="0" sx="1" sy="1" sz="1" height="0.5" width="0.5" src="{{obj.src}}" hidden="true"></twx-dt-image></div>\n';
       var ctrl = '<div ng-navigator class="navigatorWidget" id-field="' + props.widgetId + '" isholo-field=' + forholo +
       ' step-field={{me.steps}} shader-field="me.shader" extent-field={{me.extent}} visible-field={{me.visible}}'+
-      ' auto-field={{me.auto}} cutoff-field={{me.cutoff}} floor-field={{me.floor}} poidata-field="me.poidata" poi-field={{me.poi}}'+
+      ' auto-field={{me.auto}} cutoff-field={{me.cutoff}} floor-field={{me.floor}} poidata-field="me.poidata" poi-field={{me.poi}} value-field="me.value" '+
       ' head-field={{me.head}} feet-field={{me.head}} feetsrc-field={{me.feetSrc}} '+(forholo?'device-field={{me.holotarget}}':'device-field={{me.device}}')+
       ' tunnelcolor-field={{me.tunnelColor}} feetcolor-field={{me.feetColor}} delegate-field="delegate"></div>\n';
       return shade+tml1+tml2+tml3+ctrl;

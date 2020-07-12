@@ -29,6 +29,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         extentField      : '@',
         floorField       : '@',
         poidataField     : '=',
+        valueField       : '=',
         poiField         : '@',
         delegateField    : '='
       },
@@ -127,7 +128,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         scope.exited = function(h,d) {
           scope.$parent.fireEvent('departed');
         }
-
+        
         //////////////////////////////////////////////////////////////////////
         //setup stuff    
         //
@@ -189,20 +190,15 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           if (scope.data.auto) show();          
           else                 hide();
         });
-
+            
         //
+        // move locator to specified location (index)    
         //
-        //
-        scope.$watch('poidataField', function () {
-          scope.data.poidata = scope.poidataField != undefined ? JSON.parse(scope.poidataField) : undefined;
-        });
-        scope.$watch('poiField', function () {
-          scope.data.poiselected = scope.poiField != undefined ? parseInt(scope.poiField) : -1;
-          scope.data.poidata = scope.poidataField ;
+        scope.setSelected = function() {
           if (scope.data.navigator   != undefined && 
               scope.data.poidata     != undefined && 
               scope.data.poiselected >= 0         && 
-              scope.data.poiselected < scope.data.poidata.length) {
+              scope.data.poiselected < scope.data.poidata.length) $timeout(function() { 
           
             //build the locator
             let selrow = scope.data.poidata[scope.data.poiselected];
@@ -210,7 +206,34 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                                 gaze: new Vector4().FromString(selrow.gaze),
                                   up: new Vector4().FromString(selrow.up) };
             scope.data.navigator.setAt(locator).show();
-          }                     
+            
+            // and set the shared output
+            scope.valueField = selrow;
+            scope.$parent.fireEvent('activated');
+          },1);
+        }
+        
+        //
+        // look for changes in input data
+        //
+        scope.$watch(
+          function() { return JSON.stringify(scope.poidataField)},
+          function(value) {
+            scope.data.poidata = scope.poidataField ;
+              
+            //reset the selected index if it is out of range  
+            //question : should we do this always i.e. always reset to zero
+            if (scope.data.poiselected > scope.data.poidata.length)
+              scope.data.poiselected = 0;
+              
+            scope.setSelected();
+          }
+        )
+            
+        scope.$watch('poiField', function () {
+          scope.data.poiselected = scope.poiField != undefined ? parseInt(scope.poiField) : -1;
+          scope.data.poidata = scope.poidataField ;
+          scope.setSelected();
         });
             
         //
@@ -253,16 +276,24 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 scope.data.navigator.setAtCurrent().show();
                   
                 // async, we get the new value and add to the poidata table
-                // this is a bidorectional bind, so others can register interest and get the value
+                // this is a bidirectional bind, so others can register interest and get the value
                 $timeout(function() {
                   var newloc = scope.data.navigator.get();
+                  
                   // and add it to the data
-                  if (scope.data.poidata === undefined) scope.data.poidata = [];
-                  scope.data.poidata.push({ pos:newloc.position.ToString(), 
-                                           gaze:newloc.gaze.ToString(), 
-                                             up:newloc.up.ToString()});
-                  // and set the shared output
-                  scope.poidataField = scope.data.poidata;
+                  if (scope.data.poidata === undefined) 
+                    scope.data.poidata = [];
+                    
+                  let newvalue = { pos: newloc.position.ToString(), 
+                                  gaze: newloc.gaze.ToString(), 
+                                    up: newloc.up.ToString() 
+                                  };
+                  scope.data.poidata.push(newvalue);
+                      
+                  // select the last item    
+                  scope.data.poiselected = scope.data.poidata.length - 1;    
+                  scope.poidataField     = scope.data.poidata;
+                  scope.$parent.fireEvent('marked');
                 },1);
               }
             };
