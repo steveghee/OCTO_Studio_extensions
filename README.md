@@ -3,7 +3,7 @@ A list of extensions for the Vuforia Studio platform
 
 These include
 * 3d UI widgets for the hololens e.g. buttons, toggles, tethered backplate
-* 3d assistance tools e,g 'pinger' (attract attention)
+* 3d assistance tools e,g 'pinger' (attract attention), navigator
 * non-graphical logic elements e.g. AND/OR gates, flipflops, latches.
 
 ## Installation
