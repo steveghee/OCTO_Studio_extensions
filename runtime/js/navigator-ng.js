@@ -192,9 +192,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                  rows: rows,
             dataShape: {
               fieldDefinitions: {
-                gaze: {aspects: {}, baseType: "STRING", name: "gaze" },            
-                 pos: {aspects: {}, baseType: "STRING", name: "pos"  },            
-                  up: {aspects: {}, baseType: "STRING", name: "up"   }
+                gaze: {aspects: {}, baseType: "STRING", name: "gaze"      },            
+            position: {aspects: {}, baseType: "STRING", name: "position"  },            
+                  up: {aspects: {}, baseType: "STRING", name: "up"        }
               }
             }
           };     
@@ -221,9 +221,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           
             //build the locator
             let rp     = scope.data.poidata[scope.data.poiselected];
-            let selrow = { pos: rp.pos, gaze:rp.gaze, up:rp.up }; // we only want these fields
+            let selrow = { position: rp.position, 
+                               gaze: rp.gaze, 
+                               up: rp.up 
+                         }; // we only want these fields
             
-            var locator = { position: new Vector4().FromString(selrow.pos),
+            var locator = { position: new Vector4().FromString(selrow.position),
                                 gaze: new Vector4().FromString(selrow.gaze),
                                   up: new Vector4().FromString(selrow.up) };
             scope.data.navigator.setAt(locator).show();
@@ -305,9 +308,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   if (scope.data.poidata === undefined) 
                     scope.data.poidata = [];
                     
-                  let newvalue = { pos: newloc.position.ToString(), 
-                                  gaze: newloc.gaze.ToString(), 
-                                    up: newloc.up.ToString() 
+                  let newvalue = { position: newloc.position.ToString(), 
+                                       gaze: newloc.gaze.ToString(), 
+                                         up: newloc.up.ToString() 
                                   };
                   scope.data.poidata.push(newvalue);
                   scope.valueField = buildInfoTable([newvalue]);

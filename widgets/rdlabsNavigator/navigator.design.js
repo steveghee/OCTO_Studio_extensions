@@ -106,14 +106,14 @@ function twxNavigator() {
            label: 'Show feet',
         datatype: 'boolean',
          default: true,
- isBindingTarget: true
+ isBindingTarget: false
       },
       {
             name: 'feetColor',
            label: 'Feet Color',
         datatype: 'select',
          default: "0,1,0",
- isBindingTarget: true,
+ isBindingTarget: false,
        isVisible: true,
           editor: 'select',
          options: [
@@ -176,7 +176,8 @@ function twxNavigator() {
            label: 'ves-basic-web-widgets-extension:Data',
         datatype: 'infotable',
  isBindingTarget: true,
- isBindingSource: false,
+ isBindingSource: true,
+       showInput: false,
        isVisible: true
       },
       {
