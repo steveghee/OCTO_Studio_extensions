@@ -182,7 +182,25 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             scope.data.navigator.Cutoff(scope.data.cutoff, scope.data.auto, scope.entered, scope.exited);
           }
         });
-
+            
+        //
+        // let's emit an info table - this makes the data easily consumable by Thingworx
+        // not sure if there's a twx function to do this already?
+        //
+        function buildInfoTable(rows) {
+          var itable = { 
+                 rows: rows,
+            dataShape: {
+              fieldDefinitions: {
+                gaze: {aspects: {}, baseType: "STRING", name: "gaze" },            
+                 pos: {aspects: {}, baseType: "STRING", name: "pos"  },            
+                  up: {aspects: {}, baseType: "STRING", name: "up"   }
+              }
+            }
+          };     
+          return itable;
+        }
+            
         //
         //
         //
@@ -202,14 +220,16 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               scope.data.poiselected < scope.data.poidata.length) $timeout(function() { 
           
             //build the locator
-            let selrow = scope.data.poidata[scope.data.poiselected];
+            let rp     = scope.data.poidata[scope.data.poiselected];
+            let selrow = { pos: rp.pos, gaze:rp.gaze, up:rp.up }; // we only want these fields
+            
             var locator = { position: new Vector4().FromString(selrow.pos),
                                 gaze: new Vector4().FromString(selrow.gaze),
                                   up: new Vector4().FromString(selrow.up) };
             scope.data.navigator.setAt(locator).show();
             
-            // and set the shared output
-            scope.valueField = selrow;
+            // and set the shared output - note : this needs to be an infotable
+            scope.valueField = buildInfoTable( [selrow] );
             scope.$parent.fireEvent('activated');
           },1);
         }
@@ -224,7 +244,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               
             //reset the selected index if it is out of range  
             //question : should we do this always i.e. always reset to zero
-            if (scope.data.poiselected > scope.data.poidata.length)
+            if (scope.data.poiselected >= scope.data.poidata.length)
               scope.data.poiselected = 0;
               
             scope.setSelected();
@@ -290,6 +310,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                                     up: newloc.up.ToString() 
                                   };
                   scope.data.poidata.push(newvalue);
+                  scope.valueField = buildInfoTable([newvalue]);
                       
                   // select the last item    
                   scope.data.poiselected = scope.data.poidata.length - 1;    
