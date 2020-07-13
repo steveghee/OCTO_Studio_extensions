@@ -267,7 +267,7 @@ function twxNavigator() {
       var ctrl = '<div ng-navigator class="navigatorWidget" id-field="' + props.widgetId + '" isholo-field=' + forholo +
       ' step-field={{me.steps}} shader-field="me.shader" extent-field={{me.extent}} visible-field={{me.visible}}'+
       ' auto-field={{me.auto}} cutoff-field={{me.cutoff}} floor-field={{me.floor}} poidata-field="me.poidata" poi-field={{me.poi}} value-field="me.value" '+
-      ' head-field={{me.head}} feet-field={{me.head}} feetsrc-field={{me.feetSrc}} '+(forholo?'device-field={{me.holotarget}}':'device-field={{me.device}}')+
+      ' head-field={{me.head}} feet-field={{me.feet}} feetsrc-field={{me.feetSrc}} '+(forholo?'device-field={{me.holotarget}}':'device-field={{me.device}}')+
       ' tunnelcolor-field={{me.tunnelColor}} feetcolor-field={{me.feetColor}} delegate-field="delegate"></div>\n';
       return shade+tml1+tml2+tml3+ctrl;
     },
