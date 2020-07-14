@@ -46,7 +46,43 @@ function twxGroupy() {
         isBindingSource: false,
         isBindingTarget: true,
         showInput: true
-      }
+      },
+      {
+            name: 'locdata',
+           label: 'ves-basic-web-widgets-extension:Data',
+        datatype: 'infotable',
+ isBindingTarget: true,
+ isBindingSource: false,
+       showInput: false,
+       isVisible: true
+      },
+      {
+            name: 'gx',
+           label: 'ves-ar-extension:X Coordinate',
+        datatype: 'number',
+         default: 0,  
+ isBindingSource: false,
+ isBindingTarget: true,
+       showInput: true
+      },
+      {
+            name: 'gy',
+           label: 'ves-ar-extension:Y Coordinate',
+        datatype: 'number',
+         default: 0,  
+ isBindingSource: false,
+ isBindingTarget: true,
+       showInput: true
+      },
+      {
+            name: 'gz',
+           label: 'ves-ar-extension:Z Coordinate',
+        datatype: 'number',
+         default: 0,  
+ isBindingSource: false,
+ isBindingTarget: true,
+       showInput: true
+      },
     ],
 
     events: [
@@ -78,7 +114,7 @@ function twxGroupy() {
     },
 
     runtimeTemplate: function (props) {
-      var tmpl = '<div ng-groupy class="ng-hide groupyWidget ' + props.class + '" speed-field={{me.speed}} show-field={{me.show}} auto-field={{me.auto}} affects-field={{me.affects}} delegate-field="delegate"></div>';
+      var tmpl = '<div ng-groupy class="ng-hide groupyWidget ' + props.class + '" speed-field={{me.speed}} show-field={{me.show}} auto-field={{me.auto}} affects-field={{me.affects}} locdata-field="me.locdata" x-field={{me.gx}} y-field={{me.gy}} z-field={{me.gz}} delegate-field="delegate"></div>';
       return tmpl;
     }
   }

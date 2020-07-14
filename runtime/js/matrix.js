@@ -504,7 +504,7 @@ function Vector4() {
         this.v[0] = parseFloat(pcs[0]);
         this.v[1] = parseFloat(pcs[1]);
         this.v[2] = parseFloat(pcs[2]);
-        this.v[3] = pcs.length > 3 ? parseFloat(pcs[2]) : 1.0;
+        this.v[3] = pcs.length > 3 ? parseFloat(pcs[3]) : 1.0;
         return this;
     }
     

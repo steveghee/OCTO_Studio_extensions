@@ -17,6 +17,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         autoField    : '@',
         speedField   : '@',
         showField    : '@',
+        xField       : '@',
+        yField       : '@',
+        zField       : '@',
+        locdataField : '=',
         delegateField: '='
       },
       template: '<div></div>',
@@ -27,6 +31,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                        show: false, 
                     affects: undefined, 
                        auto: true,
+                     offset: new Vector4(),
+                       data: undefined,  
+                     matrix: new Matrix4(),
                       speed: 1,
                      };
                      
@@ -88,7 +95,22 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             if (scope.data.show === "true") start();
             else                            stop();
           }
-      
+          
+          // and are we repositioing anything?
+          if (scope.data.data != undefined) {
+            // lets turn the matrix into euler angles
+            var es = scope.data.matrix.ToPosEuler(true);
+            scope.data.affects.forEach(function(a) {  
+              var wname   = a.trim();
+              var subject = scope.$parent.view.wdg[wname];
+              if (subject != undefined) {
+                subject.x = es.pos.X();  
+                subject.y = es.pos.Y();  
+                subject.z = es.pos.Z();  
+              }
+            });
+
+          }
         };
 
         var updateGroupy = function(force){
@@ -120,6 +142,37 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           scope.data.auto = (scope.autoField != undefined && scope.autoField === 'true') ? true :false ;
         });
 
+        scope.$watch(
+          function() { return JSON.stringify(scope.locdataField); }, 
+          function () {
+            scope.data.data = (scope.locdataField != undefined && scope.locdataField.rows != undefined) ? scope.locdataField.rows[0] : undefined;
+            var position = new Vector4().FromString(scope.data.data.position);
+            var     gaze = new Vector4().FromString(scope.data.data.gaze).Negate();
+            var       up = new Vector4().FromString(scope.data.data.up);
+
+            // lets get the gaze (vector) and the up (vector)
+            var yup   = new Vector4().Set3(0,1,0);
+            //if (Math.abs(yup.DotP(this.gaze)) < 0.707) up = yup; // keep item vertical when head is generally looking horizontal-ish
+            var xd    = yup.CrossP(gaze).Normalize();
+            var nup   = gaze.CrossP(xd); // recalc up
+ 
+            // from gaze, up  we calculate the bitangent (nup) and from this we can calculate the view matrix
+            var vmat = new Matrix4().Set4V(xd,nup,gaze,position);
+            // and we transform the group content RELATIVE to this
+            var gmat = new Matrix4().TranslateV4(scope.data.offset);
+            scope.data.matrix = gmat.Multiply(vmat.m);
+
+            updateGroupy()
+          }
+        );
+            
+        scope.$watchGroup(['xField','yField','zField'], function () {
+          var x = (scope.xField != undefined) ? parseFloat(scope.xField) : 0;
+          var y = (scope.yField != undefined) ? parseFloat(scope.yField) : 0;
+          var z = (scope.zField != undefined) ? parseFloat(scope.zField) : 0;
+          scope.data.offset = new Vector4().Set3(x,y,z);
+        });
+            
         scope.$watch('delegateField', function (delegate) {
           if (delegate) {
             delegate.update = function () {
