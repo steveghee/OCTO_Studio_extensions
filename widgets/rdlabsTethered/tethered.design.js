@@ -38,7 +38,7 @@ function twxTethered() {
  isBindingSource: false,
  isBindingTarget: true,
        showInput: true,
- validationRegex: '^[\\d\\.]+ [\\d\\.]+$' //Matches single decimal number or 2 decimals space separated
+ validationRegex: '^-?[\\d\\.]+ -?[\\d\\.]+$' //Matches single decimal number or 2 decimals space separated
       },
       {
             name: 'src',
