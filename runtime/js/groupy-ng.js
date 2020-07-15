@@ -35,7 +35,54 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                        data: undefined,  
                      matrix: new Matrix4(),
                       speed: 1,
+                    capture: []
                      };
+                     
+        function restore(b) {
+          if(scope.$parent.view.wdg[b]!=undefined && scope.data.capture[b] != undefined) {
+            var wdg = scope.$parent.view.wdg[b];
+            for(var a in scope.data.capture[b]) 
+              wdg[a] = scope.data.capture[b][a];
+          }
+        }
+        function capture(b) {
+          if(scope.$parent.view.wdg[b]!=undefined) {
+            var wdg = scope.$parent.view.wdg[b];
+            scope.data.capture[b] = {
+              visible: wdg.visible, 
+              opacity: wdg.opacity, 
+                    x: wdg.x,
+                    y: wdg.y,
+                    z: wdg.z 
+            };
+            return true;
+          }
+          return false;
+        }
+        function capturelist(list) {
+          var ilist = scope.data[list];
+          return function(a) {
+            if (capture(a) === true)
+              ilist.push(a);
+          };
+        }
+        function against(list,effect) {
+          if (list.length > 0) {
+            for (var x=0;x<list.length;x++) {
+              var a = list[x];
+              effect(a.trim());
+            }
+          }
+        }
+        function recordlist(list) {
+          var ilist = scope[list].split(',');
+          scope.data[list]=[];
+          against(ilist,capturelist(list));
+        }
+        function resetlist(list) {
+          against(scope.data[list],restore);
+        }
+                     
                      
         var start  = function() { 
           scope.data.fade    = 1.0;
@@ -99,11 +146,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           // and are we repositioing anything?
           if (scope.data.data != undefined) {
             // lets turn the matrix into euler angles
-            var es = scope.data.matrix.ToPosEuler(true);
             scope.data.affects.forEach(function(a) {  
               var wname   = a.trim();
               var subject = scope.$parent.view.wdg[wname];
               if (subject != undefined) {
+                var cp = scope.data.capture[wname];  
+                var es = new Matrix4().Translate(cp.x,cp.y,cp.z)  
+                                      .Multiply(scope.data.matrix.m)
+                                      .ToPosEuler(true);
                 subject.x = es.pos.X();  
                 subject.y = es.pos.Y();  
                 subject.z = es.pos.Z();  
@@ -123,8 +173,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
         scope.$watch('affectsField', function () {
           // get the list of names
-          if (scope.affectsField != undefined && scope.affectsField.length > 0) 
-              scope.data.affects = scope.affectsField.split(',');
+          if (scope.affectsField != undefined && scope.affectsField.length > 0) {
+            scope.data.affects = scope.affectsField.split(',');
+            //lets grab the location info for these items, as we will need this 
+            //if this group ever gets move
+            recordlist('affectsField');
+          }
           updateGroupy(false);
         });
 
@@ -146,23 +200,25 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           function() { return JSON.stringify(scope.locdataField); }, 
           function () {
             scope.data.data = (scope.locdataField != undefined && scope.locdataField.rows != undefined) ? scope.locdataField.rows[0] : undefined;
-            var position = new Vector4().FromString(scope.data.data.position);
-            var     gaze = new Vector4().FromString(scope.data.data.gaze).Negate();
-            var       up = new Vector4().FromString(scope.data.data.up);
+            if (scope.data.data != undefined) {  
+              var position = new Vector4().FromString(scope.data.data.position);
+              var     gaze = new Vector4().FromString(scope.data.data.gaze).Negate();
+              var       up = new Vector4().FromString(scope.data.data.up);
 
-            // lets get the gaze (vector) and the up (vector)
-            var yup   = new Vector4().Set3(0,1,0);
-            //if (Math.abs(yup.DotP(this.gaze)) < 0.707) up = yup; // keep item vertical when head is generally looking horizontal-ish
-            var xd    = yup.CrossP(gaze).Normalize();
-            var nup   = gaze.CrossP(xd); // recalc up
+              // lets get the gaze (vector) and the up (vector)
+              var yup   = new Vector4().Set3(0,1,0);
+              //if (Math.abs(yup.DotP(this.gaze)) < 0.707) up = yup; // keep item vertical when head is generally looking horizontal-ish
+              var xd    = yup.CrossP(gaze).Normalize();
+              var nup   = gaze.CrossP(xd); // recalc up
  
-            // from gaze, up  we calculate the bitangent (nup) and from this we can calculate the view matrix
-            var vmat = new Matrix4().Set4V(xd,nup,gaze,position);
-            // and we transform the group content RELATIVE to this
-            var gmat = new Matrix4().TranslateV4(scope.data.offset);
-            scope.data.matrix = gmat.Multiply(vmat.m);
+              // from gaze, up  we calculate the bitangent (nup) and from this we can calculate the view matrix
+              var vmat = new Matrix4().Set4V(xd,nup,gaze,position);
+              // and we transform the group content RELATIVE to this
+              var gmat = new Matrix4().TranslateV4(scope.data.offset);
+              scope.data.matrix = gmat.Multiply(vmat.m);
 
-            updateGroupy()
+              updateGroupy();
+            }
           }
         );
             
