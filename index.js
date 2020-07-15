@@ -19,5 +19,6 @@ exports.runtimeAngularModulesRequires = ["groupy-ng",
                                          "press3D-ng",
                                          "image3D-ng", 
                                          "tethered-ng",
-                                         "navigator-ng"
+                                         "navigator-ng",
+                                         "lighttube-ng",
                                         ];

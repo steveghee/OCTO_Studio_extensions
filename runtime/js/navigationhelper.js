@@ -76,6 +76,7 @@ function spatialHelper(renderer, tunnel, targets) {
   this.setAtCurrent = function() {
     // switch the endpoint to be the current headlocation
     this.target.loc = this._positionHelpers(this.headloc);
+    this.inside     = true;
     return this;
   }
   
