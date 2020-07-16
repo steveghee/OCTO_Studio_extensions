@@ -5,6 +5,10 @@ function twxFogger() {
     label: 'Fogger',
     category : 'ar',
     groups    : ['OCTO Labs'],
+    isVisibleInPalette: function(scope) {
+      let builderSettings = scope.$root.builderSettings || {};
+      return !!builderSettings.octo;
+    },
 
     properties: [
       {
