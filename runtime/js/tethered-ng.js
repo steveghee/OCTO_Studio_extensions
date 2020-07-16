@@ -267,7 +267,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           
           updateTethered();
         });
-        */    
+        */
+        
         scope.$root.$on('modelLoaded', function(evt, arg) { 
           if (arg === scope.data.id) {              
             // kick off the next phase...

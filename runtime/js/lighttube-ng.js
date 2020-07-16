@@ -96,6 +96,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               var isholo     = !twx.app.isPreview() && (scope.isholoField != undefined) ? isbool(scope.isholoField) : false;
               
               var wdg     = scope.$parent.view.wdg[b];
+              wdg.opacity = 0.9 * intensity;
               wdg.shader  = lighttubeshader(";mixer f " + intensity + ";nls f " + nstrips + ";wls f "+wstrip);
             }
           }
