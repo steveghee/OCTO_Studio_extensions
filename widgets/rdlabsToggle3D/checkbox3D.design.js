@@ -181,10 +181,6 @@ function twxCheckbox3D() {
 
     events: [
       {
-        name: 'click',
-        label: 'ves-basic-web-widgets-extension:Click'
-      },
-      {
         name: 'pressed',
         label: 'ves-basic-web-widgets-extension:Pressed'
       },
