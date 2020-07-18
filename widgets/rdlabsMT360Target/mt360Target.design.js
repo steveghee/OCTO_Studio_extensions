@@ -7,59 +7,56 @@
 
 (function(twxAppBuilder){
 
-  function ciTarget( widgetLabel ) {
+  function mtTarget( widgetLabel ) {
     var overlay = {};
 
     overlay.rx = Twx3dCommon.common3dProp('rx');
     overlay.rx.default = -90;
     overlay.rx.alwaysWriteAttribute = true; // this flag is needed for any defaults different from the browser defaults
+    overlay.ry = Twx3dCommon.common3dProp('ry');
+    overlay.rz = Twx3dCommon.common3dProp('rz');
+    overlay.rx.isVisible = false; // user cannot rotate Model marker
+    overlay.rx.isBindingTarget = false;
+    overlay.ry.isVisible = false;
+    overlay.ry.isBindingTarget = false;
+    overlay.rz.isVisible = false;
+    overlay.rz.isBindingTarget = false;
+    overlay.x  = Twx3dCommon.common3dProp('x');
+    overlay.x. isVisible = false;
+    overlay.x. isBindingTarget = false;
+    overlay.y  = Twx3dCommon.common3dProp('y');
+    overlay.y. isVisible = false;
+    overlay.y. isBindingTarget = false;
+    overlay.z  = Twx3dCommon.common3dProp('z');
+    overlay.z. isVisible = false;
+    overlay.z. isBindingTarget = false;
+    overlay.z. default = 0;
 
-    overlay.placeholder_img = Twx3dCommon.getPlaceHolderImgProperty('/extensions/images/cloudimage_phantom.png');
-
-    overlay.id = {
-            name: 'markerId',
-           label: 'Target Name',
-        datatype: 'string',
+    overlay.placeholder_img = Twx3dCommon.getPlaceHolderImgProperty('/extensions/images/360target.png');
+    
+    overlay.dataset = {
+            name: 'dataset',
+           label: 'ves-ar-extension:Data Set',
+        datatype: 'resource_url',
          default: '',
-     placeholder: 'Bind/Enter (optional) Target Name',
- isBindingTarget: true,
-       sortOrder: 1
-    };
-
-    overlay.access = {
-            name: 'access',
-           label: 'Access Key',
-        datatype: 'string',
-         default: 'change me',
-     placeholder: 'Bind/Enter access key',
- isBindingTarget: true,
-           tFrag: 'ng-src="{{\'vuforia-cloud:///?id=\' + me.markerId + \'&access=\' + me.access + \'&secret=\' + me.secret}}" guide-src="../extensions/images/Chateau_phantom.png"',
-       sortOrder: 1
-    };
-
-    overlay.secret = {
-            name: 'secret',
-           label: 'Secret Key', 
-        datatype: 'string',
-         default: 'change me',
-     placeholder: 'Bind/Enter secret key',
- isBindingTarget: true,
+    resource_url: true,
+ allowedPatterns: ['.dat'],
+           tFrag: 'src="#_src_#"',
+       sortOrder: 1,
+       isVisible: true
+       };
+    overlay.imgurl = {
+            name: 'url',
+           label: 'ves-ar-extension:Image',
+        datatype: 'resource_url',
+  resource_image: true,
+ allowedPatterns: ['.png', '.jpg', '.svg', '.jpeg', '.gif','.bmp'],
+       isVisible: true,
+           tFrag: 'guide-src="{{me.url}}"',
        sortOrder: 2
-    };
-
-    overlay.width = {
-            name: 'width',
-           label: 'ves-ar-extension:Marker Width',
-        datatype: 'number',
-         default: 0.1,
- isBindingTarget: true,
- alwaysWriteAttribute: true,
-           tFrag: 'size="{{me.width}}"',
-             min: 0,
-       sortOrder: 2
-    };
-
-    overlay.istracked = {
+        };
+        
+        overlay.istracked = {
             name: 'istracked',
            label: 'ves-ar-extension:Tracked',
         datatype: 'boolean',
@@ -102,11 +99,11 @@
     var template = Twx3dCommon.buildRuntimeTemplate("twx-dt-target", props, true);
     
     // create a design template - this is a 3D image (can be dragged etc.)
-    var designTemplate = Twx3dCommon.buildRuntimeTemplate('twx-dt-image', Twx3dCommon.new3dProps(overlay, ['markerId','access','secret','visible']));
+    var designTemplate = Twx3dCommon.buildRuntimeTemplate('twx-dt-image', Twx3dCommon.new3dProps(overlay, ['dataset','visible']));
 
     var retObj = {
         
-         elementTag: "cloudimage-dt-target",
+         elementTag: "threesixty-dt-target",
               label: widgetLabel,
  isVisibleInPalette: true,
            category: 'ar',
@@ -116,6 +113,16 @@
          canBeAdded: function (ctrl, $scope) {
                        return TargetUtils.canTargetBeAdded(ctrl);
                      },
+         properties: props.concat([
+           {
+               name: 'targetId',
+              label: 'Target ID',
+           readonly: true,
+            default: '',
+           datatype: 'string',
+          isVisible: true
+           }
+         ]),
              events: [
                {
                  name: 'trackingacquired',
@@ -138,6 +145,12 @@
 
     runtimeTemplate: function (props) {
                        var tmpl = template.replace("#widgetId#", props.widgetId);
+                       
+                       // strip off .dat extension: 'app/resources/Uploaded/DB2.dat' -> 'app/resources/Uploaded/DB2'
+                       var data = props.dataset ? props.dataset.replace(/\.[^\.]*$/, '') : '';
+                       
+                       // result is like: src="vuforia-model:///app/resources/Uploaded/DB2?id=T1"
+                       tmpl = tmpl.replace('#_src_#', 'vuforia-model:///' + data + '?id=' + props.targetId);
                        return tmpl;
                      }
     };
@@ -146,10 +159,10 @@
     return retObj;
   }
 
-  function cloudimageTarget() {
-    var widget = Twx3dCommon.getWidget( 'Cloud Image Target', ciTarget );
+  function mt360Target() {
+    var widget = Twx3dCommon.getWidget( '360 Model Target', mtTarget );
     return widget;
   }
-  twxAppBuilder.widget('cloudimageTarget', cloudimageTarget);
+  twxAppBuilder.widget('mt360Target', mt360Target);
 
 })(twxAppBuilder);

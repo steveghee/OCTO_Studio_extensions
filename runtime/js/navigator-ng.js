@@ -247,7 +247,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               
             //reset the selected index if it is out of range  
             //question : should we do this always i.e. always reset to zero
-            if (scope.data.poiselected >= scope.data.poidata.length)
+            if (scope.data.poidata != undefined && 
+                scope.data.poidata instanceof Array && 
+                scope.data.poiselected >= scope.data.poidata.length)
               scope.data.poiselected = 0;
               
             scope.setSelected();
@@ -324,15 +326,25 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             };
           }
         });
-                
+
+        //
         // make sure we are triggered when the page is ready    
-            
+        //    
         scope.$root.$on("$ionicView.afterEnter", function (event) {
                         
-          //
           init();              
         
         });
+            
+        //    
+        // ugly timing hack ; retrigger initial placement when model(s) are loaded
+        // ideally this would be when MY models are loaded (not any others) but there's an even
+        // uglier timing problem going on underneath this
+        //
+        scope.$root.$on('modelLoaded', function(evt, arg) { 
+          scope.setSelected();
+        });
+
       }
     };
   }
