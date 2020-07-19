@@ -138,7 +138,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             ctx.textAlign = aspect>aspectLimit?"left":"center";
             ctx.fillStyle = rgb2hex(wdg.fontColor); //pass in font color prop
             
-            ctx.font = "bold 70px Segoe";                      // only works with some tricky stuff see Styles for more information
+            ctx.font = "bold 70px Arial";           // Segoe only works with some tricky stuff see Styles for more information
             var tx = aspect>aspectLimit?ix+s220:canvas.width/2; // if the button is square, center the text, otherwise draw to the right of the image
             var ty = aspect>aspectLimit?(canvas.height/2)+55:canvas.height-s40; // if centered, draw below the image
       

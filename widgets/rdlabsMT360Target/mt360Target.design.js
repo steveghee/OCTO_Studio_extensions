@@ -120,7 +120,7 @@
            readonly: true,
             default: '',
            datatype: 'string',
-          isVisible: true
+          isVisible: false
            }
          ]),
              events: [

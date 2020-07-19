@@ -143,7 +143,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               ctx.textAlign = "center";
               ctx.fillStyle = rgb2hex(wdg.fontColor); //pass in font color prop
             
-              ctx.font = "bold 70px Segoe";                      // only works with some tricky stuff see Styles for more information
+              ctx.font = "bold 70px Arial"; //Segoe only works with some tricky stuff see Styles for more information
               var tx   = canvas.width/2; // if the button is square, center the text, otherwise draw to the right of the image
               var ty   = canvas.height - s40; // if centered, draw below the image
       
