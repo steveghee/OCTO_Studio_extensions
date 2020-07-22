@@ -33,7 +33,7 @@ function twxDisplayPanel3D() {
       },
       {
             name: 'src',
-           label: 'ves-basic-web-widgets-extension:Image when Pressed',
+           label: 'ves-basic-web-widgets-extension:Image',
         datatype: 'resource_url',
   resource_image: true,
  allowedPatterns: ['.png', '.jpg', '.svg', '.jpeg', '.gif','.bmp'],
@@ -44,7 +44,7 @@ function twxDisplayPanel3D() {
             name: 'height',
            label: 'ves-ar-extension:Height',
         datatype: 'string',
-        default: '0.04',
+         default: '0.04',
        isVisible: false
       },
       {
