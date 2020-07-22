@@ -72,7 +72,7 @@ function twxBillboard() {
     },
 
     runtimeTemplate: function (props) {
-      var tmpl = '<div ng-billboard class="billboardWidget" angle-field={{me.angle}} offset-field={{me.offset}} auto-field={{me.auto}} affects-field={{me.affects}} delegate-field="delegate"></div>';
+      var tmpl = '<div ng-billboard angle-field={{me.angle}} offset-field={{me.offset}} auto-field={{me.auto}} affects-field={{me.affects}} delegate-field="delegate"></div>';
       return tmpl;
     },
     
