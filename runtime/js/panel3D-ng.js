@@ -16,7 +16,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         isholoField        : '@',
         widthField         : '@',  
         heightField        : '@',
+        nlinesField        : '@',
         fontField          : '@',
+        fontsizeField      : '@',
         idField            : '@',  
         disabledField      : '@',
         textField          : '@',
@@ -33,6 +35,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                    height: 0.04,
                 fontColor: '#ffffff',
                  disabled: undefined,
+                   nlines: 1,
+                 fontSize: 70,
                      text: '',
                       src: '',
                      };
@@ -80,7 +84,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             }
             lines.push(line);
 
-            var lc = lines.length;
+            //truncate to set number of lines?
+            lines  = lines.slice(0,scope.data.nlines);
+            var lc = lines.length; // should be nlines or fewer
             var sy = ty - lc * lineHeight / 2;
             lines.forEach(function(line) {
               context.fillText(line, tx, sy);
@@ -97,35 +103,45 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             background.src = isrc;
             background.onload = function() {
               let canvas = document.createElement("canvas");
-              let aspectLimit = 1.5;  
       
               // work out size/dims of the canvas
               let scaleH    = scope.data.height / 0.04
-              let imageWidth= scaleH * 172;
               var aspect    = wdg.width / wdg.height;
               canvas.width  = 512 * scaleH * aspect;
               canvas.height = 512 * scaleH;
+              let imageWidth  = canvas.width  - 12; //small margin?
+              let imageHeight = canvas.height - 12;
             
               let s96  =  96 * scaleH; // scaled x margin for image
               let s170 = 170 * scaleH; // scaled y margin for image
               let s220 = 220 * scaleH; // scaled y offset for text
               let s40  =  40 * scaleH; // scaled y offset for text
               let s24  =  24 * scaleH; // scaled x margin offset for text
+              
+              // we need to center this image, so lets see what shape it is
+              let ibase   = imageWidth / imageHeight;
+              let iaspect = ibase > 1 ? imageHeight / background.height
+                                      : imageWidth  / background.width;
+
+              // use largest dim to work out actual scale
+              let scaled = { width  : background.width  * iaspect, 
+                             height : background.height * iaspect}
             
               let ctx = canvas.getContext("2d");
-              var ix = aspect>aspectLimit?s96:(canvas.width/2)-(imageWidth/2);  // if the button is wide, draw the image to the left, otherwise center it
-              var iy = s170;
-              ctx.drawImage(background, ix, iy, imageWidth,imageWidth);
+              // adjust and center image
+              var ix = (canvas.width/2)  - (scaled.width/2); 
+              var iy = (canvas.height/2) - (scaled.height/2);
+              ctx.drawImage(background, ix, iy, scaled.width,scaled.height);
       
-              ctx.textAlign = aspect>aspectLimit?"left":"center";
+              ctx.textAlign = "center";
               ctx.fillStyle = rgb2hex(wdg.fontColor); //pass in font color prop
             
-              ctx.font = "bold 120px Arial";                       // only works with some tricky stuff see Styles for more information
-              var tx = aspect>aspectLimit?ix+s220:canvas.width/2; // if the button is square, center the text, otherwise draw to the right of the image
-              var ty = aspect>aspectLimit?(canvas.height/2)+55:canvas.height-s40; // if centered, draw below the image
+              ctx.font = "bold "+scope.data.fontSize+"px Arial";  // only works with some tricky stuff see Styles for more information
+              var tx = canvas.width/2; // if the button is square, center the text, otherwise draw to the right of the image
+              var ty = (canvas.height/2)+(3*scope.data.fontSize/4); 
       
               // we may need to adjust y to take multi-line into account e..g if there are 2 lines, we need to move y(start) up 
-              multiline(text,tx,ty,aspect>aspectLimit?canvas.width-tx-12:canvas.width-s24,120,ctx);
+              multiline(text,tx,ty,canvas.width-s24,scope.data.fontSize,ctx);
       
               var newimg = canvas.toDataURL() + '#edge=clamp';  
             
@@ -133,7 +149,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             }          
           } else {
             let canvas = document.createElement("canvas");
-            let aspectLimit = 1.5;  
       
             // work out size/dims of the canvas
             let scaleH    = scope.data.height / 0.04
@@ -152,15 +167,15 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             var ix  = s24;  // if the button is wide, draw the image to the left, otherwise center it
             var iy  = s170;
       
-            ctx.textAlign = aspect>aspectLimit?"left":"center";
+            ctx.textAlign = "center";
             ctx.fillStyle = rgb2hex(wdg.fontColor); //pass in font color prop
             
-            ctx.font = "bold 70px Arial";           //Segoe only works with some tricky stuff see Styles for more information
-            var tx = aspect>aspectLimit?ix:canvas.width/2; // if the button is square, center the text, otherwise draw to the right of the image
-            var ty = (canvas.height/2)+55; 
+            ctx.font = "bold "+scope.data.fontSize+"px Arial";           //Segoe only works with some tricky stuff see Styles for more information
+            var tx = canvas.width/2; // if the button is square, center the text, otherwise draw to the right of the image
+            var ty = (canvas.height/2)+(scope.data.fontSize/2); 
       
             // we may need to adjust y to take multi-line into account e..g if there are 2 lines, we need to move y(start) up 
-            multiline(text,tx,ty,aspect>aspectLimit?canvas.width-tx-12:canvas.width-s24,70,ctx);
+            multiline(text,tx,ty,canvas.width-s24,scope.data.fontSize,ctx);
       
             var newimg = canvas.toDataURL() + '#edge=clamp';  
           
@@ -194,19 +209,21 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         //////////////////////////////////////////////////////////////////////
         // monitor state - these wont change often
         //
-        scope.$watchGroup(['idField','widthField','heightField','fontField'], function () {
-          scope.data.id       = (scope.idField       != undefined) ? scope.idField     : undefined;
-          scope.data.width    = (scope.widthField    != undefined) ? scope.widthField  : 0.10;
-          scope.data.height   = (scope.heightField   != undefined) ? scope.heightField : 0.04;
-          scope.data.fontColor= (scope.fontField     != undefined) ? scope.fontField   : '#ffffff';
+        scope.$watchGroup(['idField','widthField','heightField','fontField','fontsizeField'], function () {
+          scope.data.id       = (scope.idField       != undefined) ? scope.idField      : undefined;
+          scope.data.width    = (scope.widthField    != undefined) ? parseFloat(scope.widthField)   : 0.10;
+          scope.data.height   = (scope.heightField   != undefined) ? parseFloat(scope.heightField)  : 0.04;
+          scope.data.fontColor= (scope.fontField     != undefined) ? scope.fontField    : '#ffffff';
+          scope.data.fontSize = (scope.fontsizeField != undefined) ? parseInt(scope.fontsizeField): 70;
         });
         
         //////////////////////////////////////////////////////////////////////
         // monitor state - these may change often
         //
-        scope.$watchGroup(['textField', 'srcField'], function () {
-          scope.data.text           = (scope.textField != undefined) ? scope.textField           : '';
-          scope.data.src            = (scope.srcField  != undefined) ? scope.srcField            : '';
+        scope.$watchGroup(['textField', 'srcField','nlinesField'], function () {
+          scope.data.text   = (scope.textField   != undefined) ? scope.textField   : '';
+          scope.data.src    = (scope.srcField    != undefined) ? scope.srcField    : '';
+          scope.data.nlines = (scope.nlinesField != undefined) ? scope.nlinesField : 1;
           
           renderimage3D(false);
         });

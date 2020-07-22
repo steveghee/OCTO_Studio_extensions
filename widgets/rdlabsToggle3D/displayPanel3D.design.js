@@ -22,25 +22,48 @@ function twxDisplayPanel3D() {
  isBindingTarget: true,
       },
       {
+            name: 'nlines',
+           label: 'Number of lines',
+        datatype: 'number',
+         default: 1,
+             min: 1,
+ isBindingSource: false,
+ isBindingTarget: false,
+       showInput: true
+      },
+      {
             name: 'src',
            label: 'ves-basic-web-widgets-extension:Image when Pressed',
         datatype: 'resource_url',
   resource_image: true,
  allowedPatterns: ['.png', '.jpg', '.svg', '.jpeg', '.gif','.bmp'],
-         default: '../../extensions/images/toggleMissing.png',
+         default: '',
  isBindingTarget: true,
       },
       {
             name: 'height',
            label: 'ves-ar-extension:Height',
         datatype: 'string',
-         default: '0.04'
+        default: '0.04',
+       isVisible: false
       },
       {
             name: 'width',
            label: 'ves-ar-extension:Width',
         datatype: 'string',
          default: '0.1'
+      },
+      {
+            name: 'fontsize',
+           label: 'Font Size',
+        datatype: 'select',
+         default: "70",
+ isBindingTarget: false,
+          editor: 'select',
+         options: [
+            {label: 'Small'    , value: "70"},
+            {label: 'Large'    , value: "120"}
+                  ],
       },
       {
             name: 'fontColor',
@@ -132,7 +155,7 @@ function twxDisplayPanel3D() {
   
     runtimeTemplate: function (props, twxWidgetEl, fullOriginalDoc, $, projectSettings) {
       var forholo = (projectSettings.projectType === 'eyewear');
-      var tmpl = '<div ng-panel3d class="ng-hide panel3DWidget ' + props.class + '" id-field="' + props.widgetId + '" isholo-field='+forholo+' height-field={{me.height}} width-field={{me.width}} font-field="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" text-field={{me.text}} src-field={{me.src}} delegate-field="delegate"></div>';
+      var tmpl = '<div ng-panel3d class="ng-hide panel3DWidget ' + props.class + '" id-field="' + props.widgetId + '" isholo-field='+forholo+' height-field={{me.height}} width-field={{me.width}} font-field="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" text-field={{me.text}} src-field={{me.src}} nlines-field={{me.nlines}} fontsize-field={{me.fontsize}} delegate-field="delegate"></div>';
       var ps1  = ''; // need a simple texture+fade shader
       var vs1  = ''; //
       var ctrl = '<twx-dt-image id="' + props.widgetId + '" class="image3dWidget" '+ 
@@ -147,6 +170,21 @@ function twxDisplayPanel3D() {
 
       // called when a widgets properties are altered
       this.widgetUpdated = function (widgetCtrl, currentProps, changedProps, oldProps) {
+        // automatically adjuts the Z distance of the button from the backplate  
+        if(changedProps.nlines) {
+          let nlines      = changedProps.nlines;
+          let fontsize    = (oldProps.fontsize) ? oldProps.fontsize.value : 70;
+          var scalefactor = 512/0.04;
+          var height      = (70 + (nlines * fontsize)) / scalefactor;
+          widgetCtrl.setProp('height', height.toFixed(4));
+        }
+        if(changedProps.fontsize) {
+          let nlines      = (oldProps.nlines) ? oldProps.nlines.value : 1;
+          let fontsize    = changedProps.fontsize;
+          var scalefactor = 512/0.04;
+          var height      = (70 + (nlines * fontsize)) / scalefactor;
+          widgetCtrl.setProp('height', height.toFixed(4));
+        }
       };
 
       return this;
