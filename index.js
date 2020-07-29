@@ -21,5 +21,6 @@ exports.runtimeAngularModulesRequires = ["groupy-ng",
                                          "tethered-ng",
                                          "navigator-ng",
                                          "lighttube-ng", 
-                                         "panel3D-ng"
+                                         "panel3D-ng",
+                                         "list3D-ng"
                                         ];
