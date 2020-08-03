@@ -1,4 +1,5 @@
 function twxMultiLineLabel3D() {
+  var ELEMENT_NAME = 'twx-dt-ext-multilinelabel';
   var properties = [
     {
       name: 'text',
@@ -45,7 +46,7 @@ function twxMultiLineLabel3D() {
       name: 'lineCount',
       label: 'Max Lines',
       datatype: 'number',
-      tFrag: "linecount={{me.lineCount}} height={{ctrl.delegate.calcHeight()}}",//"height={{calcHeight()}}",//"height={{(parseInt(me.padding.replace(/[\^\d]/g,''))*2)*(1.2*parseInt(me.font.replace(/[\^\d]/g,''))*me.lineCount)/(1024/me.width)}}",
+      tFrag: 'linecount="{{me.lineCount}}" height="{{ctrl.delegate.calcHeight()}}"',
       default: 5,
       isBindingTarget: true,
       sortOrder: 5
@@ -67,15 +68,14 @@ function twxMultiLineLabel3D() {
   overlay.experimentalOneSided.default = true;
   overlay.width = Twx3dCommon.getWidthProperty();
   overlay.width.default = 0.1;
-  overlay.placeholder_img = Twx3dCommon.getPlaceHolderImgProperty('/extensions/images/Gate.png');
 
   var props = Twx3dCommon.new3dProps(overlay, ['scale']);
 
 
-  var runtimeTemplate = Twx3dCommon.buildRuntimeTemplate('twx-dt-multilinelabel', props);
+  var runtimeTemplate = Twx3dCommon.buildRuntimeTemplate(ELEMENT_NAME, props);
   var designTemplate = Twx3dCommon.buildRuntimeTemplate('twx-dt-image',Twx3dCommon.new3dProps(overlay, ['scale','text']));
   return {
-    elementTag: 'twx-dt-multilinelabel',
+    elementTag: ELEMENT_NAME,
 
     label: '3D Multiline Label',
 
@@ -93,7 +93,7 @@ function twxMultiLineLabel3D() {
     ],
 
     dependencies: {
-      files: ['js/multiline3D-ng.js', 'images/navfeet.png'],
+      files: ['js/multiline3D-ng.js'],
       angularModules: ['multiline3D-ng']
     },
 
@@ -105,8 +105,7 @@ function twxMultiLineLabel3D() {
       };
 
       /**
-       * @returns {Array} Returns the paths for each of the resources this widget references.  Will be used to remove
-       *         the resources when the widget is removed.
+       *   Calc dynamically the height of the widget so the author get a better feeling of widget demensions in runtime
        */
       this.calcHeight = function() {
         let props = ctrl.properties;
@@ -116,11 +115,12 @@ function twxMultiLineLabel3D() {
     },
 
     designTemplate: function () {
-      return designTemplate//.replace('width="{{me.width}}"', 'height="{{(me.padding*2)*(1.2*me.font.replace( /[^\d]/g,""))*me.lineCount)/(1024/me.width)}}" width="{{me.width}}"');
+      return designTemplate;
     },
 
     runtimeTemplate: function (props) {
-      var template3d = runtimeTemplate.replace("#widgetId#", props.widgetId).replace('src="{{me.src}}"', 'src="extensions/images/navfeet.png" sx="1" sy="1" sz="1"');
+      // To get the same results in run- and design time it's necessary to add the default scale prop back to widget ctrl
+      var template3d = runtimeTemplate.replace("#widgetId#", props.widgetId).replace('>', 'sx="1" sy="1" sz="1">');
       return template3d;
     }
   };
