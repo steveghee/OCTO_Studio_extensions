@@ -12,12 +12,6 @@ function twxFinder() {
 
     properties: [
       {
-        name: 'class',
-        label: 'Class',
-        datatype: 'string',
-        default: ''
-      },
-      {
         name: 'auto',
         label: 'Auto',
         datatype: 'boolean',
@@ -117,7 +111,7 @@ function twxFinder() {
     },
 
     runtimeTemplate: function (props) {
-      var tmpl = '<div ng-finder class="ng-hide finderWidget ' + props.class + '" results-field="me.results" count-field="me.count" auto-field={{me.auto}} src-field={{me.src}} name-field={{me.name}}  op-field={{me.op}}  value-field={{me.value}}  delegate-field="delegate"></div>';
+      var tmpl = '<div ng-finder results-field="me.results" count-field="me.count" auto-field={{me.auto}} src-field={{me.src}} name-field={{me.name}}  op-field={{me.op}}  value-field={{me.value}}  delegate-field="delegate"></div>';
       return tmpl;
     }
   }

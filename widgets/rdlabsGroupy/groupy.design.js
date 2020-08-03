@@ -13,12 +13,6 @@ function twxGroupy() {
 
     properties: [
       {
-        name: 'class',
-        label: 'Class',
-        datatype: 'string',
-        default: ''
-      },
-      {
         name: 'auto',
         label: 'Auto',
         datatype: 'boolean',
@@ -118,7 +112,7 @@ function twxGroupy() {
     },
 
     runtimeTemplate: function (props) {
-      var tmpl = '<div ng-groupy class="ng-hide groupyWidget ' + props.class + '" speed-field={{me.speed}} show-field={{me.show}} auto-field={{me.auto}} affects-field={{me.affects}} locdata-field="me.locdata" x-field={{me.gx}} y-field={{me.gy}} z-field={{me.gz}} delegate-field="delegate"></div>';
+      var tmpl = '<div ng-groupy speed-field={{me.speed}} show-field={{me.show}} auto-field={{me.auto}} affects-field={{me.affects}} locdata-field="me.locdata" x-field={{me.gx}} y-field={{me.gy}} z-field={{me.gz}} delegate-field="delegate"></div>';
       return tmpl;
     }
   }

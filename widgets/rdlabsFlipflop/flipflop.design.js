@@ -12,12 +12,6 @@ function twxFlipflop() {
 
     properties: [
       {
-            name: 'class',
-           label: 'Class',
-        datatype: 'string',
-         default: ''
-      },
-      {
             name: 'auto',
            label: 'Auto',
         datatype: 'boolean',
@@ -87,7 +81,7 @@ function twxFlipflop() {
     },
 
     runtimeTemplate: function (props) {
-      var tmpl = '<div ng-flipflop class="ng-hide flipflopWidget ' + props.class + '" delegate-field="delegate" auto-field={{me.auto}} toggle-field={{me.toggle}}></div>';
+      var tmpl = '<div ng-flipflop delegate-field="delegate" auto-field={{me.auto}} toggle-field={{me.toggle}}></div>';
       return tmpl;
     }
   }

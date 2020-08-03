@@ -44,7 +44,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                      text: '',
            textnotpressed: '',
                       src: '',
-            srcnotpressed: ''
+            srcnotpressed: '',
+                activated: false
                      };
              
         //////////////////////////////////////////////////////////////////////
@@ -159,10 +160,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         // draw the buttton
         //
         var rendertoggle3D = function(trigger) {
+          //if (!scope.data.activated) return;
             
           var triggered = trigger != undefined && trigger === true;  
           var pressed = undefined;  
-          $timeout(function(){
+          $timeout(function() {
             if (scope.pressedField === true) {
                 
               var txt = scope.data.text != "" ? scope.data.text : scope.data.textnotpressed;   
@@ -309,6 +311,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             
         // make sure we are triggered when the page is ready    
         scope.$root.$on("$ionicView.afterEnter", function (event) {
+          scope.data.activated = true;
           rendertoggle3D(false);
         });
 

@@ -24,6 +24,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         backerField        : '@',
         listdataField      : '=',
         datawindowField    : '=',
+        valueField         : '=',
         upvisField         : '=',
         dnvisField         : '=',
         delegateField      : '='
@@ -64,7 +65,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             case 'downer' : 
               if (scope.dnvisField) {
                 scope.data.rowIndex+=scope.data.cols;
-                renderimage3D(true);
+                renderlist3D(true);
               }
               break;
             case 'upper' : 
@@ -72,10 +73,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 scope.data.rowIndex-=scope.data.cols;
                 if (scope.data.rowIndex < 0) 
                   scope.data.rowIndex = 0;
-                renderimage3D(true);
+                renderlist3D(true);
               }
               break;
             default:  
+              break
             }
           }
         });
@@ -92,7 +94,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         //////////////////////////////////////////////////////////////////////
         // draw the buttton
         //
-        var renderimage3D = function(trigger) {
+        var renderlist3D = function(trigger) {
             
           var triggered = trigger != undefined && trigger === true;  
           var pressed = undefined;  
@@ -103,25 +105,30 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             let count = scope.data.rows * scope.data.cols;
             if (start + count >= scope.data.data.length)
               count = scope.data.data.length - start;
-            scope.datawindowField = scope.data.data.slice(start,start+count);  
+              
+            // do we COPY or SLICE?
+            // this is the SLICE  
+            //scope.datawindowField = scope.data.data.slice(start,start+count);  
+            
+            // lets try COPY
+            var result = [];
+            for (var i=start;i<start+count; i++) {
+                var pressed = !!scope.data.data[i].pressed;
+                result.push({     pressed: pressed,
+                               notpressed: !pressed,
+                                     text: scope.data.data[i].text,
+                                      src: scope.data.data[i].src,
+                               srcpressed: scope.data.data[i].srcpressed,
+                                  visible: true
+                            });
+            }
+            // keep a copy as we need to know what change
+            scope.datawindowField = result;
             
             var tf = scope.data.rows * scope.data.cols;
             scope.dnvisField = (scope.data.data.length > tf) && ((scope.data.rowIndex + scope.data.cols) < (scope.data.data.length - 1));
             scope.upvisField = (scope.data.rowIndex > 0);
               
-            if (triggered) {
-                
-              if (pressed === true) {
-                scope.$parent.fireEvent('pressed');
-              } else if (pressed === false) {
-                scope.$parent.fireEvent('unpressed');
-              }
-            
-              scope.data.pressed    = (scope.pressedField    != undefined) ? isbool(scope.pressedField) : false;
-              scope.data.notpressed = (scope.notpressedField != undefined) ? isbool(scope.notpressedField) : false;
-            
-            }
-
           },1);
         }
         
@@ -145,7 +152,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             }
             
             scope.renderer.setProperties(scope.data.id+'_backer',{hidden:!scope.data.backer});
-            renderimage3D(false);  
               
           }
         });
@@ -179,40 +185,77 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         //////////////////////////////////////////////////////////////////////
         // monitor state - these wont change often
         //
-        scope.$watchGroup(['textField', 'srcField', 'srcnotpressedField'], function () {
-          scope.data.text           = (scope.textField           != undefined) ? scope.textField           : '';
-          scope.data.src            = (scope.srcField            != undefined) ? scope.srcField            : '';
-          scope.data.srcnotpressed  = (scope.srcnotpressedField  != undefined) ? scope.srcnotpressedField  : '';
-          
-          renderimage3D(false);
-        });
             
         //////////////////////////////////////////////////////////////////////
         // if things change externally, we may need to fire events
-        // note that we only watch pressedField.  notPressedField is output only
         //
-        scope.$watchGroup(['pressedField'], function () {
-          renderimage3D(true);
-        });
             
         scope.$watch(
           function() { return JSON.stringify(scope.listdataField)},
           function(value) {
             scope.data.data = scope.listdataField ;
-            // and we COPY (rows*cols) fields across to the windowed output field...  
-            let start = scope.data.rowIndex;
-            let count = scope.data.rows * scope.data.cols;
-            if (start + count >= scope.data.data.length)
-              count = scope.data.data.length - start;
-            scope.datawindowField = scope.data.data.slice(start,count);  
           }
-          )
+        )
         
+        //
+        // let's emit an info table - this makes the data easily consumable by Thingworx
+        // not sure if there's a twx function to do this already?
+        //
+        function buildInfoTable(rows) {
+          var itable = { 
+                 rows: rows,
+            dataShape: {
+              fieldDefinitions: {
+                text: {aspects: {}, baseType: "STRING",  name: "text"  },            
+               value: {aspects: {}, baseType: "STRING",  name: "value" },            
+             pressed: {aspects: {}, baseType: "BOOLEAN", name: "up"    }
+              }
+            }
+          };     
+          return itable;
+        }
+
         scope.$watch(
           function() { return JSON.stringify(scope.datawindowField)},
           function(value) {
-            scope.data.datawindow = scope.datawindowField ;
               
+            //work out what changed
+            let start = scope.data.rowIndex;
+            let count = scope.data.rows * scope.data.cols;
+            if (start + count > scope.data.data.length)
+              count = scope.data.data.length - start;
+            let changeIndex = undefined;
+            for (var i=0;i<count;i++) {
+                
+              // this is the main item that can change
+              var primary = scope.data.rowIndex + i;  
+              var ipressed = !!scope.data.data[primary].pressed;
+              if (ipressed != scope.datawindowField[i].pressed)
+                changeIndex = primary;
+                
+              //now copy over all the data
+              scope.data.data[scope.data.rowIndex+i].pressed    = scope.datawindowField[i].pressed;
+              scope.data.data[scope.data.rowIndex+i].notpressed = scope.datawindowField[i].notpressed;
+              scope.data.data[scope.data.rowIndex+i].visible    = scope.datawindowField[i].visible;
+              
+            }
+            
+            // update the output field and fire any events
+            if (changeIndex != undefined) {
+                
+              var selrow = {  text: scope.data.data[changeIndex].text,
+                           pressed: scope.data.data[changeIndex].pressed,
+                             value: scope.data.data[changeIndex].value };  
+              scope.valueField = buildInfoTable( [ selrow ] );
+                           
+              if (scope.data.data[changeIndex].pressed === true) {
+                scope.$parent.fireEvent('pressed',selrow.value);
+              } else {
+                scope.$parent.fireEvent('unpressed',selrow.value);
+              }
+
+            }
+            
           }
         )
             
@@ -221,14 +264,16 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         //
         scope.$watch('delegateField', function (delegate) {
           if (delegate) {
-            delegate.set   = function () { setimage3D();   };
-            delegate.reset = function () { resetimage3D(); };
+            delegate.reset = function () { 
+              scope.data.rowIndex = 0; 
+              renderlist3D(true);
+            };
           }
         });
             
         // make sure we are triggered when the page is ready    
         scope.$root.$on("$ionicView.afterEnter", function (event) {
-          renderimage3D(false);
+          renderlist3D(false);
         });
             
       }

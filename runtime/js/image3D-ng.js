@@ -126,8 +126,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             
             // we need to center this image, so lets see what shape it is
             let ibase   = imageWidth / imageHeight;
-            let iaspect = ibase > 1 ? imageHeight / background.height
-                                    : imageWidth  / background.width;
+            let bbase   = background.width / background.height;
+            
+            // note that if the image aspect is wider than the button, we need
+            // to adjust by width; otherwise we fit by height
+            let iaspect = ibase > 1 && bbase < ibase ? imageHeight / background.height
+                                                     : imageWidth  / background.width;
 
             // use largest dim to work out actual scale
             let scaled = { width  : background.width  * iaspect, 

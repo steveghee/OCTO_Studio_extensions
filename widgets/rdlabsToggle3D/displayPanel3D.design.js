@@ -9,8 +9,7 @@ function twxDisplayPanel3D() {
     
     isVisibleInPalette: function(scope) {
       let projectSettings = scope.$root.currentProject || {};
-      let builderSettings = scope.$root.builderSettings || {};
-      return !!builderSettings.octo && (projectSettings.projectType === 'eyewear');
+      return (projectSettings.projectType === 'eyewear');
     },
 
     properties: [
@@ -155,14 +154,14 @@ function twxDisplayPanel3D() {
   
     runtimeTemplate: function (props, twxWidgetEl, fullOriginalDoc, $, projectSettings) {
       var forholo = (projectSettings.projectType === 'eyewear');
-      var tmpl = '<div ng-panel3d class="ng-hide panel3DWidget ' + props.class + '" id-field="' + props.widgetId + '" isholo-field='+forholo+' height-field={{me.height}} width-field={{me.width}} font-field="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" text-field={{me.text}} src-field={{me.src}} nlines-field={{me.nlines}} fontsize-field={{me.fontsize}} delegate-field="delegate"></div>';
+      var tmpl = '<div ng-panel3d id-field="' + props.widgetId + '" isholo-field='+forholo+' height-field={{me.height}} width-field={{me.width}} font-field="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" text-field={{me.text}} src-field={{me.src}} nlines-field={{me.nlines}} fontsize-field={{me.fontsize}} delegate-field="delegate"></div>\n';
       var ps1  = ''; // need a simple texture+fade shader
       var vs1  = ''; //
-      var ctrl = '<twx-dt-image id="' + props.widgetId + '" class="image3dWidget" '+ 
+      var ctrl = '<twx-dt-image id="' + props.widgetId + '" class="panel3dWidget" '+ 
       'src="extensions/images/toggleMissing.png" '+ // we need to render onto something...
       'height="{{me.height}}" width="{{me.width}}" '+
       'x="{{me.x}}" y="{{me.y}}" z="{{me.z}}" rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" hidden="{{!app.fn.isTrue(me.visible)}}" '+
-      'shader="{{me.shader}}" interactable-hint="true" decal="false" pivot="5" sx="1" sy="1" sz="1"/>';
+      'shader="{{me.shader}}" interactable-hint="true" decal="false" pivot="5" sx="1" sy="1" sz="1"/>\n';
       return tmpl+ps1+vs1+ctrl;
     },
     

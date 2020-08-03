@@ -12,12 +12,6 @@ function twxGate() {
 
     properties: [
       {
-        name: 'class',
-        label: 'Class',
-        datatype: 'string',
-        default: ''
-      },
-      {
         name: 'auto',
         label: 'Auto',
         datatype: 'boolean',
@@ -101,7 +95,7 @@ function twxGate() {
     },
 
     runtimeTemplate: function (props) {
-      var tmpl = '<div ng-gate class="ng-hide gateWidget ' + props.class + '" result-field="me.result" auto-field={{me.auto}} test-field={{me.test}} op-field={{me.op}} value-field={{me.value}} delegate-field="delegate"></div>';
+      var tmpl = '<div ng-gate result-field="me.result" auto-field={{me.auto}} test-field={{me.test}} op-field={{me.op}} value-field={{me.value}} delegate-field="delegate"></div>';
       return tmpl;
     }
   }

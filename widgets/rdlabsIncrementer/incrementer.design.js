@@ -12,12 +12,6 @@ function twxIncrementer() {
 
     properties: [
       {
-            name: 'class',
-           label: 'Class',
-        datatype: 'string',
-         default: ''
-      },
-      {
             name: 'base',
            label: 'Initial Value',
         datatype: 'number',
@@ -72,7 +66,7 @@ function twxIncrementer() {
     },
 
     runtimeTemplate: function (props) {
-      var tmpl = '<div ng-incrementer class="ng-hide incrementerWidget ' + props.class + '" delegate-field="delegate" quotient-field={{me.quotient}} base-field={{me.base}}></div>';
+      var tmpl = '<div ng-incrementer delegate-field="delegate" quotient-field={{me.quotient}} base-field={{me.base}}></div>';
       return tmpl;
     }
   }

@@ -12,12 +12,6 @@ function twxLogic() {
 
     properties: [
       {
-             name: 'class',
-            label: 'Class',
-         datatype: 'string',
-          default: ''
-      },
-      {
              name: 'auto',
             label: 'Auto',
          datatype: 'boolean',
@@ -94,7 +88,7 @@ function twxLogic() {
     },
 
     runtimeTemplate: function (props) {
-      var tmpl = '<div ng-logic class="ng-hide logicWidget ' + props.class + '" result-field="me.result" auto-field={{me.auto}} ina-field={{me.inputA}} op-field={{me.op}} inb-field={{me.inputB}} delegate-field="delegate">{{me.op}}</div>';
+      var tmpl = '<div ng-logic result-field="me.result" auto-field={{me.auto}} ina-field={{me.inputA}} op-field={{me.op}} inb-field={{me.inputB}} delegate-field="delegate">{{me.op}}</div>';
       return tmpl;
     }
   }

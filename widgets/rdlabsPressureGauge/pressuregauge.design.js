@@ -13,12 +13,6 @@ function twxPressureGauge() {
 
     properties: [
       {
-            name: 'class',
-           label: 'Class',
-        datatype: 'string',
-         default: ''
-      },
-      {
             name: 'visible',
            label: 'Visible',
         datatype: 'boolean',
@@ -192,7 +186,7 @@ function twxPressureGauge() {
       var geom3  = ' color="[0.5,0.5,0.5,1.0]" texture="'+smoke+'" shader="points;percent f {{me.pressure}};max f {{me.max}}"></twx-dt-emitter>';
 
       // runtime interaction
-      var ctrl   = '<div ng-pressuregauge id="'+props.widgetId+'" class="ng-hide pressureWidget' + props.class + '" pressure-field={{me.pressure}} max-field={{me.max}}></div>';
+      var ctrl   = '<div ng-pressuregauge id="'+props.widgetId+'" pressure-field={{me.pressure}} max-field={{me.max}}></div>';
 
       // put them together and what have you got ...
       var shaders= vs1+ps1 + vs2+ps2 + vs3+ps3 ;

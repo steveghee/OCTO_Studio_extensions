@@ -12,12 +12,6 @@ function twxMapper() {
 
     properties: [
       {
-            name: 'class',
-           label: 'Class',
-        datatype: 'string',
-         default: ''
-      },
-      {
             name: 'shader',
            label: 'Shader',
         datatype: 'string',
@@ -75,7 +69,7 @@ function twxMapper() {
     },
 
     runtimeTemplate: function (props) {
-      var tmpl = '<div ng-mapper class="ng-hide mapperWidget ' + props.class + '" info-field="me.data" shader-field={{me.shader}} default-field={{me.default}} polarity-field={{me.polarity}} model-field={{me.model}}></div>';
+      var tmpl = '<div ng-mapper info-field="me.data" shader-field={{me.shader}} default-field={{me.default}} polarity-field={{me.polarity}} model-field={{me.model}}></div>';
       return tmpl;
     }
   }

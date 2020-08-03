@@ -12,12 +12,6 @@ function twxBouncer() {
 
     properties: [
       {
-            name: 'class',
-           label: 'Class',
-        datatype: 'string',
-         default: ''
-      },
-      {
             name: 'bouncing',
            label: 'Bouncing',
         datatype: 'boolean',
@@ -98,7 +92,7 @@ function twxBouncer() {
     },
 
     runtimeTemplate: function (props) {
-      var tmpl = '<div ng-bouncer class="ng-hide spinnerWidget ' + props.class + '" bouncing-field={{me.bouncing}} min-field={{me.min}} max-field={{me.max}} rate-field={{me.rate}} limit-field={{me.limit}}></div>';
+      var tmpl = '<div ng-bouncer bouncing-field={{me.bouncing}} min-field={{me.min}} max-field={{me.max}} rate-field={{me.rate}} limit-field={{me.limit}}></div>';
       return tmpl;
     }
   }

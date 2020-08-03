@@ -187,10 +187,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         //////////////////////////////////////////////////////////////////////
         // draw the buttton
         //
-        var renderimage3D = function(trigger) {
+        var renderpanel3D = function() {
             
-          var triggered = trigger != undefined && trigger === true;  
-          var pressed = undefined;  
           $timeout(function(){
                 
             var txt  = scope.data.text;  // should not be undefined, but can be empty
@@ -225,7 +223,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           scope.data.src    = (scope.srcField    != undefined) ? scope.srcField    : '';
           scope.data.nlines = (scope.nlinesField != undefined) ? scope.nlinesField : 1;
           
-          renderimage3D(false);
+          renderpanel3D();
         });
             
         //////////////////////////////////////////////////////////////////////
@@ -236,7 +234,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             
         // make sure we are triggered when the page is ready    
         scope.$root.$on("$ionicView.afterEnter", function (event) {
-          renderimage3D(false);
+          renderpanel3D();
         });
             
       }

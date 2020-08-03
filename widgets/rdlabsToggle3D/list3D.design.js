@@ -215,10 +215,18 @@ function twxList3D() {
       {
         name: 'pressed',
         label: 'ves-basic-web-widgets-extension:Pressed'
+      },
+      {
+        name: 'unpressed',
+        label: 'ves-basic-web-widgets-extension:Unpressed'
       }
     ],
 
     services: [
+      {
+        name: 'reset',
+        label: 'Reset'
+      }
     ],
     
     dependencies: {
@@ -240,7 +248,7 @@ function twxList3D() {
     runtimeTemplate: function (props, twxWidgetEl, fullOriginalDoc, $, projectSettings) {
       var forholo = (projectSettings.projectType === 'eyewear');
         
-      var tmpl = '<div ng-list3d class="ng-hide list3DWidget ' + props.class + '" id-field="' + props.widgetId + '" isholo-field='+forholo+' rows-field={{me.rows}} cols-field={{me.cols}} height-field={{me.buttonheight}} width-field={{me.buttonwidth}} disabled-field={{me.disabled}} listdata-field="me.listdata" datawindow-field="me.datawindow" upvis-field="me.upvis" dnvis-field="me.dnvis" delegate-field="delegate"></div>\n';
+      var tmpl = '<div ng-list3d class="ng-hide list3DWidget ' + props.class + '" id-field="' + props.widgetId + '" isholo-field='+forholo+' rows-field={{me.rows}} cols-field={{me.cols}} height-field={{me.buttonheight}} width-field={{me.buttonwidth}} disabled-field={{me.disabled}} listdata-field="me.listdata" datawindow-field="me.datawindow" value-field="me.value" upvis-field="me.upvis" dnvis-field="me.dnvis" delegate-field="delegate"></div>\n';
       var ctrl = '';
       
       // we build up an array of buttons, cols wide, rows deep
@@ -265,7 +273,7 @@ function twxList3D() {
           var rowtmpl = '<div ng-image3d  id-field="' + props.widgetId + '-' + bid + '" isholo-field='+forholo+' height-field={{me.buttonheight}} width-field={{me.buttonwidth}} backer-field={{me.showbacker}} font-field="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" '+
                         'text-field={{me.datawindow['+bid+'].text}} src-field={{me.datawindow['+bid+'].srcpressed}} srcnotpressed-field={{me.datawindow['+bid+'].src}} '+
                         'pressed-field="me.datawindow['+bid+'].pressed" notpressed-field="me.datawindow['+bid+'].notpressed" disabled-field={{me.disabled}}></div>\n';
-          var rowctrl = '<twx-dt-3dbutton id="' + props.widgetId + '-' + bid + '" ' + 
+          var rowctrl = '<twx-dt-3dbutton id="' + props.widgetId + '-' + bid + '" class="list3Dwidget" ' + 
                         'text="" ' + 
                         'height="{{me.buttonheight}}" width="{{me.buttonwidth}}" '+
                         'fontcolor="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" fontoutlinecolor="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" '+

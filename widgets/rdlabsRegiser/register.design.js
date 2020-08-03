@@ -12,12 +12,6 @@ function twxRegister() {
 
     properties: [
       {
-            name: 'class',
-           label: 'Class',
-        datatype: 'string',
-         default: ''
-      },
-      {
             name: 'auto',
            label: 'Auto',
         datatype: 'boolean',
@@ -70,7 +64,7 @@ function twxRegister() {
     },
 
     runtimeTemplate: function (props) {
-      var tmpl = '<div ng-latch class="ng-hide registerWidget ' + props.class + '" delegate-field="delegate" auto-field={{me.auto}} input-field={{me.i}}></div>';
+      var tmpl = '<div ng-latch delegate-field="delegate" auto-field={{me.auto}} input-field={{me.i}}></div>';
       return tmpl;
     }
   }

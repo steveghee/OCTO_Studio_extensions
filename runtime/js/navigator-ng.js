@@ -71,12 +71,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
              hololens: scope.data.isholo
           };
           var targets = {
-              extent: scope.data.extent,
-              device: scope.data.device,
-                head: scope.data.head === true ? 'extensions/images/navhead.pvz' : undefined,
-                feet: scope.data.feet,
-               color: scope.data.feetColor,
-         floorOffset: scope.data.floor
+               extent: scope.data.extent,
+               device: scope.data.device,
+                 head: scope.data.head === true ? 'extensions/images/navhead.pvz' : undefined,
+                 feet: scope.data.feet,
+                color: scope.data.feetColor,
+          floorOffset: scope.data.floor
           };
           
           scope.data.navigator = new spatialHelper(scope.renderer,tunnel,targets)
