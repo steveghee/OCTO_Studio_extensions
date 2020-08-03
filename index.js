@@ -22,5 +22,8 @@ exports.runtimeAngularModulesRequires = ["groupy-ng",
                                          "navigator-ng",
                                          "lighttube-ng", 
                                          "panel3D-ng",
-                                         "list3D-ng"
+                                         "list3D-ng",
+                                         "multiline3D-ng"
                                         ];
+
+//exports.canvasAngularModulesRequires    ['multiline3D-ng'];              
