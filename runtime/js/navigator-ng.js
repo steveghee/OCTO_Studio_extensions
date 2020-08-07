@@ -83,6 +83,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                                  .Cutoff(scope.data.cutoff, scope.data.auto, scope.entered, scope.exited);
           
           scope.$root.helper = scope.data.navigator;
+          scope.setSelected();                       
         }
         //
         // we are mainly driven by the external clock which is the renderer location callback

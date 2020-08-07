@@ -201,7 +201,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               }
             
               scope.data.pressed    = (scope.pressedField    != undefined) ? isbool(scope.pressedField) : false;
-              scope.data.notpressed = (scope.notpressedField != undefined) ? isbool(scope.notpressedField) : false;
+              scope.data.notpressed = !scope.data.pressed;
             
             }
 
@@ -302,6 +302,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         // note that we only watch pressedField.  notPressedField is output only
         //
         scope.$watchGroup(['pressedField'], function () {
+          scope.notpressedField = !scope.pressedField;
           renderimage3D(true);
         });
             

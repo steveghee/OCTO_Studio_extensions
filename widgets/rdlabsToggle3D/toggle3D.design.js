@@ -63,7 +63,7 @@ function twxToggle3D() {
  isBindingSource: true,
  isBindingTarget: false,
          default: true,
-      isVisible : false
+       showInput: false
       },
       {
             name: 'height',
