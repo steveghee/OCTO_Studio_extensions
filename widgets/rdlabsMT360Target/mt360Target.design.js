@@ -121,7 +121,16 @@
             default: '',
            datatype: 'string',
           isVisible: false
+           },
+           {
+               name: 'size',
+              label: 'Width (override)',
+           readonly: false,
+            default: '',
+           datatype: 'string',
+          isVisible: true
            }
+      
          ]),
              events: [
                {
@@ -148,6 +157,9 @@
                        
                        // strip off .dat extension: 'app/resources/Uploaded/DB2.dat' -> 'app/resources/Uploaded/DB2'
                        var data = props.dataset ? props.dataset.replace(/\.[^\.]*$/, '') : '';
+                       
+                       if (props.size != '') 
+                         tmpl = tmpl.replace('#_src_#"', '#_src_#" size='+props.size);
                        
                        // result is like: src="vuforia-model:///app/resources/Uploaded/DB2?id=T1"
                        tmpl = tmpl.replace('#_src_#', 'vuforia-model:///' + data + '?id=' + props.targetId);
