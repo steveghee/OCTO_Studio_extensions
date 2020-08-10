@@ -55,7 +55,7 @@ function tetheredHelper(renderer, interval, panels, offset) {
           outgoing : this.panels,
           incoming : panels,
           tpos     : new Vector4(),
-          tgaze    : new Vector4().Set3(0,0,1),
+          tgaze    : new Vector4().Set3(0,0,0),  // these are angles, not a vector.
           tem      : new Matrix4()
       };
       

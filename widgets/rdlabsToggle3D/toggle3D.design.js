@@ -154,14 +154,6 @@ function twxToggle3D() {
        showInput: true
       },
       {
-            name: 'rz',
-           label: 'ves-ar-extension:Z Rotation',
-        datatype: 'number',
- isBindingSource: false,
- isBindingTarget: true,
-       showInput: true
-      },
-      {
             name: 'visible',
            label: 'ves-basic-web-widgets-extension:Visible',
         datatype: 'boolean',
