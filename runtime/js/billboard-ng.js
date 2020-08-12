@@ -24,7 +24,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
         var lastUpdated = 'unknown';
         scope.data = {  
-                      angle: undefined, 
+                      angle: 0, 
                     affects: undefined, 
                        auto: true,
                       force: false,
@@ -41,11 +41,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           var arg= scope.data.args;
           if (arg === undefined) return;
           
-          var gz = new Vector4().Set3(-arg.gaze[0],-arg.gaze[1],-arg.gaze[2]);
-          var up = new Vector4().Set3(arg.up[0],arg.up[1],arg.up[2]);
-          var xd = up.CrossP(gz);
-          var em = new Matrix4().Set3V(xd,up,gz);
-          var es = em.ToEuler(true);
+          var ps  = new Vector4().Set3(arg.position[0], arg.position[1], arg.position[2]);
+          var yup = new Vector4().Set3(0,1,0);
+          var cosa= Math.cos(Math.PI * scope.data.angle / 180);
           
           if (scope.data.affects != undefined && scope.data.affects.length > 0) 
           scope.data.affects.forEach(function(a) {  
@@ -55,13 +53,25 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             if (subject != undefined) {
                                      
               // calc heading for subject 'a'
+              var em = new Matrix4().RotateFromEuler(subject.rx, subject.ry, subject.rz, true);;
+              var sz = new Vector4().Set4a(em.m[2]).Normalize();
+          
               // first, find out which way it is currently heading                         
-              var cy = subject.ry - scope.data.offset;
+              var sps = new Vector4().Set3(subject.x, arg.position[1], subject.z);
+              var dlt = ps.Sub(sps).Normalize();
               
-              // then see if the delta is greater than the accepted angle property
-              if (scope.data.force || 
-                  Math.abs(cy - es.heading) > scope.data.angle) {
-                subject.ry = es.heading + scope.data.offset;
+              // this is the cos of the angle between the two vectors
+              var dp = Math.abs(sz.DotP(dlt));
+               
+              var xd = yup.CrossP(dlt);
+              var em = new Matrix4().Set3V(xd,yup,dlt);
+              var es = em.ToEuler(true);
+              
+              // if the (cos of the) angle is less than the allowed difference...
+              if (scope.data.force === true || dp < cosa) {
+                subject.rx = es.attitude;
+                subject.ry = es.heading;
+                subject.rz = es.bank;
               }
             }
           });

@@ -195,7 +195,7 @@ function twxPinger() {
       //var props = 'hidden={{me.disabled}} x={{me.x}} y={{me.y}} z={{me.z}} rx={{me.rx}} ry={{me.ry}} rz={{me.rz}} sx={{me.radius*2}} sy={{me.radius*2}} sz={{me.radius*2}}';
       //var geom  = 'shader="pinger;rings f {{me.rings}};rate f {{(me.disabled?-1:me.rate)}};fade f {{(me.disabled?1:0)}};direction f {{me.direction?1:-1}};r f {{me.color.split(\',\')[0]}};g f {{me.color.split(\',\')[1]}};b f {{me.color.split(\',\')[2]}}" vertices="[-0.5,-0.5,0, 0.5,-0.5,0, 0.5,0.5,0, -0.5,0.5,0]" normals="[]" texcoords="[-0.5,-0.5, 0.5,-0.5, 0.5,0.5, -0.5,0.5]" indexes="[0,1,2,0,2,3]" color="{{me.color}}"></twx-dt-3dmodel>';
       
-      var tmpl  = '<twx-dt-image id="' + props.widgetId + '" class="pingerWidget" ';
+      var tmpl  = '<twx-dt-image id="' + props.widgetId + '"';
       var props = 'hidden="{{!me.visible}}" x="{{me.x}}" y="{{me.y}}" z="{{me.z}}" rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" width="{{me.radius*2}}" height="{{me.radius*2}}" sx="1" sy="1" sz="1" pivot="5" decal="{{me.decal}}"';
       var geom  = 'ng-src="{{me.src}}" src="" shader="'+(forholo?'pingerhl':'pingergl')+';rings f {{me.rings}};rate f {{(me.disabled?-1:me.rate)}};fade f {{(me.disabled?1:0)}};direction f {{me.direction?1:-1}};r f {{me.color.split(\',\')[0]}};g f {{me.color.split(\',\')[1]}};b f {{me.color.split(\',\')[2]}}"'+' ng-click="app.fn.isTrue(me.disabled) ? fireEvent() : fireEvent(\'click\');"></twx-dt-image>';
       return (forholo?vs1+ps1:vs0+ps0)+tmpl+props+geom; 
