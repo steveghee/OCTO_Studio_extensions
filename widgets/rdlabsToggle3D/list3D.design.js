@@ -80,6 +80,13 @@ function twxList3D() {
  isBindingTarget: true,
       },
       {
+            name: 'pressedColor',
+           label: 'Color, pressed',
+        datatype: 'color',
+         default: 'rgba(78,137,188,1);',
+ isBindingTarget: true,
+      },
+      {
             name: 'colordisabled',
            label: 'Color - disabled',
         datatype: 'color',
@@ -226,6 +233,10 @@ function twxList3D() {
       {
         name: 'reset',
         label: 'Reset'
+      },
+      {
+        name: 'refresh',
+        label: 'Refresh'
       }
     ],
     
@@ -277,7 +288,7 @@ function twxList3D() {
                         'text="" ' + 
                         'height="{{me.buttonheight}}" width="{{me.buttonwidth}}" '+
                         'fontcolor="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" fontoutlinecolor="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" '+
-                        'color="{{me.disabled ? me.colordisabled : (me.buttonColor.endsWith(&apos;;&apos;)? me.buttonColor.slice(0, -1): me.buttonColor) }}" '+
+                        'color="{{me.disabled ? me.colordisabled : me.datawindow['+bid+'].pressed ? (me.pressedColor.endsWith(&apos;;&apos;)? me.pressedColor.slice(0, -1): me.pressedColor) : (me.buttonColor.endsWith(&apos;;&apos;)? me.buttonColor.slice(0, -1): me.buttonColor) }}" '+
                         'backercolor="{{me.buttonColor.endsWith(&apos;;&apos;)? me.buttonColor.slice(0, -1): me.buttonColor}}" ' + 
                         'x="{{'+dx+' + me.x}}" y="{{'+dy+' + me.y}}" z="{{me.z}}" ' + 
                         'rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" ' + 

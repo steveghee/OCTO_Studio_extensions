@@ -194,6 +194,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           function() { return JSON.stringify(scope.listdataField)},
           function(value) {
             scope.data.data = scope.listdataField ;
+            renderlist3D(true);
           }
         )
         
@@ -206,9 +207,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                  rows: rows,
             dataShape: {
               fieldDefinitions: {
-                text: {aspects: {}, baseType: "STRING",  name: "text"  },            
-               value: {aspects: {}, baseType: "STRING",  name: "value" },            
-             pressed: {aspects: {}, baseType: "BOOLEAN", name: "up"    }
+                  value: {aspects: {}, baseType: "STRING",  name: "value"   },            
+                pressed: {aspects: {}, baseType: "BOOLEAN", name: "pressed" }
               }
             }
           };     
@@ -243,9 +243,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             // update the output field and fire any events
             if (changeIndex != undefined) {
                 
-              var selrow = {  text: scope.data.data[changeIndex].text,
-                           pressed: scope.data.data[changeIndex].pressed,
-                             value: scope.data.data[changeIndex].value };  
+              var selrow = { pressed: scope.data.data[changeIndex].pressed,
+                               value: scope.data.data[changeIndex].value };  
               scope.valueField = buildInfoTable( [ selrow ] );
                            
               if (scope.data.data[changeIndex].pressed === true) {
@@ -266,6 +265,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           if (delegate) {
             delegate.reset = function () { 
               scope.data.rowIndex = 0; 
+              renderlist3D(true);
+            };
+            delegate.refresh = function () { 
+              //dont change the rowindex
               renderlist3D(true);
             };
           }

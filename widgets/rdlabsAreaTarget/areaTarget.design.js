@@ -150,7 +150,7 @@
                        var data = props.dataset ? props.dataset.replace(/\.[^\.]*$/, '') : '';
                        
                        // result is like: src="vuforia-model:///app/resources/Uploaded/DB2?id=T1"
-                       tmpl = tmpl.replace('#_src_#', 'vuforia-image:///' + data + '?id=' + props.targetId);
+                       tmpl = tmpl.replace('#_src_#', 'vuforia-area:///' + data + '?id=' + props.targetId);
                        return tmpl;
                      },
                      
