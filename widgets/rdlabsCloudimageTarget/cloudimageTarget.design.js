@@ -137,7 +137,8 @@
                      },
 
     runtimeTemplate: function (props) {
-                       var tmpl = template.replace("#widgetId#", props.widgetId);
+                       var dv   = '<div class="targetGuide cloudimage" ng-hide="hideTargetGuide"></div>';
+                       var tmpl = dv + template.replace("#widgetId#", props.widgetId);
                        return tmpl;
                      }
     };
