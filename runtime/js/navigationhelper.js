@@ -300,7 +300,7 @@ function spatialHelper(renderer, tunnel, targets) {
                         tcol != undefined ? 'navpinger;rings f 5;r f '+tcol[0]+';g f '+tcol[1]+';b f '+tcol[2]+';direction f -1'
                                           : 'navpinger;rings f 5;r f 0;g f 1;b f 0;direction f -1';
                                                 
-       this.renderer.setProperties (this.target.fname,{shader: pingshade,    
+        this.renderer.setProperties (this.target.fname,{shader: pingshade,    
                                                         hidden:false });
       }
       if (this.target.hname != undefined) 
@@ -374,9 +374,11 @@ function spatialHelper(renderer, tunnel, targets) {
       var hg  = new Vector4().Set3(gaze.v[0],0,gaze.v[2]).Normalize();
           xd  = fup.CrossP(hg);
           em  = new Matrix4().Set3V(xd,fup,hg);
+          
       // the feet (image) need to be flipped -90 to align to floor
       var r90 = new Matrix4().Rotate([1,0,0],-90,true).Multiply(em.m);
       var esf = r90.ToEuler(true);
+      
       // feet are positioned 0.5m back from the target
       var fp  = new Vector4().Set3(ep.v[0], - this.target.floor, ep.v[2]).Add(hg.Scale(0.5));
       
@@ -384,7 +386,7 @@ function spatialHelper(renderer, tunnel, targets) {
       var pingshade = twx.app.isPreview() ? "Default" :
                       tcol != undefined ? 'navpinger;rings f 5;r f '+tcol[0]+';g f '+tcol[1]+';b f '+tcol[2]+';direction f -1'
                                         : 'navpinger;rings f 5;r f 0;g f 1;b f 0;direction f -1';
-
+                                        
       this.renderer.setTranslation(this.target.fname, fp.v[0],      fp.v[1],     fp.v[2] ); 
       this.renderer.setRotation   (this.target.fname, esf.attitude, esf.heading, esf.bank);
       this.renderer.setProperties (this.target.fname, {shader:pingshade, 

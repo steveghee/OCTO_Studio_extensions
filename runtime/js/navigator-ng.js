@@ -56,6 +56,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                        head: false,
                     visible: undefined,
                     pending: undefined,
+                      ready: false
                      };
                      
         scope.renderer = $window.cordova ? vuforia : $injector.get('threeJsTmlRenderer');
@@ -83,13 +84,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                                  .Cutoff(scope.data.cutoff, scope.data.auto, scope.entered, scope.exited);
           
           scope.$root.helper = scope.data.navigator;
-          scope.setSelected();                       
+          if (scope.data.ready)
+            scope.setSelected();                       
         }
         //
         // we are mainly driven by the external clock which is the renderer location callback
         //
         scope.$root.$on('tracking', function(evt, arg) { 
-          if (scope.data.visible) {
+          if (scope.data.ready && scope.data.visible) {
             scope.data.args = arg;          
             updatenavigation();
           }
@@ -215,7 +217,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         // move locator to specified location (index)    
         //
         scope.setSelected = function() {
-          if (scope.data.navigator   != undefined && 
+          if (scope.data.ready &&
+              scope.data.navigator   != undefined && 
               scope.data.poidata     != undefined && 
               scope.data.poiselected >= 0         && 
               scope.data.poiselected < scope.data.poidata.length) $timeout(function() { 
@@ -334,6 +337,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         scope.$root.$on("$ionicView.afterEnter", function (event) {
                         
           init();              
+//          scope.setSelected();
         
         });
             
@@ -343,7 +347,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         // uglier timing problem going on underneath this
         //
         scope.$root.$on('modelLoaded', function(evt, arg) { 
-          scope.setSelected();
+          if (!scope.data.ready) {
+            scope.data.ready = true;
+            $timeout(scope.setSelected,2000);
+          }
         });
 
       }
