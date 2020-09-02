@@ -1,6 +1,6 @@
-function twxSpinner() {
+function twxTurntable() {
   return {
-    elementTag: 'twx-spinner',
+    elementTag: 'twx-turntable',
 
     label: 'Turntable',
     category : 'ar',
@@ -12,12 +12,6 @@ function twxSpinner() {
 
     properties: [
       {
-            name: 'class',
-           label: 'Class',
-        datatype: 'string',
-         default: ''
-      },
-      {
             name: 'spinning',
            label: 'Spinning',
         datatype: 'boolean',
@@ -27,7 +21,7 @@ function twxSpinner() {
       },
       {
             name: 'rate',
-           label: 'Rate',
+           label: 'Rate (degrees per second)',
         datatype: 'number',
  isBindingSource: false,
  isBindingTarget: true,
@@ -84,19 +78,19 @@ function twxSpinner() {
     ],
 
     designTemplate: function () {
-      return '<div class="spinnerWidget"></div>';
+      return '<div class="turntableWidget"></div>';
     },
 
     dependencies: {
-      files         : ['js/spinner-ng.js'],
-      angularModules: ['spinner-ng']
+      files         : ['js/turntable-ng.js'],
+      angularModules: ['turntable-ng']
     },
 
     runtimeTemplate: function (props) {
-      var tmpl = '<div ng-spinner class="ng-hide spinnerWidget ' + props.class + '" spinning-field={{me.spinning}} direction-field={{me.direction}} rate-field={{me.rate}} revs-field={{me.revs}} angle-field=me.angle></div>';
+      var tmpl = '<div ng-turntable spinning-field={{me.spinning}} direction-field={{me.direction}} rate-field={{me.rate}} revs-field={{me.revs}} angle-field=me.angle></div>';
       return tmpl;
     }
   }
 }
 
-twxAppBuilder.widget('twxSpinner', twxSpinner);
+twxAppBuilder.widget('twxTurntable', twxTurntable);

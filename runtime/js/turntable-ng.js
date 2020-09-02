@@ -1,14 +1,14 @@
 if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.exports === exports) {
-  module.exports = 'spinner-ng';
+  module.exports = 'turntable-ng';
 }
 
 (function () {
   'use strict';
 
-  var spinnerModule = angular.module('spinner-ng', []);
-  spinnerModule.directive('ngSpinner', ['$interval', ngSpinner]);
+  var turntableModule = angular.module('turntable-ng', []);
+  turntableModule.directive('ngTurntable', ['$interval', ngTurntable]);
 
-  function ngSpinner($interval) {
+  function ngTurntable($interval) {
 
     return {
       restrict: 'EA',
