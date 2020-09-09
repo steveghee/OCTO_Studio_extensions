@@ -5,7 +5,6 @@ function twxLighttube() {
     category : 'ar',
     groups    : ['Effects'],  
     properties: [
- 
       {
         name: 'affects',
         label: 'Affects',
@@ -64,7 +63,7 @@ function twxLighttube() {
         datatype: 'boolean',
         default: false,
         isBindingTarget: true,
-        isVisible : false       
+        isVisible : true    
       },
 
     ],
