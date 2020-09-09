@@ -294,8 +294,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           scope.data.src            = (scope.srcField            != undefined) ? scope.srcField            : '';
           scope.data.srcnotpressed  = (scope.srcnotpressedField  != undefined) ? scope.srcnotpressedField  : '';
           
-          console.log('image '+scope.data.id+' : text='+scope.data.text);
-          
           renderimage3D(false);
         });
             
