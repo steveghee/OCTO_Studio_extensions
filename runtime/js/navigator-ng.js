@@ -335,9 +335,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         // make sure we are triggered when the page is ready    
         //    
         scope.$root.$on("$ionicView.afterEnter", function (event) {
-                        
-          init();              
-//          scope.setSelected();
+          if (event.targetScope.view.wdg[scope.data.id] != undefined) {
+            scope.data.ready = true;
+            init();              
+          }
         
         });
             

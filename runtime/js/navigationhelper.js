@@ -16,11 +16,7 @@ function spatialHelper(renderer, tunnel, targets) {
   
   this.headloc      = undefined;
   this.target       = targets != undefined ? targets : {};
-  this.target.loc   = { 
-                        position: new Vector4(), 
-                            gaze: new Vector4().Set3(0, 0,-1),
-                              up: new Vector4().Set3(0, 1, 0)
-                      };
+  this.target.loc   = undefined;
   this.target.tname = this.target.device != undefined ? "target" : undefined;
   this.target.tdist = this.target.extent != undefined ? this.target.extent : 0.45;
   this.target.fname = this.target.feet   != undefined ? "feet"   : undefined;
@@ -284,7 +280,7 @@ function spatialHelper(renderer, tunnel, targets) {
     this.showTunnel = force != undefined ? force 
                                          : !this.showTunnel;
   
-    if (this.showTunnel === true) {
+    if (this.target.loc != undefined && this.showTunnel === true) {
 
       this.tunneling = this.showTunnel;
  
@@ -322,6 +318,8 @@ function spatialHelper(renderer, tunnel, targets) {
         this.renderer.setProperties (this.target.hname,{shader: navfoggedshade,    
                                                         hidden: true});
     }
+    
+    return this.tunneling;    
   }
   
   this._positionHelpers = function(headloc) {
