@@ -335,6 +335,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         // make sure we are triggered when the page is ready    
         //    
         scope.$root.$on("$ionicView.afterEnter", function (event) {
+          // check that I (as named widget) am referenced in this view              
           if (event.targetScope.view.wdg[scope.data.id] != undefined) {
             scope.data.ready = true;
             init();              
