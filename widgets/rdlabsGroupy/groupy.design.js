@@ -102,7 +102,7 @@ function twxGroupy() {
     ],
     
     dependencies: {
-      files         : ['js/groupy-ng.js'],
+      files         : ['js/matrix.js', 'js/groupy-ng.js'],
       angularModules: ['groupy-ng']
     },
 

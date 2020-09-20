@@ -17,18 +17,13 @@
     overlay.rz = Twx3dCommon.common3dProp('rz');
     overlay.rx.isVisible = false; // user cannot rotate Model marker
     overlay.rx.isBindingTarget = false;
-    overlay.ry.isVisible = false;
     overlay.ry.isBindingTarget = false;
-    overlay.rz.isVisible = false;
     overlay.rz.isBindingTarget = false;
     overlay.x  = Twx3dCommon.common3dProp('x');
-    overlay.x. isVisible = false;
     overlay.x. isBindingTarget = false;
     overlay.y  = Twx3dCommon.common3dProp('y');
-    overlay.y. isVisible = false;
     overlay.y. isBindingTarget = false;
     overlay.z  = Twx3dCommon.common3dProp('z');
-    overlay.z. isVisible = false;
     overlay.z. isBindingTarget = false;
     overlay.z. default = 0;
 
