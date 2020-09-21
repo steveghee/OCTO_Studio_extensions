@@ -50,6 +50,16 @@
            tFrag: 'guide-src="{{me.url}}"',
        sortOrder: 2
         };
+    overlay.modelurl = {
+            name: 'maskurl',
+           label: 'Mask',
+        datatype: 'resource_url',
+  resource_image: true,
+ allowedPatterns: ['.pvz'],
+       isVisible: false,
+           tFrag: 'model-src="" model-src="{{me.maskurl}}"',
+       sortOrder: 3
+        };
         
         overlay.istracked = {
             name: 'istracked',
@@ -94,7 +104,7 @@
     var template = Twx3dCommon.buildRuntimeTemplate("twx-dt-target", props, true);
     
     // create a design template - this is a 3D image (can be dragged etc.)
-    var designTemplate = Twx3dCommon.buildRuntimeTemplate('twx-dt-image', Twx3dCommon.new3dProps(overlay, ['dataset','visible']));
+    var designTemplate = '<twx-dt-model id="#widgetId#" src="{{me.maskurl}}" opacity="1" hidden="false" sx="1" sy="1" sz="1" x="0" y="0" z="0" rx="-90" ry="0" rz="0" occlude="true" decal="false" shader="desaturatedgl"></twx-dt-model>';
 
     var retObj = {
         
@@ -143,8 +153,7 @@
        },
 
      designTemplate: function (props) {
-                        return designTemplate.replace('size="{{me.width}}"',
-                                                      'src="/extensions/images/placeholder_user_defined.svg" opacity="1" hidden="false" width="{{me.width}}" height="{{me.width/2}}" sx="1" sy="1" sz="1"');
+                        return designTemplate;
                      },
 
     runtimeTemplate: function (props) {
@@ -159,7 +168,26 @@
                        // result is like: src="vuforia-model:///app/resources/Uploaded/DB2?id=T1"
                        tmpl = tmpl.replace('#_src_#', 'vuforia-model:///' + data + '?id=' + props.targetId);
                        return tmpl;
+                     },
+                   
+           delegate: function () {
+
+                       // called when a widgets properties are altered
+                       this.widgetUpdated = function (widgetCtrl, currentProps, changedProps, oldProps) {
+            
+                         // automatically sets the viewable when the dat is chosen
+                         if (changedProps.dataset) {
+              
+                           //note we only want the Uploaded/filename(no extension)  
+                           var data = changedProps.dataset ? changedProps.dataset.replace(/\.[^\.]*$/, '') : '';
+                           data = data.substring(data.indexOf('Uploaded'));
+                           widgetCtrl.setProp('maskurl', data+".pvz");
+                           
+                         }
+                       }
+                       return this;
                      }
+                   
     };
 
     TargetUtils.registerWidgetAsTarget(retObj);
