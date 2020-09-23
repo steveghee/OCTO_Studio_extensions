@@ -211,6 +211,10 @@ function twxPinger() {
           widgetCtrl.setProp('width',  newScale.toFixed(4));
           widgetCtrl.setProp('height', newScale.toFixed(4));
         }
+        // a blank (none image) pinger makes no sense, so we dont allow it 
+        if(changedProps.src === "") {
+          widgetCtrl.setProp('src','../../extensions/images/pingerBlank.png');
+        }
       };
       return this;
     }
