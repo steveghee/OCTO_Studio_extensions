@@ -1,0 +1,35 @@
+twx-dt-view {
+  position: inherit;
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: auto;
+}
+
+@keyframes pulse {
+	0% {
+	    transform: scaleX(1);
+	}
+	50% {
+	    transform: scale3d(1.05,1.05,1.05);
+	}
+	100% {
+	    transform: scaleX(1);
+	}
+}
+
+.targetGuide {
+	-webkit-transition: opacity ease-in-out 0.75s;
+	transition: opacity ease-in-out 0.75s;
+	animation-duration: 1s;
+	animation-fill-mode: both;
+	&.ng-hide {
+		opacity: 0;
+		animation-name: pulse;
+	}
+}
+
+.targetGuide.vumark {
+    background-image: url(../extensions/images/vumarkTarget.png);
+}
+

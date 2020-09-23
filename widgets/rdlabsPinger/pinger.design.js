@@ -205,10 +205,10 @@ function twxPinger() {
 
       // called when a widgets properties are altered
       this.widgetUpdated = function (widgetCtrl, currentProps, changedProps, oldProps) {
-        // automatically adjuts the Z distance of the button from the backplate  
+        // adjust the width/height based on the radius setting  
         if(changedProps.radius) {
           let newScale = 2 * changedProps.radius;
-          widgetCtrl.setProp('width', newScale.toFixed(4));
+          widgetCtrl.setProp('width',  newScale.toFixed(4));
           widgetCtrl.setProp('height', newScale.toFixed(4));
         }
       };
