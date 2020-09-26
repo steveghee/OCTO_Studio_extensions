@@ -98,17 +98,21 @@ Included are a collection of simple logic 'gates' (based on core principals and 
 These building blocks can be used to controlling state within you application.
 
 #### Flip Flip
-The flipflop emulates a standard JK flipflop electroni circuit.  It can be set to a value (true) or reset (false) or it can be 'clocked' to toggle between these two states.
-The output Q reflects the behaviour above.  Qbar is the opposite of Q i.e. if Q is true, Qbar is false.  
+The flipflop emulates a standard JK flipflop electronic circuit.  It can be set to a value (true) or reset (false) or it can set to 'toggle' mode and 'clocked' to bounce between these two states.
+The output Q reflects the behaviour above.  Qbar is the opposite of Q i.e. if Q is true, Qbar is false.
+
+When in Auto mode (Auto=true), Set or Reset will be immediately reflected in Q/Qbar.
+With Auto-false, the widget must be 'clocked' (Clk) to propogate the value.
+In Toggle mode (Toggle=true), state will change when the widget is clocked.  
 
 This useful utitlity widget can be used, for example, to turn an event say a button press, or the response from a Thingworx service call) into a usable state value (true/false) that can then be used to control other elements of the experience.
 
-#### Gate (basic filter)
+#### Gate
 The Gate takes an input (Property) and a Value to test against, and a defined operation (Op). The output reflects the result of the operation
-e.g. is the op is 'greater than' then the output will follow the input IF the input is greater than the defined value.
+e.g. is the op is 'greater than' then the output will follow the input if the input (Property)  is greater than the defined Value.
 
-Gate can be used for basic threshhold and comparison tests e.g you can compare strings (A like B), you can compare dates (A before B) and you can perform numeric
-comparisons e.g. A > B.
+Gate can be used for basic threshhold and comparison tests e.g. you can compare strings (A like B), you can compare dates (A before B) and you can perform numeric
+comparisons e.g. A > B.   Chaining Gates together allows for more complex expressions e.g.   3 < A < 12
 
 #### Increment
 A simple counter which takes two inputs - the starting value and the increment (default is 1) and when 'clocked' the value will 
@@ -117,21 +121,21 @@ increase by the defined quotient.
 Reset will set the value back to the initial value.
 
 #### Latch
-The latch capture and retains whatever boolean value (true /false) was applied to the input when clocked.
+The latch captures and retains whatever boolean value (true /false) was applied to the input when clocked.
 Q and Qbar outputs are provided.
 
 #### Logic
 The logic block takes two inputs A,B and an Boolean operand.  The can be one of 
 AND,OR,NAND,NOR,XOR.  The output is the result of the boolean operation of the two values.
 
-This block can be used to check combinatorial state i.e. only when i press the two buttons on should the panel open.
+This block can be used to check combinatorial state i.e. only when I press the two buttons on should the panel open (button A AND buton B).
 
 #### Oscillator
-The oscillator is a simple cosine wave generator wihch will drive its output between the two min/max limits defined.  The oscillation rate defines the number of cycles / second.
-The oscillator can be given a start value. 
+The oscillator is a simple cosine wave generator which will drive its output between the two min/max limits defined.  
+Rate defines the number of cycles / second. The oscillator can be given a start value. 
 
 Reset will restart the oscillator at the starting value.
 
 #### Register
-The register is similar to the latch block, but works with non-boolean data.
-it can be used to store strings, numbers etc.
+The register is similar to the latch, but works with non-boolean data.
+It can be used to store strings, numbers etc.
