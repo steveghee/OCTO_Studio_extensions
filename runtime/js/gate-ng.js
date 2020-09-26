@@ -36,6 +36,7 @@ var cmds = {
         opField      : '@',
         autoField    : '@',
         resultField  : '=',
+        qField       : '=',
         delegateField: '='
       },
       template: '<div></div>',
@@ -55,7 +56,7 @@ var cmds = {
           var passed = (excmd != undefined) ? excmd(scope.testField, scope.valueField) 
                                             : false;
           scope.data.result = (passed === true) ? scope.testField 
-                                                : undefined;
+                                                : scope.valueField;
 
           // output the output variables
           if (passed === true) {
@@ -65,7 +66,8 @@ var cmds = {
           }  
           
           // and set the output
-          $scope.resultField = scope.data.result;
+          scope.resultField = scope.data.result;
+          scope.qField      = passed;
         };
 
         var updateGate = function(auto){

@@ -2,8 +2,8 @@ function twxBouncer() {
   return {
     elementTag: 'twx-bouncer',
 
-    label: 'Bouncer',
-    category : 'ar',
+    label: 'Oscillator',
+    category: 'mobile-2D',
     groups    : ['OCTO Labs'],
     isVisibleInPalette: function(scope) {
       let builderSettings = scope.$root.builderSettings || {};
@@ -46,6 +46,15 @@ function twxBouncer() {
        showInput: true
       },
       {
+            name: 'start',
+           label: 'Starting value',
+        datatype: 'number',
+         default: 0.0,
+ isBindingSource: false,
+ isBindingTarget: true,
+       showInput: true
+      },
+      {
             name: 'value',
            label: 'Value',
         datatype: 'number',
@@ -71,6 +80,13 @@ function twxBouncer() {
       },
     ],
 
+    services: [
+      {
+         name: 'reset',
+        label: 'Reset'
+      }
+    ],
+    
     events: [
       {
          name: 'bounce',
@@ -92,7 +108,7 @@ function twxBouncer() {
     },
 
     runtimeTemplate: function (props) {
-      var tmpl = '<div ng-bouncer bouncing-field={{me.bouncing}} min-field={{me.min}} max-field={{me.max}} rate-field={{me.rate}} limit-field={{me.limit}}></div>';
+      var tmpl = '<div ng-bouncer delegate-field="delegate" bouncing-field={{me.bouncing}} min-field={{me.min}} max-field={{me.max}} start-field={{me.start}} rate-field={{me.rate}} limit-field={{me.limit}}></div>';
       return tmpl;
     }
   }

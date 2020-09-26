@@ -3,7 +3,7 @@ function twxGate() {
     elementTag: 'twx-gate',
 
     label: 'Gate',
-    category : 'ar',
+    category: 'basic-html',
     groups    : ['OCTO Labs'],
     isVisibleInPalette: function(scope) {
       let builderSettings = scope.$root.builderSettings || {};
@@ -64,6 +64,14 @@ function twxGate() {
   isBindingTarget: false,
         showInput: false
       },
+      {
+        name: 'q',
+        label: 'Q',
+        datatype: 'boolean',
+  isBindingSource: true,
+  isBindingTarget: false,
+        showInput: false
+      },
     ],
 
     events: [
@@ -95,7 +103,7 @@ function twxGate() {
     },
 
     runtimeTemplate: function (props) {
-      var tmpl = '<div ng-gate result-field="me.result" auto-field={{me.auto}} test-field={{me.test}} op-field={{me.op}} value-field={{me.value}} delegate-field="delegate"></div>';
+      var tmpl = '<div ng-gate result-field="me.result" q-field="me.q" auto-field={{me.auto}} test-field={{me.test}} op-field={{me.op}} value-field={{me.value}} delegate-field="delegate"></div>';
       return tmpl;
     }
   }

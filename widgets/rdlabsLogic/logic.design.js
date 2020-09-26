@@ -3,7 +3,7 @@ function twxLogic() {
     elementTag: 'twx-logic',
 
     label: 'Logic',
-    category : 'ar',
+    category: 'basic-html',
     groups    : ['OCTO Labs'],
     isVisibleInPalette: function(scope) {
       let builderSettings = scope.$root.builderSettings || {};

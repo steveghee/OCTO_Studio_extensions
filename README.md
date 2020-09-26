@@ -27,17 +27,18 @@ Lets look at each in turn.
 ## Targets
 
 ### 360 Model targets
-aka Trained Model targets, this is a new class of model target wihch can be trained (using Vuforia Engine services) to be able to recognise and
+aka Trained Model targets, this is a new class of model target which can be trained (using Vuforia Engine services) to be able to recognise and
 snap to a model target from any angle.  This if course differs to the standard model target where there is a specific perspective (otten indicated via a helpful 'guide view'). With Trained / 360 models targets, 
 recognition can be 'trained' to occur from a broad range of angles, all the way up to 360 around the target item.
 
-Training of the target is not included in this extension. Instead, the user shoudl use their Vuforia Engine account to download the new Model Target Generator application, and view the documentation on the Engine website in order
+Training of the target is not included in this extension. Instead, the user should use their Vuforia Engine account to download the new Model Target Generator application, and view the documentation on the Engine website in order
 to familiarise themselves with the User Interface and functionality of this tool.  
 
 In principal, inclusion of a trained model target into Vuforia Studio is simple.
 
 1. create trained model target using Vuforia Engine target generator application. This will generate two files, <filename>.dat and <filename.xml> based on whatever name you gave in the target generator app.
-2. copy these two files into the app/resources/Uploaded folder in Studio. You can use the 'add resource' button
+2. copy these two files (.dat and .xml) into the app/resources/Uploaded folder in Studio. You can use the 'add resource' button, but be sure to add the two files
+  * note that clicking 'add resource' from the widget 'target' field will only select and copy the selected (dat) file, so will not copy the xml file.  This is a know problem, Instead, bring both files over to the resources folder first
   * if you have created a suitable guide view to help your user identify the product, you can also copy that png file over to the experience
 3. If your target was created from a pvz file, also copy that file into the resources/Uploaded folder.  It should be given the same <filename> as the target e.g. <filename>.pvz
 4. add the 360 target widget into you experience.  
@@ -53,7 +54,28 @@ various perspectives.
 Note : The 3d occluding model is (currently) not included in the runtime display. 
 
 ### Area targets
-TBC
+
+Work in progress here.- this feature is not currently available without a custom build of View
+
+Area targets provide a means of locating and tracking the user in a larger spatial environment, say a room or a small factory space. 
+Instead of tracking against an object/shape or an image, you are tracking against the environment/surroundings.
+
+Generation of the target is not included in this extension. Instead, the user should use their Vuforia Engine account to download the new Area Target Generator application, and view the documentation on the Engine website in order
+to familiarise themselves with the User Interface and functionality of this tool.
+
+In principal, the steps are as follows
+
+1. scan your environment using a recommended camera.  There is a direct integration to Matterport included in the Area Target generator, and these cameras are perfect for small-medium sized locations.
+2. upload your scan to the Matterport account. 
+3. Follow the instructions in the Area Target web documentation to identify the results of the scan and to pass this information to the Target Generator
+4. The Area Target generator will create the .dat and .xml target descriptor files
+5. (still being worked on) The area target generates a glTF representation of your space.  There's an issue in Studio which prevents this from loading (this will be fixed soon) so for now you need to 
+download the matterpak content from matterport - this includes a .obj representation of the space.  Use the obj input tools to bring this into Studio. The file should be given the same name as the target dat/xml files. 
+6. Copy the .dat and .xml target files into the resources/Uploaded folder   
+7. Drag the area target widget into your Studio canvas
+8. Select the .dat file as the target data base for the widget. The 3d representation (same name - see step 5 above) will now appear in Studio
+9. You can now place any augmented content in this space 
+10. Run the experience and you should locate and track relative to the target. Your augmentations will appear where you placed them in the editor. Note the 3d representation is not displayed.
 
 ### Cloud Image Targets
 TBC
@@ -70,4 +92,46 @@ TBC
 ## Navigation
 
 ## Misc
-TBC
+
+### Logic and state management
+Included are a collection of simple logic 'gates' (based on core principals and building blocks used in microelectronics).
+These building blocks can be used to controlling state within you application.
+
+#### Flip Flip
+The flipflop emulates a standard JK flipflop electroni circuit.  It can be set to a value (true) or reset (false) or it can be 'clocked' to toggle between these two states.
+The output Q reflects the behaviour above.  Qbar is the opposite of Q i.e. if Q is true, Qbar is false.  
+
+This useful utitlity widget can be used, for example, to turn an event say a button press, or the response from a Thingworx service call) into a usable state value (true/false) that can then be used to control other elements of the experience.
+
+#### Gate (basic filter)
+The Gate takes an input (Property) and a Value to test against, and a defined operation (Op). The output reflects the result of the operation
+e.g. is the op is 'greater than' then the output will follow the input IF the input is greater than the defined value.
+
+Gate can be used for basic threshhold and comparison tests e.g you can compare strings (A like B), you can compare dates (A before B) and you can perform numeric
+comparisons e.g. A > B.
+
+#### Increment
+A simple counter which takes two inputs - the starting value and the increment (default is 1) and when 'clocked' the value will 
+increase by the defined quotient.  
+
+Reset will set the value back to the initial value.
+
+#### Latch
+The latch capture and retains whatever boolean value (true /false) was applied to the input when clocked.
+Q and Qbar outputs are provided.
+
+#### Logic
+The logic block takes two inputs A,B and an Boolean operand.  The can be one of 
+AND,OR,NAND,NOR,XOR.  The output is the result of the boolean operation of the two values.
+
+This block can be used to check combinatorial state i.e. only when i press the two buttons on should the panel open.
+
+#### Oscillator
+The oscillator is a simple cosine wave generator wihch will drive its output between the two min/max limits defined.  The oscillation rate defines the number of cycles / second.
+The oscillator can be given a start value. 
+
+Reset will restart the oscillator at the starting value.
+
+#### Register
+The register is similar to the latch block, but works with non-boolean data.
+it can be used to store strings, numbers etc.

@@ -3,7 +3,7 @@ function twxLatch() {
     elementTag: 'twx-latch',
 
     label: 'Latch',
-    category : 'ar',
+    category: 'basic-html',
     groups    : ['OCTO Labs'],
     isVisibleInPalette: function(scope) {
       let builderSettings = scope.$root.builderSettings || {};
@@ -22,7 +22,7 @@ function twxLatch() {
       },
       {
             name: 'i',
-           label: 'I',
+           label: 'D',
         datatype: 'boolean',
          default: false,
  isBindingSource: false,
@@ -32,6 +32,15 @@ function twxLatch() {
       {
             name: 'q',
            label: 'Q',
+        datatype: 'boolean',
+         default: false,
+ isBindingSource: true,
+ isBindingTarget: false,
+       showInput: false
+      },
+      {
+            name: 'qbar',
+           label: 'Qbar',
         datatype: 'boolean',
          default: false,
  isBindingSource: true,

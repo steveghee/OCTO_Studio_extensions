@@ -3,7 +3,7 @@ function twxFlipflop() {
     elementTag: 'twx-flipflop',
 
     label: 'Flipflop',
-    category : 'ar',
+    category: 'basic-html',
     groups    : ['OCTO Labs'],
     isVisibleInPalette: function(scope) {
       let builderSettings = scope.$root.builderSettings || {};

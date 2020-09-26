@@ -3,7 +3,7 @@ function twxRegister() {
     elementTag: 'twx-register',
 
     label: 'Register',
-    category : 'ar',
+    category: 'basic-html',
     groups    : ['OCTO Labs'],
     isVisibleInPalette: function(scope) {
       let builderSettings = scope.$root.builderSettings || {};
@@ -32,7 +32,7 @@ function twxRegister() {
       {
             name: 'q',
            label: 'Register',
-        datatype: 'boolean',
+        datatype: 'string',
          default: false,
  isBindingSource: true,
  isBindingTarget: false,

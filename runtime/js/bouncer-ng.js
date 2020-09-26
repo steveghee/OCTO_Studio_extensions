@@ -18,6 +18,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         minField      : '@',
         maxField      : '@',
         limitField    : '@',
+        startField    : '@',
+        delegateField : '='
       },
       template: '<div></div>',
       link: function (scope, element, attr) {
@@ -29,18 +31,51 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                          step: 0, 
                           min: 0, 
                           max: 1, 
+                        start: 0,
                      interval: undefined 
-                   };
+                     };
+                     
+        var reset = function() {
+          scope.data.value = setStart(scope.data.start);                         
+        };
+                               
+        var setStart = function(v) {
+            
+          // this oscillator is a cosine wave, so if we set the start value
+          // we must work out what the root driving value is to get to this
+          // output = min + delta (max-min)
+          // delta  = (1 - cos(driver))/2
+          //
+          //if we invert this (we need to find 'driver' given 'output') we get
+          //
+          //driver=acos( ((2*min + (max-min))-2*output)/(max-min) )
+          
+          let max = scope.data.max;
+          let min = scope.data.min;
+          let output = scope.data.start;  // this is what we need to get to
+          
+          var driver = Math.acos( ((min + max) - 2*output)/(max-min) );
+          return driver;
+          
+        }
+                     
         var updateBouncer = function(){
           
           var rate = parseFloat(scope.rateField);
           var M2PI = 2.0 * Math.PI;
+          
           if (rate != 0.0)
             scope.data.step = M2PI * rate / 100 ;
 
-          if (scope.data.interval === undefined) {
+          if (rate > 0 && scope.data.interval === undefined) {
+              
+            // start at defined value    
+            scope.data.value = setStart(scope.data.start);
+            
+            // and off we go...
             scope.data.interval = $interval(function () {
               var data = scope.data;
+              
               if (data && scope.limitField != undefined && 
                           scope.limitField != '' && 
                           data.count >= scope.limitField) {
@@ -80,7 +115,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         };
 
         scope.$watch('bouncingField', function () {
-          scope.data.value = 0.0;
+          reset();
           updateBouncer();
         });
 
@@ -98,9 +133,21 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           updateBouncer();
         });
 
+        scope.$watch('startField', function () {
+          scope.data.start = parseFloat(scope.startField); // it changed
+          updateBouncer();
+        });
+
         scope.$watch('limitField', function () {
           updateBouncer();
         });
+            
+        scope.$watch('delegateField', function (delegate) {
+          if (delegate) {
+            delegate.reset   = function () { reset();   };
+          }
+        });
+
       }
     };
   }

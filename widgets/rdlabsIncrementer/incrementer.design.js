@@ -3,7 +3,7 @@ function twxIncrementer() {
     elementTag: 'twx-incrementer',
 
     label: 'Increment',
-    category : 'ar',
+    category: 'basic-html',
     groups    : ['OCTO Labs'],
     isVisibleInPalette: function(scope) {
       let builderSettings = scope.$root.builderSettings || {};

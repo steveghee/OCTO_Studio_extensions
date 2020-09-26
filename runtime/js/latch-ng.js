@@ -26,7 +26,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                      };
         
         var _setq = function() {
-          scope.$parent.view.wdg[scope.$parent.widgetId]['q']    = scope.data.q;
+          scope.$parent.view.wdg[scope.$parent.widgetId]['q']    =  scope.data.q;
+          scope.$parent.view.wdg[scope.$parent.widgetId]['qbar'] = !scope.data.q;
           scope.$parent.fireEvent('qclocked');
         }
 
