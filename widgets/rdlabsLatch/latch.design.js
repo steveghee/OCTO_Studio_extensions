@@ -3,7 +3,9 @@ function twxLatch() {
     elementTag: 'twx-latch',
 
     label: 'Latch',
-    category: 'basic-html',
+    // note : only specify category if you want to limit usage to a specific experience type
+    //category: 'ar',  
+    // in this case, we want this widget to be available anywhere, so we do NOT specify a category
     groups    : ['OCTO Labs'],
     isVisibleInPalette: function(scope) {
       let builderSettings = scope.$root.builderSettings || {};

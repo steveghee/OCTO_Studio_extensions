@@ -3,7 +3,9 @@ function twxBouncer() {
     elementTag: 'twx-bouncer',
 
     label: 'Oscillator',
-    category: 'mobile-2D',
+    // note : only specify category if you want to limit usage to a specific experience type
+    //category: 'ar',  
+    // in this case, we want this widget to be available anywhere, so we do NOT specify a category
     groups    : ['OCTO Labs'],
     isVisibleInPalette: function(scope) {
       let builderSettings = scope.$root.builderSettings || {};
@@ -12,8 +14,8 @@ function twxBouncer() {
 
     properties: [
       {
-            name: 'bouncing',
-           label: 'Bouncing',
+            name: 'oscillating',
+           label: 'Oscillating',
         datatype: 'boolean',
          default: false,
  isBindingTarget: true,
@@ -47,9 +49,11 @@ function twxBouncer() {
       },
       {
             name: 'start',
-           label: 'Starting value',
+           label: 'Cycle Start (0..1)',
         datatype: 'number',
          default: 0.0,
+             min: 0,
+             max: 1,
  isBindingSource: false,
  isBindingTarget: true,
        showInput: true
@@ -63,16 +67,16 @@ function twxBouncer() {
        showInput: false
       },
       {
-            name: 'bounceCount',
-           label: 'Bounces',
+            name: 'cycleCount',
+           label: '# Cycles',
         datatype: 'number',
  isBindingSource: true,
  isBindingTarget: false,
        showInput: false
       },
       {
-            name: 'limit',
-           label: 'Max Bounces',
+            name: 'maxCycles',
+           label: 'Max Cycles',
         datatype: 'number',
  isBindingSource: false,
  isBindingTarget: true,
@@ -90,7 +94,7 @@ function twxBouncer() {
     events: [
       {
          name: 'bounce',
-        label: 'Bounced'
+        label: 'Cycled'
       },
       {
          name: 'stopped',
@@ -108,7 +112,7 @@ function twxBouncer() {
     },
 
     runtimeTemplate: function (props) {
-      var tmpl = '<div ng-bouncer delegate-field="delegate" bouncing-field={{me.bouncing}} min-field={{me.min}} max-field={{me.max}} start-field={{me.start}} rate-field={{me.rate}} limit-field={{me.limit}}></div>';
+      var tmpl = '<div ng-bouncer delegate-field="delegate" bouncing-field={{me.oscillating}} min-field={{me.min}} max-field={{me.max}} start-field={{me.start}} rate-field={{me.rate}} limit-field={{me.maxCycles}}></div>';
       return tmpl;
     }
   }

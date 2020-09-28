@@ -41,6 +41,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                                
         var setStart = function(v) {
             
+          var M2PI = 2.0 * Math.PI;
+          /* 
+              
           // this oscillator is a cosine wave, so if we set the start value
           // we must work out what the root driving value is to get to this
           // output = min + delta (max-min)
@@ -56,6 +59,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           
           var driver = Math.acos( ((min + max) - 2*output)/(max-min) );
           return driver;
+          
+          */
+          
+          return scope.data.start * M2PI;
           
         }
                      
@@ -106,7 +113,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
                   // output the output variables
                   scope.$parent.view.wdg[scope.$parent.widgetId]['value']       = output;
-                  scope.$parent.view.wdg[scope.$parent.widgetId]['bounceCount'] = data.count;
+                  scope.$parent.view.wdg[scope.$parent.widgetId]['cycleCount'] = data.count;
                 }
               }
             }, 10);
@@ -135,6 +142,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
         scope.$watch('startField', function () {
           scope.data.start = parseFloat(scope.startField); // it changed
+          reset();
           updateBouncer();
         });
 
