@@ -14,6 +14,20 @@ function twxBouncer() {
 
     properties: [
       {
+        name: 'wave',
+        label: 'Waveform',
+        datatype: 'select',
+        default: 'sine',
+        isBindingTarget: true,
+        editor: 'select',
+        options: [
+            {label: 'Sine'    , value: "sine"},
+            {label: 'Saw'     , value: "saw"},
+            {label: 'Triangle', value: "triangle"},
+            {label: 'Square'  , value: "square"},
+        ],
+      },
+      {
             name: 'oscillating',
            label: 'Oscillating',
         datatype: 'boolean',
@@ -112,7 +126,7 @@ function twxBouncer() {
     },
 
     runtimeTemplate: function (props) {
-      var tmpl = '<div ng-bouncer delegate-field="delegate" bouncing-field={{me.oscillating}} min-field={{me.min}} max-field={{me.max}} start-field={{me.start}} rate-field={{me.rate}} limit-field={{me.maxCycles}}></div>';
+      var tmpl = '<div ng-bouncer delegate-field="delegate" wave-field={{me.wave}} bouncing-field={{me.oscillating}} min-field={{me.min}} max-field={{me.max}} start-field={{me.start}} rate-field={{me.rate}} limit-field={{me.maxCycles}}></div>';
       return tmpl;
     }
   }

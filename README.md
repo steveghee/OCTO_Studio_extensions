@@ -131,8 +131,9 @@ AND,OR,NAND,NOR,XOR.  The output is the result of the boolean operation of the t
 This block can be used to check combinatorial state i.e. only when I press the two buttons on should the panel open (button A AND buton B).
 
 #### Oscillator
-The oscillator is a simple cosine wave generator which will drive its output between the two min/max limits defined.  
+The oscillator is a simple selectable-wave generator which will drive its output between the two min/max limits defined.  
 Rate defines the number of cycles / second. The oscillator can be given a start value. 
+You can choose between sine, saw, triangle and square waveforms.
 
 Reset will restart the oscillator at the starting value.
 

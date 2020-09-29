@@ -19,6 +19,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         maxField      : '@',
         limitField    : '@',
         startField    : '@',
+        waveField     : '@',
         delegateField : '='
       },
       template: '<div></div>',
@@ -32,6 +33,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                           min: 0, 
                           max: 1, 
                         start: 0,
+                         wave:'sine',
                      interval: undefined 
                      };
                      
@@ -39,31 +41,32 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           scope.data.value = setStart(scope.data.start);                         
         };
                                
+        var M2PI = 2.0 * Math.PI;
+        
         var setStart = function(v) {
-            
-          var M2PI = 2.0 * Math.PI;
-          /* 
-              
-          // this oscillator is a cosine wave, so if we set the start value
-          // we must work out what the root driving value is to get to this
-          // output = min + delta (max-min)
-          // delta  = (1 - cos(driver))/2
-          //
-          //if we invert this (we need to find 'driver' given 'output') we get
-          //
-          //driver=acos( ((2*min + (max-min))-2*output)/(max-min) )
-          
-          let max = scope.data.max;
-          let min = scope.data.min;
-          let output = scope.data.start;  // this is what we need to get to
-          
-          var driver = Math.acos( ((min + max) - 2*output)/(max-min) );
-          return driver;
-          
-          */
-          
           return scope.data.start * M2PI;
-          
+        }
+        
+        var genWave = function(value) {
+          var result = undefined;
+          switch (scope.data.wave) {
+            case 'saw':  
+              result = value / M2PI;
+              break;
+            case 'triangle':  
+              let A = 1;
+              let P = Math.PI;
+              result = (A/P) * (P - Math.abs( (value % 2*P) - P));
+              break;
+            case 'square':  
+              result = (Math.sin(value)) >= 0.0 ? 1.0 : 0.0;
+              break;
+            case 'sine' : 
+            default:  
+              result = (1.0 - Math.cos(value)) / 2.0; // normalised
+              break;
+          }
+          return result;
         }
                      
         var updateBouncer = function(){
@@ -100,6 +103,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 if (scope.bouncingField != undefined && 
                     scope.bouncingField === 'true') {
 
+                  data.bounce = genWave(data.value); //(1.0 - Math.cos(data.value)) / 2.0; // normalised
+                  var output = data.min + data.bounce * (data.max - data.min); 
+
+                  // output the output variables
+                  scope.$parent.view.wdg[scope.$parent.widgetId]['value']       = output;
+                  scope.$parent.view.wdg[scope.$parent.widgetId]['cycleCount'] = data.count;
+                  
                   data.value += data.step;
                   if (data.value > M2PI) {
                     data.value -= M2PI;
@@ -108,15 +118,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                     // we've complete 1 cycle
                     scope.$parent.fireEvent('bounce');
                   }
-                  data.bounce = (1.0 - Math.cos(data.value)) / 2.0; // normalised
-                  var output = data.min + data.bounce * (data.max - data.min); 
-
-                  // output the output variables
-                  scope.$parent.view.wdg[scope.$parent.widgetId]['value']       = output;
-                  scope.$parent.view.wdg[scope.$parent.widgetId]['cycleCount'] = data.count;
+                
                 }
               }
-            }, 10);
+            }, 10); // this runs at 100Hz.  too fast?
           }
 
         };
@@ -147,6 +152,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         });
 
         scope.$watch('limitField', function () {
+          updateBouncer();
+        });
+            
+        scope.$watch('waveField', function () {
+          scope.data.wave = scope.waveField != undefined ? scope.waveField : 'sine';
           updateBouncer();
         });
             
