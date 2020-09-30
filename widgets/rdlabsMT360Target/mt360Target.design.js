@@ -15,7 +15,6 @@
     overlay.rx.alwaysWriteAttribute = true; // this flag is needed for any defaults different from the browser defaults
     overlay.ry = Twx3dCommon.common3dProp('ry');
     overlay.rz = Twx3dCommon.common3dProp('rz');
-    overlay.rx.isVisible = false; // user cannot rotate Model marker
     overlay.rx.isBindingTarget = false;
     overlay.ry.isBindingTarget = false;
     overlay.rz.isBindingTarget = false;
