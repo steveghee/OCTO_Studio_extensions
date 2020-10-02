@@ -101,7 +101,7 @@ function twxFinder() {
     ],
     
     dependencies: {
-      files         : ['js/linq.js', 'js/finder-ng.js', 'js/sxsl.js'],
+      files         : ['js/linq.js', 'js/finder-ng.js'],
       angularModules: ['finder-ng']
     },
 
