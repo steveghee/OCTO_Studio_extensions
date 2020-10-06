@@ -34,6 +34,32 @@ function twxList3D() {
        showInput: true
       },
       {
+            name: 'listdata',
+           label: 'ves-basic-web-widgets-extension:Data',
+        datatype: 'infotable',
+ isBindingTarget: true,
+ isBindingSource: true,
+       showInput: false,
+       isVisible: true
+      },
+      {
+            name: 'datawindow',
+           label: 'Data Window',
+        datatype: 'infotable',
+ isBindingTarget: true,
+ isBindingSource: true,
+       showInput: false,
+       isVisible: false
+      },
+      {
+            name: 'value',
+           label: 'Value',
+        datatype: 'infotable',
+ isBindingSource: true,
+ isBindingTarget: false,
+       showInput: false,
+      },
+      {
             name: 'buttonheight',
            label: 'Button Height',
         datatype: 'string',
@@ -147,32 +173,6 @@ function twxList3D() {
  isBindingSource: false,
  isBindingTarget: true,
        showInput: true
-      },
-      {
-            name: 'listdata',
-           label: 'ves-basic-web-widgets-extension:Data',
-        datatype: 'infotable',
- isBindingTarget: true,
- isBindingSource: true,
-       showInput: false,
-       isVisible: true
-      },
-      {
-            name: 'datawindow',
-           label: 'Data Window',
-        datatype: 'infotable',
- isBindingTarget: true,
- isBindingSource: true,
-       showInput: false,
-       isVisible: false
-      },
-      {
-            name: 'value',
-           label: 'Value',
-        datatype: 'infotable',
- isBindingSource: true,
- isBindingTarget: false,
-       showInput: false,
       },
       {
             name: 'visible',
