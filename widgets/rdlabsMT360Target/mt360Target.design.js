@@ -103,7 +103,7 @@
     var template = Twx3dCommon.buildRuntimeTemplate("twx-dt-target", props, true);
     
     // create a design template - this is a 3D image (can be dragged etc.)
-    var designTemplate = '<twx-dt-model id="#widgetId#" src="{{me.maskurl}}" opacity="1" hidden="false" sx="1" sy="1" sz="1" x="0" y="0" z="0" rx="-90" ry="0" rz="0" occlude="true" decal="false" shader="desaturatedgl"></twx-dt-model>';
+    var designTemplate = '<twx-dt-model id="#widgetId#" src="{{me.maskurl}}" opacity="1" hidden="false" sx="1" sy="1" sz="1" x="{{me.x}}" y="{{me.y}}" z="{{me.z}}" rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" occlude="true" decal="false" shader=""></twx-dt-model>';
 
     var retObj = {
         
