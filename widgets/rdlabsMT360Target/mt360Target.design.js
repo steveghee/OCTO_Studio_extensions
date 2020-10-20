@@ -9,22 +9,20 @@
 
   function mtTarget( widgetLabel ) {
     var overlay = {};
-
+    
+    // lets use defaults 
     overlay.rx = Twx3dCommon.common3dProp('rx');
-    overlay.rx.default = -90;
-    overlay.rx.alwaysWriteAttribute = true; // this flag is needed for any defaults different from the browser defaults
     overlay.ry = Twx3dCommon.common3dProp('ry');
     overlay.rz = Twx3dCommon.common3dProp('rz');
     overlay.rx.isBindingTarget = false;
     overlay.ry.isBindingTarget = false;
     overlay.rz.isBindingTarget = false;
     overlay.x  = Twx3dCommon.common3dProp('x');
-    overlay.x. isBindingTarget = false;
     overlay.y  = Twx3dCommon.common3dProp('y');
-    overlay.y. isBindingTarget = false;
     overlay.z  = Twx3dCommon.common3dProp('z');
+    overlay.x. isBindingTarget = false;
+    overlay.y. isBindingTarget = false;
     overlay.z. isBindingTarget = false;
-    overlay.z. default = 0;
 
     overlay.placeholder_img = Twx3dCommon.getPlaceHolderImgProperty('/extensions/images/360target.png');
     
