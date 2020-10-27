@@ -20,9 +20,9 @@ function twxFinder() {
         showInput: true
       },
       {
-        name: 'src',
-        label: 'Src',
-        datatype: 'resource_url',
+        name: 'modelid',
+        label: 'Model ID',
+        datatype: 'string',
         default: '',
         isBindingTarget: true,
         showInput: true
@@ -59,7 +59,25 @@ function twxFinder() {
       {
         name: 'value',
         label: 'Value',
-        datatype: 'number',
+        datatype: 'string',
+        isBindingSource: false,
+        isBindingTarget: true,
+        showInput: true
+      },
+      {
+        name: 'category',
+        label: 'Category',
+        datatype: 'string',
+        default: '',
+        isVisible:false, 
+        isBindingTarget: true,
+        showInput: true
+      },
+      {
+        name: 'include',
+        label: 'Fields to Include',
+        datatype: 'string',
+        default: '',
         isBindingSource: false,
         isBindingTarget: true,
         showInput: true
@@ -111,7 +129,7 @@ function twxFinder() {
     },
 
     runtimeTemplate: function (props) {
-      var tmpl = '<div ng-finder results-field="me.results" count-field="me.count" auto-field={{me.auto}} src-field={{me.src}} name-field={{me.name}}  op-field={{me.op}}  value-field={{me.value}}  delegate-field="delegate"></div>';
+      var tmpl = '<div ng-finder results-field="me.results" count-field="me.count" include-field={{me.include}} auto-field={{me.auto}} modelid-field={{me.modelid}} category-field={{me.category}} name-field={{me.name}}  op-field={{me.op}}  value-field={{me.value}}  delegate-field="delegate"></div>';
       return tmpl;
     }
   }

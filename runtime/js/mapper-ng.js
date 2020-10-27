@@ -68,7 +68,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
         var apply = function(re) {
           scope.data.prev = scope.data.results;
-          scope.data.results = scope.infoField;
+          scope.data.results = (Array.isArray(scope.infoField)) ? scope.infoField : [];
 
           // work out how many unique NEW items exist
           var left = (scope.data.results != undefined && scope.data.results.length > 0 &&
@@ -87,7 +87,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                      : scope.data.prev;
             tolist(diff,(scope.data.polarity === 'true') ? unlite : dotlite, scope.renderer);
           }
-
+          
           tolist(left, hilite, scope.renderer);
 
           // signal we are done

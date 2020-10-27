@@ -45,7 +45,7 @@ function twxMapper() {
       {
             name: 'data',
            label: 'Data',
-        datatype: 'string',
+        datatype: 'Infotable',
          default: false,
  isBindingTarget: true,
        showInput: true
