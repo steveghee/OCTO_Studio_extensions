@@ -68,18 +68,23 @@ var findcmds = {
             try {
                 
               var selectFunc = function(idpath) {
+                    
+                var retobj = { model: scope.data.id, 
+                                path: idpath 
+                             };
+                              
                 if (scope.includeField != undefined && scope.includeField != '') {
-                  var retobj = {path:idpath};
-                  //now lets see ig we can get the other properies that user is asking for 
+                                   
+                  //now lets see if we can get the other properies that user is asking for 
                   var ask = scope.includeField.split(',');
                   var res = this.get(idpath, ask);
-                  if (res != undefined && res.length === ask.length) for(var p=0;p<ask.length;p++) {
+                  if (res != undefined && res.length === ask.length) for (var p=0;p<ask.length;p++) {
+                    // add each result as a new property in the return body  
                     retobj[ask[p]] = res[p];
                   }
-                  return retobj;
                 }
-                else 
-                  return {path:idpath};
+              
+                return retobj;
               }
   
               let cmd            = findcmds[scope.opField];
