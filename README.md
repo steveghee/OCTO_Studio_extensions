@@ -84,6 +84,21 @@ TBC
 TBC
 
 ## Inputs
+UI elements such as Hololens2-ready UI controls
+TBC
+
+## Metadata 
+### Finder
+Provides real-time metadata shearch within specified model ID.
+Results can be bound to Mapper (see below) for visualisation
+TBC
+
+### Mapper
+Takes an input of selected model item ids and applied highlight shading
+TBC 
+
+### MetaGetta
+Takes an input of selected model item ids and extracts metadata
 TBC
 
 ## Containers
