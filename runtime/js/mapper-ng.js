@@ -82,6 +82,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           scope.data.prev = scope.data.results;
           scope.data.results = (Array.isArray(scope.infoField)) ? scope.infoField : [];
           
+          // if the data item has 'selectedRows' then lets use the SUBSET of data to control the list
+          if (scope.data.results != undefined && scope.infoField.selectedRows != undefined)
+            scope.data.results = scope.infoField.selectedRows;
+          
           if (scope.data.results === undefined || scope.data.results.length === 0) {
             scope.data.undo = (scope.data.undo != undefined) 
                             ? Enumerable.from(scope.data.undo).union([{model:scope.data.model, path:'/'}]).toArray()
@@ -204,6 +208,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
         scope.$watch('infoField', function () {
           updateMapper();
+        });
+            
+        // if there is a SUBSET of data defined, lets watch to see if that list changes    
+        scope.$watch(
+          function() { return JSON.stringify(scope.infoField.selectedRows)},
+          function(value) {
+            if (value != undefined) 
+              apply();
         });
       }
     };
