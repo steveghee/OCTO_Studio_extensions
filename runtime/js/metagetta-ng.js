@@ -33,16 +33,22 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         // look through the presented/selected items, picking out the metadata
         //
         var apply = function() {
-            if (scope.data.id != undefined) PTC.Metadata.fromId(scope.data.id)
-                                               .then( (meta) => {
-                              
+            if (scope.data.id != undefined && scope.data.info != undefined) 
+              PTC.Metadata.fromId(scope.data.id)
+                 .then( (meta) => {
+                                                     
+                  // if we have specified one or more property names ...                                   
                   if (scope.data.include != undefined && scope.data.include.length > 0) {
+                      
                     scope.data.results = [];  
                     for (var i=0;i<scope.data.info.length;i++) {
+                        
                       var idpath = scope.data.info[i].path;      
+                        
                       //now lets see if we can get the other properies that user is asking for 
                       var ask = scope.data.include;
                       var res = meta.get(idpath, ask);
+                      
                       if (res != undefined && res.length === ask.length) {
                         var retobj = {};  
                         retobj.model = scope.data.id;  
@@ -54,6 +60,27 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                         scope.data.results.push(retobj);
                       }
                     }
+                  } else {
+                    // otherwise, let's see if there a list of properties we can get  
+                    scope.data.results = [];  
+                    for (var i=0;i<scope.data.info.length;i++) {
+                      var idpath = scope.data.info[i].path;      
+                      var res = meta._getRawProps()[idpath];
+                      console.log(res);
+                      
+                      if (res != undefined) {
+                        var retobj = {};  
+                        retobj.model = scope.data.id;  
+                        retobj.path  = idpath;  
+                        retobj.categories = {};
+                        for (var p in res) {
+                          // add each result as a new property in the return body  
+                          retobj.categories[p] = res[p];
+                        }
+                        scope.data.results.push(retobj);
+                      }
+                    }
+                     
                   }
               })
               .finally( () => {
@@ -86,7 +113,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         // watch for changes
         //
         scope.$watch('includeField', function () {
-          scope.data.include = (scope.includeField != undefined) ? scope.includeField.split(',') : undefined;
+          scope.data.include = (scope.includeField != undefined && scope.includeField.length>0) ? scope.includeField.split(',') : undefined;
           apply();
         });
             
