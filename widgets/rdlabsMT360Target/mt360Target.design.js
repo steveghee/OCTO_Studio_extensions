@@ -7,7 +7,7 @@
 
 (function(twxAppBuilder){
 
-  function mtTarget( widgetLabel ) {
+  function octo360mtTarget( widgetLabel ) {
     var overlay = {};
     
     // lets use defaults 
@@ -105,7 +105,7 @@
 
     var retObj = {
         
-         elementTag: "threesixty-dt-target",
+         elementTag: "octothreesixty-dt-target",
               label: widgetLabel,
  isVisibleInPalette: true,
            category: 'ar',
@@ -191,10 +191,10 @@
     return retObj;
   }
 
-  function mt360Target() {
-    var widget = Twx3dCommon.getWidget( '360 Model Target', mtTarget );
+  function octo360mt360Target() {
+    var widget = Twx3dCommon.getWidget( 'OCTO 360 Model Target', octo360mtTarget );
     return widget;
   }
-  twxAppBuilder.widget('mt360Target', mt360Target);
+  twxAppBuilder.widget('octo360mt360Target', octo360mt360Target);
 
 })(twxAppBuilder);

@@ -1,14 +1,14 @@
 if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.exports === exports) {
-  module.exports = 'press3D-ng';
+  module.exports = 'octopress3D-ng';
 }
 
 (function () {
   'use strict';
 
-  var press3DModule = angular.module('press3D-ng', []);
-  press3DModule.directive('ngPress3d', ['$timeout', '$http', '$window', '$injector', ngPress3D]);
+  var press3DModule = angular.module('octopress3D-ng', []);
+  press3DModule.directive('ngOctopress3d', ['$timeout', '$http', '$window', '$injector', ngOctopress3D]);
 
-  function ngPress3D($timeout, $http, $window, $injector) {
+  function ngOctopress3D($timeout, $http, $window, $injector) {
 
     return {
       restrict: 'EA',
