@@ -1,6 +1,6 @@
 function twxImageButton3D() {
   return {
-    elementTag: 'twx-imagebutton3d',
+    elementTag: 'octo-imagebutton3d',
       
     label    : '3D Image Button',
     

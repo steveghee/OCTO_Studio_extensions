@@ -1,6 +1,6 @@
 function twxBusy3D() {
   return {
-    elementTag: 'twx-busy3d',
+    elementTag: 'octo-busy3d',
       
     label    : 'Busy Indicator',
     

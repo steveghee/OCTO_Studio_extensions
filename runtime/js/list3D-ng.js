@@ -22,6 +22,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         idField            : '@',  
         disabledField      : '@',
         backerField        : '@',
+        multiselectField   : '@',
         listdataField      : '=',
         datawindowField    : '=',
         valueField         : '=',
@@ -39,6 +40,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                    height: 0.04,
                      rows: 1, 
                      cols: 1,
+                    multi: true,
                 rowIndex : 0,
                 fontColor: '#ffffff',
                   pressed: false,
@@ -173,13 +175,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         //////////////////////////////////////////////////////////////////////
         // monitor state - these wont change often
         //
-        scope.$watchGroup(['idField','widthField','heightField','fontField','rowsField','colsField'], function () {
+        scope.$watchGroup(['idField','widthField','heightField','fontField','rowsField','colsField','multiselectField'], function () {
           scope.data.id        = (scope.idField     != undefined) ? scope.idField                 : undefined;
           scope.data.width     = (scope.widthField  != undefined) ? parseFloat(scope.widthField)  : 0.04;
           scope.data.height    = (scope.heightField != undefined) ? parseFloat(scope.heightField) : 0.04;
           scope.data.fontColor = (scope.fontField   != undefined) ? scope.fontField               : '#ffffff';
           scope.data.rows      = (scope.rowsField   != undefined) ? parseInt(scope.rowsField)     : 1;
           scope.data.cols      = (scope.colsField   != undefined) ? parseInt(scope.colsField)     : 1;
+          scope.data.multi     = (scope.multiselectField != undefined) ? isbool(scope.multiselectField) : true; // default to true
         });
         
         //////////////////////////////////////////////////////////////////////
@@ -242,6 +245,16 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             
             // update the output field and fire any events
             if (changeIndex != undefined) {
+                
+              // if we;re not in multiselect mode, we must now deselect all the other buttons  
+              if (scope.data.multi === false) {  
+                let todo = scope.data.data.length;
+                let newp = scope.datawindowField[changeIndex-start].pressed;
+                for (var i=0;i<todo;i++) {
+                  scope.data.data[i].pressed    = (i === changeIndex) ?  newp : false;
+                  scope.data.data[i].notpressed = (i === changeIndex) ? !newp : true;
+                }
+              }
                 
               var selrow = { pressed: scope.data.data[changeIndex].pressed,
                                value: scope.data.data[changeIndex].value };  

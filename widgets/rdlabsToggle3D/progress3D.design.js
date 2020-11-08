@@ -1,6 +1,6 @@
 function twxProgress3D() {
   return {
-    elementTag: 'twx-progress3d',
+    elementTag: 'octo-progress3d',
       
     label    : '3D Progress',
     

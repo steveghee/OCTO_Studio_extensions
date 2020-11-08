@@ -1,14 +1,14 @@
 if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.exports === exports) {
-  module.exports = 'toggle3D-ng';
+  module.exports = 'octotoggle3D-ng';
 }
 
 (function () {
   'use strict';
 
-  var Toggle3DModule = angular.module('toggle3D-ng', []);
-  Toggle3DModule.directive('ngToggle3d', ['$timeout', '$http', '$window', '$injector', ngToggle3D]);
+  var Toggle3DModule = angular.module('octotoggle3D-ng', []);
+  Toggle3DModule.directive('ngOctotoggle3d', ['$timeout', '$http', '$window', '$injector', ngOctotoggle3D]);
 
-  function ngToggle3D($timeout, $http, $window, $injector) {
+  function ngOctotoggle3D($timeout, $http, $window, $injector) {
 
     return {
       restrict: 'EA',

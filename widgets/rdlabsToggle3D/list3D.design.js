@@ -1,6 +1,6 @@
 function twxList3D() {
   return {
-    elementTag: 'twx-list3d',
+    elementTag: 'octo-list3d',
       
     label    : '3D List',
     
@@ -208,6 +208,14 @@ function twxList3D() {
        showInput: true
       },
       {
+            name: 'multiselect',
+           label: 'Multi Select',
+        datatype: 'boolean',
+         default: true,
+ isBindingTarget: true,
+       showInput: true
+      },
+      {
             name: 'disabled',
            label: 'ves-basic-web-widgets-extension:Disabled',
         datatype: 'boolean',
@@ -241,8 +249,8 @@ function twxList3D() {
     ],
     
     dependencies: {
-      files         : ['js/list3D-ng.js', 'js/press3D-ng.js', 'js/image3D-ng.js', 'images/**'],
-      angularModules: ['list3D-ng','press3D-ng', 'image3D-ng']
+      files         : ['js/list3D-ng.js', 'js/octopress3D-ng.js', 'js/image3D-ng.js', 'images/**'],
+      angularModules: ['list3D-ng','octopress3D-ng', 'image3D-ng']
     },
   
     designTemplate: function () {
@@ -259,7 +267,7 @@ function twxList3D() {
     runtimeTemplate: function (props, twxWidgetEl, fullOriginalDoc, $, projectSettings) {
       var forholo = (projectSettings.projectType === 'eyewear');
         
-      var tmpl = '<div ng-list3d class="ng-hide list3DWidget ' + props.class + '" id-field="' + props.widgetId + '" isholo-field='+forholo+' rows-field={{me.rows}} cols-field={{me.cols}} height-field={{me.buttonheight}} width-field={{me.buttonwidth}} disabled-field={{me.disabled}} listdata-field="me.listdata" datawindow-field="me.datawindow" value-field="me.value" upvis-field="me.upvis" dnvis-field="me.dnvis" delegate-field="delegate"></div>\n';
+      var tmpl = '<div ng-list3d class="ng-hide list3DWidget ' + props.class + '" id-field="' + props.widgetId + '" isholo-field='+forholo+' multiselect-field={{me.multiselect}} rows-field={{me.rows}} cols-field={{me.cols}} height-field={{me.buttonheight}} width-field={{me.buttonwidth}} disabled-field={{me.disabled}} listdata-field="me.listdata" datawindow-field="me.datawindow" value-field="me.value" upvis-field="me.upvis" dnvis-field="me.dnvis" delegate-field="delegate"></div>\n';
       var ctrl = '';
       
       // we build up an array of buttons, cols wide, rows deep

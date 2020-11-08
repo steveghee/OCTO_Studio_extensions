@@ -1,6 +1,6 @@
 function twxOCTOPress3D() {
   return {
-    elementTag: 'twx-octopress3d',
+    elementTag: 'octo-press3d',
       
     label    : 'OCTO 3D Press Button',
     
