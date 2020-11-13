@@ -39,6 +39,7 @@ var findcmds = {
         modelidField : '@',
         includeField : '@',
         resultsField : '=',
+        selectedField: '=',
         countField   : '=',
         delegateField: '='
       },
@@ -99,6 +100,7 @@ var findcmds = {
           })
           .finally( () => {
             scope.resultsField = scope.data.results != undefined ? scope.data.results : [];
+            scope.selectedField= [];       
             scope.countField   = scope.data.results != undefined ?scope.data.results.length : 0;
             scope.$parent.fireEvent('complete');
             scope.$parent.$applyAsync();
@@ -125,6 +127,16 @@ var findcmds = {
           scope.data.id   = (scope.modelidField != undefined && scope.modelidField != '') ? scope.modelidField : undefined;
           updateFinder();
         });
+            
+        // if there is a SUBSET of data defined, lets watch to see if that list changes    
+        scope.$watch(
+          function() { return scope.resultsField != undefined ? JSON.stringify(scope.resultsField.selectedRows) : ''},
+          function(value) {
+            if (value != undefined) 
+              scope.selectedField = scope.resultsField.selectedRows;                 
+              apply();
+        });
+
 
         scope.$watch('delegateField', function (delegate) {
           if (delegate) {

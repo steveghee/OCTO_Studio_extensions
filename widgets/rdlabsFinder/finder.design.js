@@ -91,6 +91,14 @@ function twxFinder() {
         showInput: false
       },
       {
+        name: 'selected',
+        label: 'Selected',
+        datatype: 'Infotable',
+  isBindingSource: true,
+  isBindingTarget: false,
+        showInput: false
+      },
+      {
         name: 'count',
         label: 'Count',
         datatype: 'number',
@@ -129,7 +137,7 @@ function twxFinder() {
     },
 
     runtimeTemplate: function (props) {
-      var tmpl = '<div ng-finder results-field="me.results" count-field="me.count" include-field={{me.include}} auto-field={{me.auto}} modelid-field={{me.modelid}} category-field={{me.category}} name-field={{me.name}}  op-field={{me.op}}  value-field={{me.value}}  delegate-field="delegate"></div>';
+      var tmpl = '<div ng-finder results-field="me.results" selected-field="me.selected" count-field="me.count" include-field={{me.include}} auto-field={{me.auto}} modelid-field={{me.modelid}} category-field={{me.category}} name-field={{me.name}}  op-field={{me.op}}  value-field={{me.value}}  delegate-field="delegate"></div>';
       return tmpl;
     }
   }
