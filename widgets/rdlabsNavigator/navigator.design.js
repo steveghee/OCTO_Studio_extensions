@@ -235,7 +235,7 @@ function twxNavigator() {
     ],
     
     dependencies: {
-      files         : ['js/matrix.js', 'js/navigationHelper.js', 'js/navigator-ng.js', 'images/navipad.pvz', 'images/navphonl.pvz', 'images/navphonp.pvz', 'images/navhead.pvz', 'images/navfeet.png', 'images/navSphere.pvz'],
+      files         : ['js/matrix.js', 'js/navigationHelper.js', 'js/navigator-ng.js', 'images/navipad.pvz', 'images/navphonl.pvz', 'images/navphonp.pvz', 'images/navhead.pvz', 'images/navfeet.png', 'images/navSphere.pvz', 'images/navArrow.pvz'],
       angularModules: ['navigator-ng']
     },
 

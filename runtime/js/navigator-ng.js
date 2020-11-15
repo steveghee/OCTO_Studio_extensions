@@ -52,7 +52,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                        args: undefined,
                 tunnelColor: undefined,
                   feetColor: undefined,
-                  tunnelSrc: 'extensions/images/navSphere.pvz',
+                  tunnelSrc: undefined,
                        head: false,
                     visible: undefined,
                     pending: undefined,
@@ -147,7 +147,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           scope.data.id          = (scope.idField          != undefined) ? scope.idField : undefined;
           scope.data.steps       = (scope.stepsField       != undefined) ? parseFloat(scope.stepsField) : 15;                 
           scope.data.tunnelColor = (scope.tunnelcolorField != undefined) ? scope.tunnelcolorField.split(',') : [1,1,0];
-          scope.data.tunnelSrc   = (scope.tunnelsrcField   != undefined && scope.tunnelsrcField != '') ? scope.tunnelsrcField : 'extensions/images/navSphere.pvz';
+          scope.data.tunnelSrc   = (scope.tunnelsrcField   != undefined && scope.tunnelsrcField != '') ? scope.tunnelsrcField : undefined;
           scope.data.isholo      = (scope.isholoField      != undefined) ? isbool(scope.isholoField) : false;
         });
 
@@ -227,7 +227,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             let rp     = scope.data.poidata[scope.data.poiselected];
             let selrow = { position: rp.position, 
                                gaze: rp.gaze, 
-                               up: rp.up 
+                                 up: rp.up 
                          }; // we only want these fields
             
             var locator = { position: new Vector4().FromString(selrow.position),

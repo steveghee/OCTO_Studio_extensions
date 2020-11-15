@@ -177,14 +177,14 @@ function Matrix4() {
         n11 = this.m[0][0], n12 = this.m[0][1], n13 = this.m[0][2], n14 = this.m[0][3],
         n21 = this.m[1][0], n22 = this.m[1][1], n23 = this.m[1][2], n24 = this.m[1][3],
         n31 = this.m[2][0], n32 = this.m[2][1], n33 = this.m[2][2], n34 = this.m[2][3],
-	n41 = this.m[3][0], n42 = this.m[3][1], n43 = this.m[3][2], n44 = this.m[3][3],
+        n41 = this.m[3][0], n42 = this.m[3][1], n43 = this.m[3][2], n44 = this.m[3][3],
         
-     	t11 = n23 * n34 * n42 - n24 * n33 * n42 + n24 * n32 * n43 - n22 * n34 * n43 - n23 * n32 * n44 + n22 * n33 * n44,
-	t12 = n14 * n33 * n42 - n13 * n34 * n42 - n14 * n32 * n43 + n12 * n34 * n43 + n13 * n32 * n44 - n12 * n33 * n44,
-	t13 = n13 * n24 * n42 - n14 * n23 * n42 + n14 * n22 * n43 - n12 * n24 * n43 - n13 * n22 * n44 + n12 * n23 * n44,
-	t14 = n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34;
+        t11 = n23 * n34 * n42 - n24 * n33 * n42 + n24 * n32 * n43 - n22 * n34 * n43 - n23 * n32 * n44 + n22 * n33 * n44,
+        t12 = n14 * n33 * n42 - n13 * n34 * n42 - n14 * n32 * n43 + n12 * n34 * n43 + n13 * n32 * n44 - n12 * n33 * n44,
+        t13 = n13 * n24 * n42 - n14 * n23 * n42 + n14 * n22 * n43 - n12 * n24 * n43 - n13 * n22 * n44 + n12 * n23 * n44,
+        t14 = n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34;
         
-	var det = n11 * t11 + n21 * t12 + n31 * t13 + n41 * t14;
+        var det = n11 * t11 + n21 * t12 + n31 * t13 + n41 * t14;
         return det;
     },
 
@@ -196,22 +196,21 @@ function Matrix4() {
         n11 = this.m[0][0], n12 = this.m[0][1], n13 = this.m[0][2], n14 = this.m[0][3],
         n21 = this.m[1][0], n22 = this.m[1][1], n23 = this.m[1][2], n24 = this.m[1][3],
         n31 = this.m[2][0], n32 = this.m[2][1], n33 = this.m[2][2], n34 = this.m[2][3],
-	n41 = this.m[3][0], n42 = this.m[3][1], n43 = this.m[3][2], n44 = this.m[3][3],
+        n41 = this.m[3][0], n42 = this.m[3][1], n43 = this.m[3][2], n44 = this.m[3][3],
         
-     	t11 = n23 * n34 * n42 - n24 * n33 * n42 + n24 * n32 * n43 - n22 * n34 * n43 - n23 * n32 * n44 + n22 * n33 * n44,
-	t12 = n14 * n33 * n42 - n13 * n34 * n42 - n14 * n32 * n43 + n12 * n34 * n43 + n13 * n32 * n44 - n12 * n33 * n44,
-	t13 = n13 * n24 * n42 - n14 * n23 * n42 + n14 * n22 * n43 - n12 * n24 * n43 - n13 * n22 * n44 + n12 * n23 * n44,
-	t14 = n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34;
+       	t11 = n23 * n34 * n42 - n24 * n33 * n42 + n24 * n32 * n43 - n22 * n34 * n43 - n23 * n32 * n44 + n22 * n33 * n44,
+        t12 = n14 * n33 * n42 - n13 * n34 * n42 - n14 * n32 * n43 + n12 * n34 * n43 + n13 * n32 * n44 - n12 * n33 * n44,
+        t13 = n13 * n24 * n42 - n14 * n23 * n42 + n14 * n22 * n43 - n12 * n24 * n43 - n13 * n22 * n44 + n12 * n23 * n44,
+        t14 = n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34;
         
-	var det = n11 * t11 + n21 * t12 + n31 * t13 + n41 * t14;
-	if ( det === 0 ) {
+        var det = n11 * t11 + n21 * t12 + n31 * t13 + n41 * t14;
+        if ( det === 0 ) {
             var msg = "Invert() can't invert matrix, determinant is 0";
             if ( throwOnDegenerate === true ) {
-		throw new Error( msg );
+                throw new Error( msg );
             } else {
-		console.warn( msg );
+                console.warn( msg );
             }
-            
             return new Matrix4();
         }
 
@@ -322,7 +321,16 @@ function Matrix4() {
                   [0.0-(light.v[0]*ground.v[3]), 0.0-(light.v[1]*ground.v[3]), 0.0-(light.v[2]*ground.v[3]), dot-(light.v[3]*ground.v[3])]];
         return this;
     }
-
+    
+    // builds a lookat matrix where the Z (gaze) axis will point in the 
+    // direction specified by the at,from points
+    this.makeLookat = function(at,from,up) {
+        var lookv  = at.Sub(from).Normalize();
+        var xd     = up.Normalize().CrossP(lookv.Normalize());
+        var nup    = lookv.CrossP(xd).Normalize(); // recalc up
+        return       new Matrix4().Set4V(xd,nup,lookv,from);
+    }
+    
     this.Flatten = function () {
         var f = [];
         for (var i = 0; i < 4; i++) {
@@ -543,7 +551,7 @@ function Vector4() {
 
     this.DotP = function (v2) {
         // cos(theta)
-        var cost = (this.v[0] * v2.v[0]) + (this.v[1] * v2.v[1]) + (this.v[2] * v2.v[2]) + (this.v[3] * v2.v[3]);
+        var cost = (this.v[0] * v2.v[0]) + (this.v[1] * v2.v[1]) + (this.v[2] * v2.v[2]);
         return cost;
     }
 
@@ -580,25 +588,22 @@ function Vector4() {
     }
     
     this.Tween = function(v2,d) {
-      // result = a + (b-a).d, assuming d normalised 0..1
-      //        = v2.Sub(this).Scale(d).Add(this);
-      var mid = new Vector4().Set3(
-          	(v2.v[0] - this.v[0]) * d + this.v[0],
-        	(v2.v[1] - this.v[1]) * d + this.v[1],
-        	(v2.v[2] - this.v[2]) * d + this.v[2]   );        
-      return mid;
+        // result = a + (b-a).d, assuming d normalised 0..1
+        //        = v2.Sub(this).Scale(d).Add(this);
+        var mid = new Vector4().Set3(
+                                     (v2.v[0] - this.v[0]) * d + this.v[0],
+                                     (v2.v[1] - this.v[1]) * d + this.v[1],
+                                     (v2.v[2] - this.v[2]) * d + this.v[2]   );        
+        return mid;
     }
     
     this.Tween2 = function(v2,d,c) {
         var saturate = function(x) {
-            if (Math.abs(x) < 1e-6)
-                return 0;
-            else if (x > 1)
-                return 1;  
-            else 
-                return x;
+            if (Math.abs(x) < 1e-6) return 0;
+            else if (x > 1) return 1;  
+            else return x;
         }
-  
+        
         // result = a + (b-a).d, assuming d normalised 0..1
         if (c!=undefined && c===true) d=saturate(d);  
         var i = v2.Sub(this).Scale(d).Add(this);
@@ -614,16 +619,16 @@ function Vector4() {
     
     // raytrace this point from starting point x0 and direction x1
     this.Raytrace = function(x0,x1) {
-      var nx1 = x1.Normalize();  
-      var x2  = x0.Add(nx1);
-      var n21 = x2.Sub(x0);
-      var n10 = x0.Sub(this);
-      var n1  = n10.DotP(n21);
-      var l21 = n21.Length();
-      var t   = - n1 / (l21 * l21);
-      var l10 = n10.Length();
-      var d2   = ((l10*l10)*(l21*l21)-(n1*n1))/(l21*l21);
-      return { t:t, d:Math.sqrt(d2) };
+        var nx1 = x1.Normalize();  
+        var x2  = x0.Add(nx1);
+        var n21 = x2.Sub(x0);
+        var n10 = x0.Sub(this);
+        var n1  = n10.DotP(n21);
+        var l21 = n21.Length();
+        var t   = - n1 / (l21 * l21);
+        var l10 = n10.Length();
+        var d2  = ((l10*l10)*(l21*l21)-(n1*n1))/(l21*l21);
+        return { t:t, d:Math.sqrt(d2) };
     }
   
     this.Transform = function(b) {
