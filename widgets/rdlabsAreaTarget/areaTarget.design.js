@@ -101,7 +101,7 @@
 
     var retObj = {
         
-         elementTag: "area-dt-target",
+         elementTag: "octo_area-dt-target",
               label: widgetLabel,
  isVisibleInPalette: function(scope) {
                        let builderSettings = scope.$root.builderSettings || {};
@@ -179,7 +179,7 @@
   }
 
   function areaTarget() {
-    var widget = Twx3dCommon.getWidget( 'Area Target', areaTargetDefinition );
+    var widget = Twx3dCommon.getWidget( 'OCTO Area Target', areaTargetDefinition );
     return widget;
   }
   twxAppBuilder.widget('areaTarget', areaTarget);
