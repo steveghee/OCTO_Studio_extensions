@@ -33,7 +33,7 @@
          default: 'change me',
      placeholder: 'Bind/Enter access key',
  isBindingTarget: true,
-           tFrag: 'ng-src="{{\'vuforia-cloud:///?id=\' + me.markerId + \'&access=\' + me.access + \'&secret=\' + me.secret}}" guide-src="../extensions/images/Chateau_phantom.png"',
+           tFrag: 'ng-src="{{\'vuforia-cloud:///?id=\' + me.markerId + \'&access=\' + me.access + \'&secret=\' + me.secret}}"',
        sortOrder: 1
     };
 
@@ -47,7 +47,19 @@
        sortOrder: 2
     };
 
-    overlay.width = {
+    overlay.imgurl = {
+            name: 'url',
+           label: 'ves-ar-extension:Image',
+        datatype: 'resource_url',
+  resource_image: true,
+ allowedPatterns: ['.png', '.jpg', '.svg', '.jpeg', '.gif','.bmp'],
+       isVisible: true,
+         default: '../../extensions/images/cloudimage_phantom.png',
+           tFrag: 'guide-src="{{me.url}}"',
+       sortOrder: 2
+        };
+        
+     overlay.width = {
             name: 'width',
            label: 'ves-ar-extension:Marker Width',
         datatype: 'number',
@@ -94,7 +106,7 @@
        }
     };
     
-    var removals = ['billboard', 'occlude', 'opacity', 'visible', 'shader', 'scale', 'decal'];
+    var removals = ['billboard', 'occlude', 'opacity', 'visible', 'shader', 'scale', 'decal', 'trackingIndicator'];
     
     // create the default props list (add the ones we created, remove the list above)
     var props = Twx3dCommon.new3dProps(overlay, removals);
@@ -137,10 +149,22 @@
                      },
 
     runtimeTemplate: function (props) {
-                       var dv   = '<div class="targetGuide cloudimage" ng-hide="hideTargetGuide"></div>';
-                       var tmpl = dv + template.replace("#widgetId#", props.widgetId);
+                       var tmpl = template.replace("#widgetId#", props.widgetId);
                        return tmpl;
-                     }
+                     },
+                   
+    delegate: function () {
+
+      // called when a widgets properties are altered
+      this.widgetUpdated = function (widgetCtrl, currentProps, changedProps, oldProps) {
+        // a blank (none image) guide makes no sense, so we dont allow it 
+        if(changedProps.url === "") {
+          widgetCtrl.setProp('url','../../extensions/images/cloudimage_phantom.png');
+        }
+      };
+      return this;
+    }
+
     };
 
     TargetUtils.registerWidgetAsTarget(retObj);
