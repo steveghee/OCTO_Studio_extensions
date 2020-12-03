@@ -207,7 +207,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             
         var show = function(){
           $timeout(function () {
-                   
+            scope.data.visible = true;       
             scope.data.pending = scope.affectsField.split(',');
             scope.data.disabled = false;
 
@@ -241,6 +241,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               
             // otherwise, we need to unlink
             scope.data.tether.setPanels( undefined );
+            
+            scope.data.visible = false;       
             
           }, 1);
 

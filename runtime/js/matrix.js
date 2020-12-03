@@ -331,6 +331,15 @@ function Matrix4() {
         return       new Matrix4().Set4V(xd,nup,lookv,from);
     }
     
+    // builds a pose matrix from the pos,gaze,up vectors
+    // for example the vectors passed in the 'tracking' event
+    this.makePose = function(at,gaze,up) {
+        var xd   = up.Normalize().CrossP(gaze.Normalize());
+        var nup  = gaze.CrossP(xd).Normalize(); // recalc up
+        var pose = new Matrix4().Set4V(xd,nup,gaze,at);
+        return pose;
+    }
+  
     this.Flatten = function () {
         var f = [];
         for (var i = 0; i < 4; i++) {
