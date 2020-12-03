@@ -230,7 +230,7 @@ function tetheredHelper(renderer, interval, panels, offset) {
         
         // we are blending/lerping our way along a vector from 0..1 where the end is panel.targetPos
         // the current location is that lerped value
-        var lerp        = tpan.targetPos != undefined ? tpan.ipos.Tween(tpan.targetPos, tpan.tweend) 
+        var lerp        = tpan.targetPos != undefined ? tpan.ipos.Tween2(tpan.targetPos, tpan.tweend) 
                                                       : tpan.ipos;
         tpan.tweend    += tobj.step;
         
@@ -387,14 +387,14 @@ function tetheredHelper(renderer, interval, panels, offset) {
         for (var p=0;p<transition.outgoing.length;p++) {
             
           var panel = transition.outgoing[p];
-          var lerp  = transition.outscale.Tween(transition.outtgt,transition.tweend,true);  
+          var lerp  = transition.outscale.Tween2(transition.outtgt,transition.tweend,true);  
           tobj.renderer.setScale(panel.name,lerp.X(),lerp.Y(),lerp.Z());
           
           // at the end, hide the items
           if (panel.buttons != undefined) for (var b=0;b<panel.buttons.length;b++) {
             var button = panel.buttons[b];
             
-            lerp  = transition.btnscale.Tween(transition.outtgt,transition.tweend,true);  
+            lerp  = transition.btnscale.Tween2(transition.outtgt,transition.tweend,true);  
             tobj.renderer.setScale(button.name,lerp.X(),lerp.Y(),lerp.Z());
             
             if (transition.tweend >= 1) {
@@ -433,13 +433,13 @@ function tetheredHelper(renderer, interval, panels, offset) {
         if (tweenin > 0) for (var p=0;p<transition.incoming.length;p++) {
           var panel = transition.incoming[p];
       
-          var lerp  = transition.inscale.Tween(transition.intgt,tweenin,true);  
+          var lerp  = transition.inscale.Tween2(transition.intgt,tweenin,true);  
           tobj.renderer.setScale(panel.name,lerp.X(),lerp.Y(),lerp.Z());
         
           if (panel.buttons != undefined) for (var b=0;b<panel.buttons.length;b++) {
             var button = panel.buttons[b];
           
-            lerp  = transition.inscale.Tween(transition.btnscale,tweenin,true);  
+            lerp  = transition.inscale.Tween2(transition.btnscale,tweenin,true);  
             tobj.renderer.setScale(button.name,lerp.X(),lerp.Y(),lerp.Z());
           }        
         }

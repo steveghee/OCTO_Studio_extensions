@@ -588,26 +588,33 @@ function Vector4() {
     }
     
     this.Tween = function(v2,d) {
-        // result = a + (b-a).d, assuming d normalised 0..1
-        //        = v2.Sub(this).Scale(d).Add(this);
-        var mid = new Vector4().Set3(
-                                     (v2.v[0] - this.v[0]) * d + this.v[0],
-                                     (v2.v[1] - this.v[1]) * d + this.v[1],
-                                     (v2.v[2] - this.v[2]) * d + this.v[2]   );        
-        return mid;
+      // result = a + (b-a).d, assuming d normalised 0..1
+      //        = v2.Sub(this).Scale(d).Add(this);
+      var mid = new Vector4().Set3(
+          	(v2.v[0] - this.v[0]) * d + this.v[0],
+        	(v2.v[1] - this.v[1]) * d + this.v[1],
+        	(v2.v[2] - this.v[2]) * d + this.v[2]   );        
+      return mid;
     }
     
     this.Tween2 = function(v2,d,c) {
-        var saturate = function(x) {
-            if (Math.abs(x) < 1e-6) return 0;
-            else if (x > 1) return 1;  
-            else return x;
-        }
-        
-        // result = a + (b-a).d, assuming d normalised 0..1
-        if (c!=undefined && c===true) d=saturate(d);  
-        var i = v2.Sub(this).Scale(d).Add(this);
-        return i;
+      var bezier = function(t)
+      {
+        return t * t * (3 - 2 * t); 
+      }
+      var saturate = function(x) {
+        if (Math.abs(x) < 1e-6)
+          return 0;
+        else if (x > 1)
+          return 1;  
+        else 
+          return x;
+      }
+  
+      // result = a + (b-a).d, assuming d normalised 0..1
+      if (c!=undefined && c===true) d=saturate(d);  
+      var i = v2.Sub(this).Scale(bezier(d)).Add(this);
+      return i;
     }
   
     this.Inside = function(box) {
@@ -619,16 +626,16 @@ function Vector4() {
     
     // raytrace this point from starting point x0 and direction x1
     this.Raytrace = function(x0,x1) {
-        var nx1 = x1.Normalize();  
-        var x2  = x0.Add(nx1);
-        var n21 = x2.Sub(x0);
-        var n10 = x0.Sub(this);
-        var n1  = n10.DotP(n21);
-        var l21 = n21.Length();
-        var t   = - n1 / (l21 * l21);
-        var l10 = n10.Length();
-        var d2  = ((l10*l10)*(l21*l21)-(n1*n1))/(l21*l21);
-        return { t:t, d:Math.sqrt(d2) };
+      var nx1 = x1.Normalize();  
+      var x2  = x0.Add(nx1);
+      var n21 = x2.Sub(x0);
+      var n10 = x0.Sub(this);
+      var n1  = n10.DotP(n21);
+      var l21 = n21.Length();
+      var t   = - n1 / (l21 * l21);
+      var l10 = n10.Length();
+      var d2   = ((l10*l10)*(l21*l21)-(n1*n1))/(l21*l21);
+      return { t:t, d:Math.sqrt(d2) };
     }
   
     this.Transform = function(b) {
