@@ -89,7 +89,7 @@
        sortOrder: 4000
     };
     
-    var removals = ['billboard', 'occlude', 'opacity', 'visible', 'shader', 'scale', 'decal'];
+    var removals = ['billboard', 'opacity', 'visible', 'shader', 'scale', 'decal'];
     
     // create the default props list (add the ones we created, remove the list above)
     var props = Twx3dCommon.new3dProps(overlay, removals);
@@ -97,7 +97,7 @@
     var template = Twx3dCommon.buildRuntimeTemplate("twx-dt-target", props, true);
     
     // create a design template - this is a 3D image (can be dragged etc.)
-    var designTemplate = '<twx-dt-model id="#widgetId#" src="{{me.url}}" opacity="1" hidden="false" sx="1" sy="1" sz="1" x="0" y="0" z="0" rx="-90" ry="0" rz="0" decal="false" shader="desaturatedgl"></twx-dt-model>';
+    var designTemplate = '<twx-dt-model id="#widgetId#" src="{{me.url}}" opacity="1" hidden="false" sx="1" sy="1" sz="1" x="0" y="0" z="0" rx="-90" ry="0" rz="0" shader="desaturatedgl"></twx-dt-model>';
 
     var retObj = {
         
@@ -151,7 +151,9 @@
                        
                        // result is like: src="vuforia-model:///app/resources/Uploaded/DB2?id=T1"
                        tmpl = tmpl.replace('#_src_#', 'vuforia-area:///' + data + '?id=' + props.targetId);
-                       return tmpl;
+                       
+                       var occluder = (props.occlude != undefined && props.occlude === true) ? '<twx-dt-model id="'+props.widgetId+'-occluder" src="{{me.url}}" occlude="true" opacity="1" hidden="false" decal="false" sx="1" sy="1" sz="1" x="0" y="0" z="0" rx="-90" ry="0" rz="0"></twx-dt-model>' : '';
+                       return occluder + tmpl;
                      },
                      
            delegate: function () {
