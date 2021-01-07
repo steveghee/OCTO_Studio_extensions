@@ -101,11 +101,38 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           if (scope.data.id === src && !scope.data.disabled && scope.infoField === undefined) {
               
             console.log(scope.data.id+' userpick');
-            var pathid     = JSON.parse(evtdata).occurrence;
+            var pathid      = JSON.parse(evtdata).occurrence;
             
-            scope.data.info = [];
-            scope.data.info.push({ model : scope.data.id, path: pathid });
-            apply();
+            // we need to look at the structure to see if the selected item is welded, and if so we walk up the tree
+            PTC.Metadata.fromId(scope.data.id)
+                        .then( (meta) => {
+                              
+              var looking = true;                
+              while (looking) {
+                  
+                // illustrate sBOMs can contain collapsed structure indicators (done using metadata!)  
+                var sbominfo = meta.get(pathid, 'sBOM_Welded');
+                
+                if (sbominfo != undefined && sbominfo === 'true') {
+                    
+                  // try the parent until we reach the root, in which case abort
+                  var child = pathid.lastIndexOf('/');
+                  if (child === 0) 
+                    looking = false;               // we've reached the root. stop here.
+                  pathid = pathid.substr(0,child); // otherwise, step up
+              
+                } else {
+                  looking = false;
+                }
+              }
+            
+              scope.data.info = [];
+              scope.data.info.push({ model: scope.data.id, path: pathid });
+              apply();
+            })
+            .catch((err) => { console.log('metadata extraction failed with reason : ' + err) 
+            })
+           
           }
         });
             
