@@ -544,18 +544,22 @@ function Vector4() {
     }
 
     this.Normalize = function () {
-        var rad = this.Length();
-        this.v[0] = this.v[0] / rad;
-        this.v[1] = this.v[1] / rad;
-        this.v[2] = this.v[2] / rad;
-        return this;
+        var rad  = this.Length();
+        var norm = new Vector4().Set3(
+            this.v[0] = this.v[0] / rad,
+            this.v[1] = this.v[1] / rad,
+            this.v[2] = this.v[2] / rad
+        );
+        return norm;
     }
     
     this.Negate = function () {
-        this.v[0] = - this.v[0];
-        this.v[1] = - this.v[1];
-        this.v[2] = - this.v[2];
-        return this;
+        var neg = new Vector4().Set3(
+            0.0 - this.v[0],
+            0.0 - this.v[1],
+            0.0 - this.v[2]
+        );
+        return neg;
     }
 
     this.DotP = function (v2) {
