@@ -323,12 +323,14 @@ function Matrix4() {
     }
     
     // builds a lookat matrix where the Z (gaze) axis will point in the 
-    // direction specified by the at,from points
-    this.makeLookat = function(at,from,up) {
+    // direction specified by the at,from points. if forceup is defined and true, the
+    // given up vector is retained
+    this.makeLookat = function(at,from,up,forceup) {
         var lookv  = at.Sub(from).Normalize();
         var xd     = up.Normalize().CrossP(lookv.Normalize());
-        var nup    = lookv.CrossP(xd).Normalize(); // recalc up
-        return       new Matrix4().Set4V(xd,nup,lookv,from);
+        var nup    = (forceup === undefined || forceup === false) ? lookv.CrossP(xd).Normalize() : up; // recalc up?
+        if (forceup != undefined && forceup === true) lookv = xd.CrossP(nup).Normalize();              // recalc lookv
+        return new Matrix4().Set4V(xd,nup,lookv,from);
     }
     
     // builds a pose matrix from the pos,gaze,up vectors
