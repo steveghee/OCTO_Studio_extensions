@@ -96,7 +96,7 @@
 
     var retObj = {
         
-         elementTag: "vumark-dt-target",
+         elementTag: "octo-vumark-dt-target",
               label: widgetLabel,
  isVisibleInPalette: function(scope) {
                        let builderSettings = scope.$root.builderSettings || {};
@@ -185,7 +185,7 @@
   }
 
   function vumarkTarget() {
-    var widget = Twx3dCommon.getWidget( 'VuMark Target', vumarkTargetDefinition );
+    var widget = Twx3dCommon.getWidget( 'OCTO VuMark Target', vumarkTargetDefinition );
     return widget;
   }
   twxAppBuilder.widget('vumarkTarget', vumarkTarget);

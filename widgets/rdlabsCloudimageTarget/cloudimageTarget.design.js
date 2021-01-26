@@ -118,7 +118,7 @@
 
     var retObj = {
         
-         elementTag: "cloudimage-dt-target",
+         elementTag: "octo-cloudimage-dt-target",
               label: widgetLabel,
  isVisibleInPalette: true,
            category: 'ar',
@@ -172,7 +172,7 @@
   }
 
   function cloudimageTarget() {
-    var widget = Twx3dCommon.getWidget( 'Cloud Image Target', ciTarget );
+    var widget = Twx3dCommon.getWidget( 'OCTO Cloud Image Target', ciTarget );
     return widget;
   }
   twxAppBuilder.widget('cloudimageTarget', cloudimageTarget);
