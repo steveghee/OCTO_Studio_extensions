@@ -413,7 +413,8 @@ function spatialHelper(renderer, tunnel, targets) {
       var esf = r90.ToEuler(true);
       
       // feet are positioned 0.5m back from the target
-      var fp  = new Vector4().Set3(ep.v[0], - this.target.floor, ep.v[2]).Add(hg.Scale(0.5));
+      var fdist = this.target.tdist * 1.1;
+      var fp  = new Vector4().Set3(ep.v[0], - this.target.floor, ep.v[2]).Add(hg.Scale(fdist));
       
       var tcol      = this.target.color != undefined ? this.target.color : this.color;
       var pingshade = twx.app.isPreview() ? "Default" :
