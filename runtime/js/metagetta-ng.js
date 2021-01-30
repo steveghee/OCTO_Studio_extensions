@@ -166,9 +166,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         scope.$watch(
           function() { return scope.infoField != undefined ? JSON.stringify(scope.infoField.selectedRows) : ''},
           function(value) {
-            if (value != undefined) 
+            if (value != undefined && scope.infoField != undefined) {
               scope.data.info = scope.infoField.selectedRows;                 
               apply();
+            }
         });
       }
     };

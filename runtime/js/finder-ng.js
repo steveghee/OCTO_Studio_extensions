@@ -132,9 +132,8 @@ var findcmds = {
         scope.$watch(
           function() { return scope.resultsField != undefined ? JSON.stringify(scope.resultsField.selectedRows) : ''},
           function(value) {
-            if (value != undefined) 
+            if (value != undefined && scope.resultsField != undefined) 
               scope.selectedField = scope.resultsField.selectedRows;                 
-              apply();
         });
 
 
