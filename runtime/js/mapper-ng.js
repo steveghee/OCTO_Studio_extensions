@@ -18,15 +18,16 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         defaultField  : '@',
         modelField    : '@',
         colorField    : '@',
+        isholoField   : '@',
         infoField     : '='
       },
       template: '<div></div>',
       link: function (scope, element, attr) {
 
-          var lastUpdated = 'unknown';
+        var lastUpdated = 'unknown';
           
-        let defaultHiliteShader='mapper_coloredHilitegl;r f 1;g f 0.5;b f 0.25';
-        let defaultUnliteShader='mapper_desaturatedgl';
+        let defaultHiliteShader='mapper_coloredHilite';
+        let defaultUnliteShader='mapper_desaturated';
         let defaultDotlitShader='mapper_screendoor';
   
         scope.data = { shader: undefined, 
@@ -35,6 +36,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                         model: undefined,
                       default: undefined,
                          undo: undefined,
+                      isholo : false,
+                  hiliteColor: ';r f 1;g f 0.5;b f 0.25',
                  hiliteShader: defaultHiliteShader,
                  unliteShader: defaultUnliteShader,
                  dotlitShader: defaultDotlitShader,
@@ -43,10 +46,19 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                      };
         scope.renderer = $window.cordova ? vuforia : $injector.get('threeJsTmlRenderer');
         
+        function toBool(v) {
+          return v === 'true' || v === true;
+        }
+        
+        function toHolo() {
+          return (toBool(scope.isholoField) && !twx.app.isPreview())?'hl':'gl';
+        }
+
+        
         var hilite = function(nodeId,rd) {
           rd.setProperties(nodeId,
             {
-              shader:scope.data.hiliteShader, 
+              shader:scope.data.hiliteShader+toHolo()+scope.data.hiliteColor, 
               hidden:false,
              opacity:1.0,
              phantom:false,
@@ -56,7 +68,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         var unlite = function(nodeId,rd) {
           rd.setProperties(nodeId,
             {
-              shader:scope.data.unliteShader,
+              shader:scope.data.unliteShader+toHolo(),
               hidden:false,
              opacity:0.5,phantom:false,
                decal:false
@@ -65,10 +77,19 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         var dotlite = function(nodeId,rd) {
           rd.setProperties(nodeId,
             {
-              shader:scope.data.dotlitShader,
+              shader:scope.data.dotlitShader+toHolo(),
               hidden:false,
              opacity:0.8,phantom:true,
                decal:true
+            });      
+        };
+        var normal = function(nodeId,rd) {
+          rd.setProperties(nodeId,
+            {
+              shader:"Default",
+              hidden:false,
+             opacity:1,phantom:false,
+               decal:false
             });      
         };
         var tolist = function(ids,cb,rd) {
@@ -151,7 +172,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             
             if (scope.modelField != scope.data.model) {  
               if (scope.data.undo != undefined)
-                tolist(scope.data.undo, (scope.data.polarity === 'true') ? dotlite : unlite, scope.renderer);
+                tolist(scope.data.undo, (scope.data.polarity === 'true') ? dotlite : normal, scope.renderer);
+                //tolist(scope.data.undo, (scope.data.polarity === 'true') ? dotlite : unlite, scope.renderer);
               scope.data.model    = scope.modelField;
               scope.data.undo = [];  
               changed = true;  
@@ -188,11 +210,15 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           updateMapper();
         });
 
+        scope.$watch('isholoField', function () {
+          scope.data.isholo = scope.isholoField != undefined ? scope.isholoField : false;
+        });
+            
         scope.$watch('colorField', function () {
           //
           // do we support colored highlighting, or stick with orange only?
           var rgb = scope.colorField.split(',');
-          scope.data.hiliteShader = `mapper_coloredHilitegl;r f ${rgb[0]};g f ${rgb[1]};b f ${rgb[2]}`;
+          scope.data.hiliteColor = `;r f ${rgb[0]};g f ${rgb[1]};b f ${rgb[2]}`;
 
           updateMapper();
         });
