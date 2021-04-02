@@ -50,7 +50,7 @@
            label: 'Space scan',
         datatype: 'resource_url',
   resource_image: true,
- allowedPatterns: ['.pvz'],
+ allowedPatterns: ['.glb'],
        isVisible: false,
            tFrag: 'guide-src="" space-src="{{me.url}}"',
        sortOrder: 2
@@ -66,6 +66,16 @@
        sortOrder: 2000
     };
 
+        overlay.popupMap = {
+            name: 'popupmap',
+           label: 'Pop up Map',
+        datatype: 'boolean',
+         default: false,
+ isBindingSource: false,
+ isBindingTarget: true,
+       sortOrder: 2000
+    };
+    
     overlay.trackingIndicator = {
             name: 'trackingIndicator',
            label: 'ves-ar-extension:Display Tracking Indicator',
@@ -97,7 +107,7 @@
     var template = Twx3dCommon.buildRuntimeTemplate("twx-dt-target", props, true);
     
     // create a design template - this is a 3D image (can be dragged etc.)
-    var designTemplate = '<twx-dt-model id="#widgetId#" src="{{me.url}}" opacity="1" hidden="false" sx="1" sy="1" sz="1" x="0" y="0" z="0" rx="-90" ry="0" rz="0" shader="desaturatedgl"></twx-dt-model>';
+    var designTemplate = '<twx-dt-model id="#widgetId#" src="{{me.url}}" opacity="1" hidden="false" sx="1" sy="1" sz="1" x="0" y="0" z="0" rx="0" ry="0" rz="0" shader="desaturatedgl"></twx-dt-model>';
 
     var retObj = {
         
@@ -134,7 +144,6 @@
                  label: 'ves-ar-extension:Tracking Lost'
                }
              ],
-
        dependencies: {
          files: ['extensions/images/**']
        },
@@ -152,8 +161,9 @@
                        // result is like: src="vuforia-model:///app/resources/Uploaded/DB2?id=T1"
                        tmpl = tmpl.replace('#_src_#', 'vuforia-area:///' + data + '?id=' + props.targetId);
                        
-                       var occluder = (props.occlude != undefined && props.occlude === true) ? '<twx-dt-model id="'+props.widgetId+'-occluder" src="{{me.url}}" occlude="true" opacity="1" hidden="false" decal="false" sx="1" sy="1" sz="1" x="0" y="0" z="0" rx="-90" ry="0" rz="0"></twx-dt-model>' : '';
-                       return occluder + tmpl;
+                       var occluder = (props.occlude != undefined && props.occlude === true) ? '<twx-dt-model id="'+props.widgetId+'-occluder" src="{{me.url}}" occlude="true" opacity="1" hidden="false" decal="false" sx="1" sy="1" sz="1" x="0" y="0" z="0" rx="0" ry="0" rz="0"></twx-dt-model>' : '';
+                       var popupmap = '<twx-dt-model id="'+props.widgetId+'-popupmap" src="{{me.url}}" occlude="false" opacity="1" hidden="{{me.popupmap}}" decal="false" sx="0.1" sy="0.1" sz="0.1" x="0" y="0" z="0" rx="0" ry="0" rz="0"></twx-dt-model>';
+                       return occluder + popupmap + tmpl;
                      },
                      
            delegate: function () {
@@ -167,7 +177,7 @@
                            //note we only want the Uploaded/filename(no extension)  
                            var data = changedProps.dataset ? changedProps.dataset.replace(/\.[^\.]*$/, '') : '';
                            data = data.substring(data.indexOf('Uploaded'));
-                           widgetCtrl.setProp('url', data+".pvz");
+                           widgetCtrl.setProp('url', data+".glb");
                            
                          }
                        }

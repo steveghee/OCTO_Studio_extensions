@@ -61,6 +61,24 @@ function Matrix4() {
         return this;
     }
     
+    this.FromString = function (str) {
+        var pcs = str.trim().split(',');                // split by comma
+        if (pcs.length < 6) pcs = str.trim().split(' ');// try spaces
+        if (pcs.length === 16) {
+            //its a matrix
+            for (var i=0;i<4;i++) {
+                for (var j=0;j<4;j++) {
+                    this.m[i][j]=parseFloat(pcs[4*i + j]);      
+                }
+            }
+        } else if (pcs.length === 6) {
+            // euler/translation
+            this.SetM4(this.RotateFromEuler(pcs[0],pcs[1],pcs[2],true)
+                           .Translate(pcs[3],pcs[4],pcs[5]));
+        }
+        return this;
+    }
+    
     this.Translate = function (x, y, z) {
         var t = [ [1, 0, 0, 0],
                   [0, 1, 0, 0],
@@ -392,10 +410,11 @@ function Matrix4() {
         };
     }
     
-    this.ToString = function () {
+    this.ToString = function (p) {
         var s = '';
         for (var i = 0; i < 4; i++) {
-            s = s.concat(this.m[i].toString());
+            if (p!=undefined) s = s.concat(this.m[i].map(x => parseFloat(x).toFixed(p)).toString());
+            else s = s.concat(this.m[i].toString());
             s = s.concat(',');
         }
         // now replace the commas with spaces
@@ -518,8 +537,8 @@ function Vector4() {
     this.W = function() { return this.v[3] }
 
     this.FromString = function (str) {
-        var pcs = str.split(',');                // split by comman
-        if (pcs.length < 3) pcs = str.split(' ');// try spaces
+        var pcs = str.trim().split(',');                // split by comma
+        if (pcs.length < 3) pcs = str.trim().split(' ');// try spaces
         this.v[0] = parseFloat(pcs[0]);
         this.v[1] = parseFloat(pcs[1]);
         this.v[2] = parseFloat(pcs[2]);
@@ -547,15 +566,28 @@ function Vector4() {
 
     this.Normalize = function () {
         var rad  = this.Length();
-        var norm = new Vector4().Set3(
-            this.v[0] = this.v[0] / rad,
-            this.v[1] = this.v[1] / rad,
-            this.v[2] = this.v[2] / rad
-        );
-        return norm;
+        this.v[0] = this.v[0] / rad,
+        this.v[1] = this.v[1] / rad,
+        this.v[2] = this.v[2] / rad
+        return this;
     }
     
     this.Negate = function () {
+        this.v[0] = - this.v[0];
+        this.v[1] = - this.v[1];
+        this.v[2] = - this.v[2];
+        return this;
+    }
+    this.Normalize2 = function () {
+        var rad  = this.Length();
+        var norm = new Vector4().Set3(
+            this.v[0] / rad,
+            this.v[1] / rad,
+            this.v[2] / rad
+        );
+        return norm;
+    }
+    this.Negate2 = function () {
         var neg = new Vector4().Set3(
             0.0 - this.v[0],
             0.0 - this.v[1],
@@ -641,16 +673,16 @@ function Vector4() {
     
     // raytrace this point from starting point x0 and direction x1
     this.Raytrace = function(x0,x1) {
-      var nx1 = x1.Normalize();  
-      var x2  = x0.Add(nx1);
-      var n21 = x2.Sub(x0);
-      var n10 = x0.Sub(this);
-      var n1  = n10.DotP(n21);
-      var l21 = n21.Length();
-      var t   = - n1 / (l21 * l21);
-      var l10 = n10.Length();
-      var d2   = ((l10*l10)*(l21*l21)-(n1*n1))/(l21*l21);
-      return { t:t, d:Math.sqrt(d2) };
+        var nx1 = x1.Normalize();  
+        var x2  = x0.Add(nx1);
+        var n21 = x2.Sub(x0);
+        var n10 = x0.Sub(this);
+        var n1  = n10.DotP(n21);
+        var l21 = n21.Length();
+        var t   = - n1 / (l21 * l21);
+        var l10 = n10.Length();
+        var d2   = ((l10*l10)*(l21*l21)-(n1*n1))/(l21*l21);
+        return { t:t, d:Math.sqrt(d2) };
     }
   
     this.Transform = function(b) {
@@ -663,8 +695,10 @@ function Vector4() {
         return dst;
     }
     
-    this.ToString = function () {
-        var s = this.v.toString();
+    this.ToString = function (p) {
+        var s;
+        if (p!=undefined) s = this.v.map(x => parseFloat(x).toFixed(p)).toString();
+        else s = this.v.toString();
         // now replace the commas with spaces
         s = s.replace(/,/g, ' ');
         return s;
@@ -684,6 +718,17 @@ function Bbox() {
     this.SetBox = function(box) {
         this.min = box.min;
         this.max = box.max;
+        return this;
+    }
+    this.FromString = function (str) {
+        var pcs = str.trim().split(',');                // split by comma
+        if (pcs.length < 6) pcs = str.trim().split(' ');// try spaces
+        this.min[0] = parseFloat(pcs[0]);
+        this.min[1] = parseFloat(pcs[1]);
+        this.min[2] = parseFloat(pcs[2]);
+        this.max[0] = parseFloat(pcs[3]);
+        this.max[1] = parseFloat(pcs[4]);
+        this.max[2] = parseFloat(pcs[5]);
         return this;
     }
     
@@ -746,6 +791,15 @@ function Bbox() {
         return center;
     }
 
+    this.Dims = function() {
+        var dims = new Vector4().Set3(
+            (this.max[0] - this.min[0]),
+            (this.max[1] - this.min[1]),
+            (this.max[2] - this.min[2])
+            );
+        return dims;
+    }
+    
     // is point inside/on box
     this.Contains = function(vox) {
         
@@ -851,11 +905,13 @@ function Bbox() {
         return this;
     }
     
-    this.ToString = function () {
+    this.ToString = function (p) {
         var s = 'min:';
-        s = s.concat(this.min.toString());
+        if (p!=undefined) s = s.concat(this.min.map(x => parseFloat(x).toFixed(p)).toString());
+        else s = s.concat(this.min.toString());
         s = s.concat(',max:');
-        s = s.concat(this.max.toString());
+        if (p!=undefined) s = s.concat(this.max.map(x => parseFloat(x).toFixed(p)).toString());
+        else s = s.concat(this.max.toString());
         // now replace the commas with spaces
         s = s.replace(/,/g, ' ');
         return s;
