@@ -74,6 +74,11 @@ function twxMultiLineLabel3D() {
     label: '3D Multiline Label',
 
     category: 'ar',
+    
+    isVisibleInPalette: function(scope) {
+      let projectSettings = scope.$root.currentProject || {};
+      return (projectSettings.projectType === 'eyewear');
+    },
 
     groups: ['AUGMENTATIONS'],
     

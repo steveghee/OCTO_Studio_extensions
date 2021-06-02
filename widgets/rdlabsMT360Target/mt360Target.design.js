@@ -107,7 +107,10 @@
         
          elementTag: "octothreesixty-dt-target",
               label: widgetLabel,
- isVisibleInPalette: true,
+ isVisibleInPalette: function(scope) {
+                       let builderSettings = scope.$root.builderSettings || {};
+                       return !!builderSettings.octo; // whilst we await support in the viewer..
+                     },
            category: 'ar',
              groups: ['Targets'],
         isContainer: false,
