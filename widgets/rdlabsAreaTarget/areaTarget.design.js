@@ -169,7 +169,7 @@
                        // result is like: src="vuforia-model:///app/resources/Uploaded/DB2?id=T1"
                        tmpl = tmpl.replace('#_src_#', 'vuforia-area:///' + data + '?id=' + props.targetId);
                        
-                       var occluder = (props.occlude != undefined && props.occlude === true) ? '<twx-dt-model id="'+props.widgetId+'-occluder" src="{{me.occluder}}" occlude="true" opacity="1" hidden="false" decal="false" sx="1" sy="1" sz="1" x="0" y="0" z="0" rx="0" ry="0" rz="0"></twx-dt-model>' : '';
+                       var occluder = '<twx-dt-model id="'+props.widgetId+'-occluder" src="{{me.occluder}}" occlude="{{me.occlude}}" opacity="1" hidden="{{!me.occlude}}" decal="false" sx="1" sy="1" sz="1" x="0" y="0" z="0" rx="0" ry="0" rz="0"></twx-dt-model>';
                        var popupmap = '<twx-dt-model id="'+props.widgetId+'-popupmap" src="{{me.url}}" occlude="false" opacity="1" hidden="{{!me.popupmap}}" decal="false" sx="0.1" sy="0.1" sz="0.1" x="0" y="0" z="0" rx="0" ry="0" rz="0"></twx-dt-model>';
                        return occluder + popupmap + tmpl;
                      },
