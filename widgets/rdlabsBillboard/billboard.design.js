@@ -28,7 +28,7 @@ function twxBillboard() {
         name: 'angle',
         label: 'Angle',
         datatype: 'number',
-        default:0,
+        default:20,
         isBindingSource: false,
         isBindingTarget: true,
         showInput: true
