@@ -55,8 +55,6 @@ Note : The 3d occluding model is (currently) not included in the runtime display
 
 ### Area targets
 
-Work in progress here.- this feature is not currently available without a custom build of View
-
 Area targets provide a means of locating and tracking the user in a larger spatial environment, say a room or a small factory space. 
 Instead of tracking against an object/shape or an image, you are tracking against the environment/surroundings.
 
@@ -69,13 +67,16 @@ In principal, the steps are as follows
 2. upload your scan to the Matterport account. 
 3. Follow the instructions in the Area Target web documentation to identify the results of the scan and to pass this information to the Target Generator
 4. The Area Target generator will create the .dat and .xml target descriptor files
-5. (still being worked on) The area target generates a glTF representation of your space.  There's an issue in Studio which prevents this from loading (this will be fixed soon) so for now you need to 
-download the matterpak content from matterport - this includes a .obj representation of the space.  Use the obj input tools to bring this into Studio. The file should be given the same name as the target dat/xml files. 
-6. Copy the .dat and .xml target files into the resources/Uploaded folder   
-7. Drag the area target widget into your Studio canvas
+5. The area target generates a 3d polygonal representation of your space, named _authoring, and a lightweight _navmesh representation which can be used for occlusion. 
+6. Copy the .dat and .xml, _authoring and _navmesh (the latter two are glb files) to your project resources folder
+7. Drag the Area Target widget into your Studio canvas
 8. Select the .dat file as the target data base for the widget. The 3d representation (same name - see step 5 above) will now appear in Studio
 9. You can now place any augmented content in this space 
-10. Run the experience and you should locate and track relative to the target. Your augmentations will appear where you placed them in the editor. Note the 3d representation is not displayed.
+10. Run the experience and you should locate and track relative to the target. Your augmentations will appear where you placed them in the editor. 
+11. If you check the 'occlusion' checkbox, the occlusion (_navmesh) glb file will be included in the project, and will be used at runtime to provide an
+occlusion effect that will ensure any digital augmentation will appear correctly occluded by the physical space e.g. an item behind a solid cannot be seen.
+
+Note this will soon be depricated as Studio has now integrated the Area Target widget into the product.
 
 ### Cloud Image Targets
 TBC
@@ -84,27 +85,66 @@ TBC
 TBC
 
 ## Inputs
-UI elements such as Hololens2-ready UI controls
-TBC
+UI elements such as Hololens2-ready UI controls.
+Note that many of these will be obsoleted soon, as they've been migrated into the Studio product build.  
+
+
 
 ## Metadata 
 ### Finder
 Provides real-time metadata shearch within specified model ID.
-Results can be bound to Mapper (see below) for visualisation
-TBC
+ou can supply the property name, the search value, and the operation to use e.g. "cost" "greater than" "20".  The property name, values, and the operand can be data driven via binding.
+ 
+Results can be bound to Mapper (see below) for visualisation.
+
+Hint : Use the metagetta to quickly identify what metadata is on your model. This can help you determine which values are useful in your search operation.
 
 ### Mapper
 Takes an input of selected model item ids and applied highlight shading
-TBC 
+
+Set the model id to be that of the main model that you are working on (same value as supplied for the Finder/Metagetta widgets).
+Bind the output of the finder to the mapper, and as results are discovered (in Finder) so the mapper will highlight them for you. 
+The Mapper works in two modes, physical (where there is a physical product present, so the mapper will show the highlight as an overlay, only lighting up the ites found) 
+and in digitial mode, where the mapper will show the digital model rendered one way, and will emphasise the results items.
 
 ### MetaGetta
-Takes an input of selected model item ids and extracts metadata
-TBC
+Takes an input of selected model item ids and extracts metadata. 
+
+In the simplest mode, drag/drop the widget into the scene and bind the result output to a label.  In preview (or runtime experience) if you tap in a 3d element (part) the metagetta widget will list 
+all the properties/value associated with the selected item.
+
+Next, using "fields to include", you can set a list (comma separated, no spaces) of properties that are to be included in the output. Use this to filter down to the properties you need.
 
 ## Containers
 TBC
 
 ## Navigation
+The navigation widget provies a simple means to helping guide/navigate the user to a location within the tracked space.  To use this feature, first add
+the navigation widget to your 3d scene.  You can choose how you want to help indicate the target location e.g. if you user is holding an ipad, you can choose the ipad 
+representation from the dropdown. There are other options available.
+
+The location itself can be set via data that is bound to the widget; you can link an array of locations and drive which is the current 'selected' location.  
+This data can be in table form - perhaps the result of a thingworx service call - or you can set the value from javascript.
+
+  `$scope.view.wdg.navigator.poidata = [ 
+                                         { position: "0,0,0",    // defined as a string of xyz coordinates 
+                                               gaze: "0,0,1",    // defined as a string, this is a unit vector pointing away from the view
+                                                 up: "0, 1, 0",  // defined as a string, this is a unit vector pointing up through the device
+                                           metadata: "optional"  // optional data that can be used to describe what this row indicates
+                                         }
+                                       ];` 
+
+With and array, the 'Selected' field will define which row is active.
+The 'value' field (output) reflects the current active target i.e. the selected row of the table.
+
+With a value set, the navigation wiget will monitor the user location and will draw a 'ribbon' from the user device to the end location - this ribbon helps guide the
+user which way to walk/navigate to reach the target location. As the user approaches the target, the ribbon will fade.
+
+The navgation widget includes settings that will control the widget reacts as the uer approaches the chosen point - cutoff distance defines a radius around the point, and when
+the user crosses this radius, the 'arrived' event is fired. You can use this to trigger some behaviour.  Note that the event is only fired as the user enters from outsede of the 
+radial zone.  Stepping back across the threshold doesn not trigger the event again.  If auto-cutoff is checked, following the 'arrived' event, the widget will hide the end marker 
+items and will wait for a new location to be defined.  Use the metadata to help indicate what the position data means, such then when you 'arrive' at a location, you can immediately 
+identify what that location e.g. e.g. the metadata could be a value that points you whatever task you should perform when you arrive at the location. 
 
 ## Misc
 

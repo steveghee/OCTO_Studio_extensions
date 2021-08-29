@@ -24,6 +24,7 @@ function spatialHelper(renderer, tunnel, targets) {
   this.target.fname = this.target.feet   != undefined ? "feet"   : undefined;
   this.target.hname = this.target.head   != undefined ? "head"   : undefined;
   this.target.floor = this.target.floorOffset != undefined ? this.target.floorOffset : 0;
+  this.target.point = this.isHololens && this.target.arrow != undefined ? true : false;
   
   this.cutoff       = 0.5;
   this.autoCutoff   = false;
@@ -290,17 +291,22 @@ function spatialHelper(renderer, tunnel, targets) {
     var la = fm.Sub(at).Normalize();
     var dp = 20 * (1 + la.DotP(gz.Normalize()));  // fudge factor to drive opacity effect on pointer when lined up with lookat vector
     var gd = fm.Sub(at).Length();                 // actual distance to target
-    var co = dp * (0.5 + clamp(gd));              // cutoff is a factor of distance AND look vector
-    var pg = gz.Scale(this.target.tdist).Add(fm); // this is a point in front of the user head
     
-    var es = new Matrix4().makeLookat(at,pg,up).ToPosEuler(true);
+    // we do the calcs always (as we need the gd distance value), but 
+    // optionally draw the arrow
+    if (this.target.pointer) {
+      var co = dp * (0.5 + clamp(gd));              // cutoff is a factor of distance AND look vector
+      var pg = gz.Scale(this.target.tdist).Add(fm); // this is a point in front of the user head
     
-    var img = "tunnel1";
-    this.renderer.setTranslation(img,es.pos.X(), es.pos.Y(), es.pos.Z());
-    this.renderer.setRotation   (img,es.rot.X(), es.rot.Y(), es.rot.Z());
-    this.renderer.setProperties (img,{  shader: 'Default',
-                                       opacity: clamp(co-0.5), 
-                                        hidden: !this.showNavpath }); 
+      var es = new Matrix4().makeLookat(at,pg,up).ToPosEuler(true);
+    
+      var img = "tunnel1";
+      this.renderer.setTranslation(img,es.pos.X(), es.pos.Y(), es.pos.Z());
+      this.renderer.setRotation   (img,es.rot.X(), es.rot.Y(), es.rot.Z());
+      this.renderer.setProperties (img,{  shader: 'Default',
+                                         opacity: clamp(co-0.5), 
+                                          hidden: !this.showNavpath }); 
+    }
     return gd;
   }
   
@@ -439,8 +445,9 @@ function spatialHelper(renderer, tunnel, targets) {
     for (var i=1; i< obj.nsteps; i++) {
      
       // declare using pvz
-      shapes.push( { name:"tunnel"+i, 
-                      src:obj.navpathGeom } ); 
+      shapes.push( { name: "tunnel"+i, 
+                      src: obj.navpathGeom
+                   } ); 
      
       // optional - declare as images (see below) 
       // shapes.push( {name:"tunnel"+i, src:"app/resources/Uploaded/arrow.png?name=img"});
@@ -454,7 +461,7 @@ function spatialHelper(renderer, tunnel, targets) {
     
     // declare models
     if (obj.target.tname != undefined) shapes.push( {name:obj.target.tname, src:obj.target.device } ); 
-    if (obj.target.hname != undefined) shapes.push( {name:obj.target.hname, src:obj.target.head   } ); 
+    if (obj.target.hname != undefined) shapes.push( {name:obj.target.hname, src:obj.target.head } ); 
     
     return shapes;
   })(this);

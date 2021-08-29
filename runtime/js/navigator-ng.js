@@ -197,7 +197,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               fieldDefinitions: {
                 gaze: {aspects: {}, baseType: "STRING", name: "gaze"      },            
             position: {aspects: {}, baseType: "STRING", name: "position"  },            
-                  up: {aspects: {}, baseType: "STRING", name: "up"        }
+                  up: {aspects: {}, baseType: "STRING", name: "up"        },
+            metadata: {aspects: {}, baseType: "STRING", name: "metadata"  }
               }
             }
           };     
@@ -227,7 +228,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             let rp     = scope.data.poidata[scope.data.poiselected];
             let selrow = { position: rp.position, 
                                gaze: rp.gaze, 
-                                 up: rp.up 
+                                 up: rp.up,
+                           metadata: rp.metadata
                          }; // we only want these fields
             
             var locator = { position: new Vector4().FromString(selrow.position),
