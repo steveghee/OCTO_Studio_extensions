@@ -141,10 +141,14 @@ With a value set, the navigation wiget will monitor the user location and will d
 user which way to walk/navigate to reach the target location. As the user approaches the target, the ribbon will fade.
 
 The navgation widget includes settings that will control the widget reacts as the uer approaches the chosen point - cutoff distance defines a radius around the point, and when
-the user crosses this radius, the 'arrived' event is fired. You can use this to trigger some behaviour.  Note that the event is only fired as the user enters from outsede of the 
-radial zone.  Stepping back across the threshold doesn not trigger the event again.  If auto-cutoff is checked, following the 'arrived' event, the widget will hide the end marker 
+the user crosses this radius, the 'arrived' event is fired. You can use this to trigger some behaviour.  Note that the event is only fired as the user enters from outside of the 
+radial zone.  Stepping back across the threshold does not trigger the event again.  If auto-cutoff is checked, following the 'arrived' event, the widget will hide the end marker 
 items and will wait for a new location to be defined.  Use the metadata to help indicate what the position data means, such then when you 'arrive' at a location, you can immediately 
 identify what that location e.g. e.g. the metadata could be a value that points you whatever task you should perform when you arrive at the location. 
+
+The navigator widget also works on the hololens, though the operation is slightly different in that on a mobile/tablet device, the path is dynamic (it will change as the user moves) whereas on the hololens, the path is static - it is computed once (either when the navigation point 
+is set, or whenever the path is shown (the Show() method).  This is for performance reasons.
+
 
 ## Misc
 
