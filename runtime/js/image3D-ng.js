@@ -130,8 +130,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             
             // note that if the image aspect is wider than the button, we need
             // to adjust by width; otherwise we fit by height
-            let iaspect = ibase > 1 && bbase < ibase ? imageHeight / background.height
-                                                     : imageWidth  / background.width;
+            let iaspect = ibase >= 1 && bbase < ibase ? imageHeight / background.height
+                                                      : imageWidth  / background.width;
 
             // use largest dim to work out actual scale
             let scaled = { width  : background.width  * iaspect, 

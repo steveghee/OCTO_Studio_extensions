@@ -169,8 +169,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         //
         // height offset of feet from virtual floor (tracking.y = 0)
         //
-        scope.$watch('floorField', function () {
-          scope.data.floor = (scope.floorField != undefined) ? parseFloat(scope.floorField) : 0;                 
+        scope.$watchGroup(['floorField'], function () {
+          scope.data.floor  = (scope.floorField  != undefined) ? parseFloat(scope.floorField)  : 0;                 
           if (scope.data.navigator != undefined) {
             scope.data.navigator.Offset(scope.data.floor);
           }

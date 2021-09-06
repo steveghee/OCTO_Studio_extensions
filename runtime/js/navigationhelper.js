@@ -7,10 +7,10 @@ function spatialHelper(renderer, tunnel, targets) {
   
   // constructor
   this.isHololens   = tunnel != undefined && tunnel.hololens != undefined ? tunnel.hololens : false;
-  this.nsteps       = this.isHololens ? 2 : tunnel != undefined && tunnel.steps != undefined ? tunnel.steps : 30;
+  this.nsteps       = tunnel != undefined && tunnel.steps != undefined ? tunnel.steps : 30; 
   this.color        = tunnel != undefined && tunnel.color != undefined ? tunnel.color : undefined;
   this.navpathGeom  = tunnel != undefined && tunnel.geom  != undefined ? tunnel.geom 
-                                                                       : this.isHololens ? 'extensions/images/navArrow.pvz' 
+                                                                       : this.isHololens ? 'extensions/images/navPath.png' 
                                                                                          : 'extensions/images/navSphere.pvz';
   this.drawing      = false;
   this.showNavpath  = false;
@@ -32,35 +32,38 @@ function spatialHelper(renderer, tunnel, targets) {
   this.entered      = undefined;
   this.exited       = undefined;
   
+  this._drawOnce     = true;
+
   // we are initialised asynchronously, so we need the caller to pass in
   // certain 'capabilities; e.g. the renderer
   this.renderer     = renderer;
-  
+
   ///////////////////////////////////////////////////////////////////////////////////////
   // public API
   //
-  
-  // 
+
+  //
   // set helper to specific location. if undefined, helper is hidden
   //
   this.setAt = function(locator) {
-  
+
     if (locator != undefined) {
-          
+
       this.target.loc = this._positionHelpers( { position:locator.position.v, 
                                                      gaze:locator.gaze.v, 
                                                        up:locator.up.v });
-          
       var hpos = new Vector4().Set3a(this.headloc.position);
       var locd = hpos.Sub(this.target.loc.position).Length();    
-      this.inside = (locd < this.cutoff) ? true : false; 
+
+      this.inside    = (locd < this.cutoff) ? true : false; 
+      this._drawOnce = !this.inside; // only draw if we are outside of the fence
     }
     else {
         this._toggleNavpath(false); 
     }
     return this;
   }
-  
+
   //
   // set helper at specific location AND show it
   //
@@ -70,7 +73,7 @@ function spatialHelper(renderer, tunnel, targets) {
       this.show();
     return this;
   }
-  
+
   //
   // auto-set helper to current tracked head location/direction
   //
@@ -80,7 +83,7 @@ function spatialHelper(renderer, tunnel, targets) {
     this.inside     = true;
     return this;
   }
-  
+
   //
   // get the current location of the helper - useful if you want to 
   // persist this for future use
@@ -88,7 +91,7 @@ function spatialHelper(renderer, tunnel, targets) {
   this.get = function() {
     return this.target.loc;
   }
-  
+
   //
   // hide the helper
   // note that this also pauses drawing the helper, thus optimising performance
@@ -97,7 +100,7 @@ function spatialHelper(renderer, tunnel, targets) {
     this._toggleNavpath(false);
     return this;
   }
-  
+
   //
   // show the helper - note the auto-cuttoff state may immediately hide it 
   // again!
@@ -106,7 +109,7 @@ function spatialHelper(renderer, tunnel, targets) {
     this._toggleNavpath(true);
     return this;
   }
-  
+
   //
   // draw the helper - the ribbon/tunnel and any associated visuals
   //
@@ -119,53 +122,59 @@ function spatialHelper(renderer, tunnel, targets) {
       var d = this._drawPath( {  from:arg.position, 
                                  gaze:arg.gaze, 
                                    up:arg.up });
-    
+
       this.drawing = this.showNavpath;
-          
+
       // are we outside, moving in? (or outside, unknown)   
       if (this.cutoff   > d     && 
           this.inside  != true) {
-        
+
       	// turn tunnel effect off when we get close?
         if (this.autoCutoff === true) {
           this.hide();
         } 
-        
+
         // and inform the user?
         if (this.entered != undefined) {  // are we entering the zone? 
           this.entered(this,d);
         }
-        
+
         this.inside = true;
       } 
       // or are we inside, moving out?
       else if (this.cutoff  < d     && 
                  this.inside != false) {   // are we exiting the cutoff zone? 
-      
+
         if (this.exited != undefined) {          
           this.exited(this,d);
         }
-        
+
         this.inside = false;
       }
 
     }
-    
+
     // and keep a record of the head position
     this.headloc = arg;
 
   }
-  
+
   //
   // set the color of the ribbon
   //
-  this.Color  = function(color)  { this.color  = color;  return this; }
-  
+  this.Color = function(color)  { 
+    this.color  = color;  
+    return this; 
+  }
+
   //
   // set the height offset 
   //
-  this.Offset = function(offset) { this.target.floor = offset; return this; }
-  
+  this.Offset = function(floor) { 
+    this.target.floor = floor; 
+    return this; 
+  }
+
   //
   // set the cutoff distance.  if auto is true, helper will hide itself
   // when the user gets within the specified distance. the third parameter
@@ -184,45 +193,45 @@ function spatialHelper(renderer, tunnel, targets) {
     this.exited  = exit;
     return this;
   }
-  
+
   this.Auto = function(auto) {
     this.autoCutoff = auto;
     return this;
   }
-  
+
   this.Steps = function(n,show) {
     this.nsteps   = this.isHololens ? 1 : n;  
     return this;
   }
-  
+
   //
   ///////////////////////////////////////////////////////////////////////////////////////
   // private API
-  
+
   ///////////////////////////////////////////////
   this._drawTunnel = function(arg) {
-    
+
     var pu = new Vector4().Set3a(arg.up);	// 
     var p0 = this.target.loc.position;      // staring point
     var p3 = new Vector4().Set3a(arg.from); // end point
-    var gd = p0.Sub(p3).Length();
+    var gd = p0.Distance(p3,[1,0,1]); // planar distance to target
     var ps = this.target.tdist / 2;
     var p1 = p0.Sub(this.target.loc.gaze.Normalize().Scale(0.2*gd)); // incoming direction
     var gz = new Vector4().Set3a(arg.gaze);
     var pg = gz.Scale(gd).Add(p3);
     var p2 = pg.Scale(2).Sub(p0);
-    
+
     // this is the same for all, so calculate this once
     var navfoggedshade = this.color != undefined ? 'navfogged;r f '+this.color[0]+';g f '+this.color[1]+';b f '+this.color[2] 
                                                  : 'navfogged';
-    
+
     // here we go : classic cubic bezier spline curve
     //
     var nsp1 = this.nsteps;
     for (var i=1; i<nsp1; i++) {
-    
+
       var img = "tunnel"+i;
-   
+
       //
       // precalculate some coefficients
       //
@@ -232,40 +241,40 @@ function spatialHelper(renderer, tunnel, targets) {
       var omt3 = omt*omt2;
       var t2   = t*t;
       var t3   = t*t2;
-    
+
       //
       //cubic bezier               B(t) = (1-t)^3.P0 + 3t(1-t)^2.P1 + 3t^2.(1-t).P2 + t^3.P3
       //
       var bt   = p0.Scale(omt3).Add(p1.Scale(3*omt2*t)).Add(p2.Scale(3*t2*omt)).Add(p3.Scale(t3));
-    
+
       this.renderer.setTranslation(img,bt.v[0],bt.v[1],bt.v[2]);
-    
+
       //
       //cubic differential tangent B'(t) = 3(1-t)^2.(P1-P0) + 6t.(1-t).(P2-P1) + 3t^2.(P3-P2)
       //
       var bdt = p1.Sub(p0).Scale(3*omt2).Add(p2.Sub(p1).Scale(6*t*omt)).Add(p3.Sub(p2).Scale(3*t2)).Normalize();
-    
+
       //
       // if we get close (within 0.5m) start fading
       //
-      
+
       this.renderer.setProperties(img,{ shader: navfoggedshade, 
                                        opacity: (gd - 0.5), 
                                         hidden: !this.showNavpath }); 
-        
+
       //
       // finally, distance scaling of the rings
       //
       var st = (i + 1) * 0.03 * gd / (this.nsteps + 1); 
       this.renderer.setScale(img,st,st,st);
     }
-
+  
     //
     // finally, the work out our xz (floor plane) distance from the stepHelp, and if we are within 0.5m, disable the 
     // tunnel. as we get close, fade the floor marker (using the shader property).
     //
     var pgd = p3.Distance(p0,[1,0,1]);
-    
+
     if (!this.isHololens && this.target.fname != undefined && this.showNavpath) {
       var tcol      = this.target.color != undefined ? this.target.color : this.color;
       var pingshade = twx.app.isPreview() ? "Default" :
@@ -276,7 +285,7 @@ function spatialHelper(renderer, tunnel, targets) {
     }
     return pgd;
   }
-  
+
   ///////////////////////////////////////////////
   this._drawPointer = function(arg) {
     var clamp = function(x) {
@@ -290,16 +299,16 @@ function spatialHelper(renderer, tunnel, targets) {
     var fm = new Vector4().Set3a(arg.from);       // end point
     var la = fm.Sub(at).Normalize();
     var dp = 20 * (1 + la.DotP(gz.Normalize()));  // fudge factor to drive opacity effect on pointer when lined up with lookat vector
-    var gd = fm.Sub(at).Length();                 // actual distance to target
-    
+    var gd = fm.Distance(at,[1,0,1]);
+
     // we do the calcs always (as we need the gd distance value), but 
     // optionally draw the arrow
     if (this.target.pointer) {
       var co = dp * (0.5 + clamp(gd));              // cutoff is a factor of distance AND look vector
       var pg = gz.Scale(this.target.tdist).Add(fm); // this is a point in front of the user head
-    
+
       var es = new Matrix4().makeLookat(at,pg,up).ToPosEuler(true);
-    
+
       var img = "tunnel1";
       this.renderer.setTranslation(img,es.pos.X(), es.pos.Y(), es.pos.Z());
       this.renderer.setRotation   (img,es.rot.X(), es.rot.Y(), es.rot.Z());
@@ -307,50 +316,129 @@ function spatialHelper(renderer, tunnel, targets) {
                                          opacity: clamp(co-0.5), 
                                           hidden: !this.showNavpath }); 
     }
+    
     return gd;
   }
   
+  ////////////////////////////////////////////////////////////////
+  this._drawPathOnce = function(arg) {
+      
+    var at = this.target.loc.position;            // staring point
+    var gt = new Vector4().Set3(this.target.loc.gaze.X(),0,this.target.loc.gaze.Z()).Normalize();  
+    var p0 = new Vector4().Set3(at.X(),      ( at.Y() - this.target.floor) / 2    , at.Z() );//.Sub(gt.Scale(this.cutoff));      // staring point
+    var gz = new Vector4().Set3(arg.gaze[0], 0,                                     arg.gaze[2]).Normalize();
+    var p3 = new Vector4().Set3(arg.from[0], (arg.from[1] - this.target.floor) / 2, arg.from[2]).Add(gz); 
+    var gd = p0.Distance(p3,[1,0,1]);
+    var fc = gd/2 < 1 ? 1 : gd/2;  // this factor drives the intensity of the control points that steer the path in/out; min value is 1.
+    var p1 = p0.Sub(gt.Scale(fc)); // incoming direction
+    var p2 = gz.Scale(fc).Add(p3); // control point is halfway between eye and starting point, central to gaze vector
+    
+    // this is the same for all, so calculate this once
+    console.log(this.color);
+    var navfoggedshade = this.color != undefined ? 'navfogged;r f '+this.color[0]+';g f '+this.color[1]+';b f '+this.color[2] 
+                                                 : 'navfogged';
+
+    // here we go : classic cubic bezier spline curve
+    var nsp1 = this.nsteps+1;
+    if (this._drawOnce == true) for (var i=1; i<nsp1; i++) {
+      var img = "tunnel"+i;
+      
+      var t    = i/nsp1;
+      var omt  = 1-t;
+      var omt2 = omt*omt;
+      var omt3 = omt*omt2;
+      var t2   = t*t;
+      var t3   = t*t2;
+
+      //
+      //cubic bezier               B(t) = (1-t)^3.P0 + 3t(1-t)^2.P1 + 3t^2.(1-t).P2 + t^3.P3
+      //
+      var bt   = p0.Scale(omt3).Add(p1.Scale(3*omt2*t)).Add(p2.Scale(3*t2*omt)).Add(p3.Scale(t3));
+      this.renderer.setTranslation(img,bt.X(),bt.Y(),bt.Z());
+      //
+      //cubic differential tangent B'(t) = 3(1-t)^2.(P1-P0) + 6t.(1-t).(P2-P1) + 3t^2.(P3-P2)
+      //
+      var bdt = p1.Sub(p0).Scale(3*omt2).Add(p2.Sub(p1).Scale(6*t*omt)).Add(p3.Sub(p2).Scale(3*t2)).Normalize();
+
+      // this is vector;we need eulers, so we convert to a matrix
+      var up = new Vector4().Set3(0,1,0);
+      var dp = up.DotP(bdt); 
+      // check to see if the two vectors are close to being parallel
+      if (Math.abs(dp) > 0.8) {
+        // if so, choose a new 'up'
+        up = new Vector4().Set3(0,0,1);
+      }
+      var xd = up.CrossP(bdt);
+      // recalculate up
+      up = bdt.CrossP(xd);	
+      // build the matrix...
+      var em  = new Matrix4().Set3V(xd,up,bdt);
+      var r90 = new Matrix4().Rotate([1,0,0],-90,true).Multiply(em.m);
+
+      // .. and get the eulers
+      var es = r90.ToEuler(true);
+      this.renderer.setRotation(img,es.attitude, es.heading, es.bank);
+      
+      //
+      // finally, distance scaling of the path
+      //
+      var st  = (i + 1) * gd / (this.nsteps + 1); 
+      var sst = st > 1 ? 1 : st;
+      this.renderer.setScale(img,sst,sst,sst);
+
+      this.renderer.setProperties(img,{  shader: navfoggedshade,
+                                        opacity: (gd - 0.5), 
+                                         hidden: !this.showNavpath }); 
+
+    }
+    this._drawOnce = false;
+    return gd;
+  }
+
   ///////////////////////////////////////////////
   this._toggleNavpath = function(force) {
-  
+
     var navfoggedshade = twx.app.isPreview() ? "Default" : 
                          "navfoggedLit";  
-                      
+
     // override if allowed
     this.showNavpath = force != undefined ? force 
                                          : !this.showNavpath;
-  
+
     if (this.target.loc != undefined && this.showNavpath === true) {
 
-      this.drawing = this.showNavpath;
- 
+      this.drawing   = this.showNavpath;
+      this._drawOnce = !this.inside;    
+
       if (this.target.tname != undefined) 
       this.renderer.setProperties (this.target.tname,{shader: navfoggedshade, 
                                                       hidden: false });
       if (this.target.callback != undefined)
         this.target.callback({hidden:false});
-      
+
       if (this.target.fname != undefined) {
         var tcol      = this.target.color != undefined ? this.target.color : this.color;
         var pingshade = twx.app.isPreview() ? "Default" :
                         tcol != undefined ? 'navpinger;rings f 5;r f '+tcol[0]+';g f '+tcol[1]+';b f '+tcol[2]+';direction f -1'
                                           : 'navpinger;rings f 5;r f 0;g f 1;b f 0;direction f -1';
-                                                
+
         this.renderer.setProperties (this.target.fname,{shader: pingshade,    
                                                         hidden:false });
       }
       if (this.target.hname != undefined) 
       this.renderer.setProperties (this.target.hname,{shader: navfoggedshade,    
                                                       hidden: false });
-    
+
     } else {
-    
+
+      this._drawOnce = true; // ensure we do one draw (to hide)
+
       if (this.target.tname != undefined) 
       this.renderer.setProperties (this.target.tname,{shader: navfoggedshade, 
                                                       hidden: true});
       if (this.target.callback != undefined)
         this.target.callback({hidden:true});
-        
+
       if (this.target.fname != undefined) 
         this.renderer.setProperties (this.target.fname,{shader :twx.app.isPreview() ? "Default" : "navpinger",    
                                                         hidden :true});
@@ -358,10 +446,10 @@ function spatialHelper(renderer, tunnel, targets) {
         this.renderer.setProperties (this.target.hname,{shader: navfoggedshade,    
                                                         hidden: true});
     }
-    
+
     return this.drawing;    
   }
-  
+
   ///////////////////////////////////////////////
   this._positionHelpers = function(headloc) {
     var vp = new Vector4().Set3a(headloc.position);
@@ -477,7 +565,8 @@ function spatialHelper(renderer, tunnel, targets) {
   })(this);
       
   // setup draw bindings    
-  this._drawPath = this.isHololens ? this._drawPointer : this._drawTunnel; 
+  this._drawPath = this.isHololens ? this._drawPathOnce  // note : now depricated :: this._drawPointer, replaced with drawPathOnce
+                                   : this._drawTunnel; 
 
 }
 
