@@ -235,13 +235,13 @@ function twxNavigator() {
     ],
     
     dependencies: {
-      files         : ['js/matrix.js', 'js/navigationHelper.js', 'js/navigator-ng.js', 'images/navipad.pvz', 'images/navphonl.pvz', 'images/navphonp.pvz', 'images/navhead.pvz', 'images/navfeet.png', 'images/navSphere.pvz', 'images/navArrow.pvz'],
+      files         : ['js/matrix.js', 'js/navigationHelper.js', 'js/navigator-ng.js', 'images/navipad.pvz', 'images/navphonl.pvz', 'images/navphonp.pvz', 'images/navhead.pvz', 'images/navfeet.png', 'images/navPath.png', 'images/navSphere.pvz', 'images/navArrow.pvz'],
       angularModules: ['navigator-ng']
     },
 
 
     designTemplate: function () {
-      return '<twx-dt-model id="#widgetId#" src="../extensions/images/ipad.pvz" opacity="1" hidden="false" scale="{{me.scale}}" x="{{me.x}}" y="{{me.y}}" z="{{me.z}}" rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" decal="{{me.decal}}" ></twx-dt-model>';
+      return '<twx-dt-model id="#widgetId#" src="../extensions/images/navipad.pvz" opacity="1" hidden="false" scale="{{me.scale}}" x="{{me.x}}" y="{{me.y}}" z="{{me.z}}" rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" decal="{{me.decal}}" ></twx-dt-model>';
     },
 
     runtimeTemplate: function (props, twxWidgetEl, fullOriginalDoc, $, projectSettings) {
@@ -261,7 +261,8 @@ function twxNavigator() {
       var ps2h  = '<script name="navfoggedLit" type="x-shader/x-fragment"> cbuffer ShaderConstantBuffer : register(b0) { float4 highlightColor; bool useTexture; bool useLight; float transparency; int pad; }; cbuffer RenderConstantBuffer : register(b1) { float tick; float3 ding; }; struct PixelShaderInput { half4 pos : SV_POSITION; half4 color : COLOR0; half4 world: POSITION; half2 xray : TEXCOORD0; }; min16float4 main(PixelShaderInput input) : SV_TARGET { min16float4 color = min16float4(0.7,0.7,0.7,1.0); float dp = input.xray.x; float opacity = abs(dp); float xray = 1.0 - pow(opacity,3.); float gz = 1.0 - clamp((input.pos.z / input.pos.w) - 0.5, 0., 1.); min16float4 finalShadedColor = min16float4(saturate(gz * xray * color).xyz, 1.0); return finalShadedColor; } </script>\n';
       var shade = forholo ? vs0h+ps0h          +vs2h+ps2h
                           : vs0g+ps0g+vs1g+ps1g+vs2g+ps2g;
-      var tml1 = '<div ng-repeat="obj in helper.tunnel_objects"><twx-dt-model id="{{obj.name}}" x="0" y="0" z="0" opacity="1.0" rx="0" ry="0" rz="0" src="{{obj.src}}" hidden="true" shader="navfogged"></twx-dt-model></div>\n';
+      var tml1 = forholo ? '<div ng-repeat="obj in helper.tunnel_objects"><twx-dt-image id="{{obj.name}}" x="0" y="0" z="0" opacity="1.0" rx="-90" ry="0" rz="0" sx="1" sy="1" sz="1" decal="false" pivot="5" height="0.15" width="0.25" src="{{obj.src}}" hidden="true" shader=""></twx-dt-image></div>\n'
+                         : '<div ng-repeat="obj in helper.tunnel_objects"><twx-dt-model id="{{obj.name}}" x="0" y="0" z="0" opacity="1.0" rx="0" ry="0" rz="0" src="{{obj.src}}" hidden="true" shader="navfogged"></twx-dt-model></div>\n';
       var tml2 = '<div ng-repeat="obj in helper.nav_objects"><twx-dt-model id="{{obj.name}}" x="0" y="0" z="0" opacity="1.0" rx="0" ry="0" rz="0" sx="1" sy="1" sz="1" src="{{obj.src}}" hidden="true"></twx-dt-model></div>\n';
       var tml3 = '<div ng-repeat="obj in helper.nav_images"><twx-dt-image id="{{obj.name}}" x="0" y="0" z="0" opacity="1.0" rx="-90" ry="0" rz="0" sx="1" sy="1" sz="1" decal="false" pivot="5" height="0.5" width="0.5" src="{{obj.src}}" hidden="true" shader="navpinger"></twx-dt-image></div>\n';
       var ctrl = '<div ng-navigator id-field="' + props.widgetId + '" isholo-field=' + forholo +
