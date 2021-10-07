@@ -9,7 +9,8 @@ function twxToggleButton3D() {
     
     isVisibleInPalette: function(scope) {
       let projectSettings = scope.$root.currentProject || {};
-      return (projectSettings.projectType === 'eyewear');
+      return false; // NOW DEPRICATED    
+      //return (projectSettings.projectType === 'eyewear');
     },
 
     properties: [

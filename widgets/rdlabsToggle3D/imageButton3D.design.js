@@ -2,14 +2,15 @@ function twxImageButton3D() {
   return {
     elementTag: 'octo-imagebutton3d',
       
-    label    : '3D Image Button',
+    label    : 'OCTO 3D Image Button',
     
     category : 'ar',
     groups    : ['input'],
     
     isVisibleInPalette: function(scope) {
       let projectSettings = scope.$root.currentProject || {};
-      return (projectSettings.projectType === 'eyewear');
+      return false; // NOW DEPRICATED    
+      //return (projectSettings.projectType === 'eyewear');
     },
 
     properties: [

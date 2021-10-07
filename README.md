@@ -88,7 +88,18 @@ TBC
 UI elements such as Hololens2-ready UI controls.
 Note that many of these will be obsoleted soon, as they've been migrated into the Studio product build.  
 
+### Busy Indicator
+When enabled, this will display a simple "traditional" spinning wheel indicating that something is happening...
 
+### Progress Indicator
+Takes a value 0..100 which indicates percentage-complete status. This widget will draw the the image provided as the resource, and it will
+stretch this image across the width of the control based on the percentage complete value.
+
+if the stepped box is checked, you can enter the number of steps into which the
+widget will quantize the value for example steps=5 will divide the control into 5 even blocks.  Then the value hits 20%, the first block will be filled with the supplied image. Same for the other settings e.g. 40,60,80,100%
+
+### List
+WIP
 
 ## Metadata 
 ### Finder
@@ -156,7 +167,7 @@ is set, or whenever the path is shown (the Show() method).  This is for performa
 Included are a collection of simple logic 'gates' (based on core principals and building blocks used in microelectronics).
 These building blocks can be used to controlling state within you application.
 
-#### Flip Flip
+#### Flip Flop
 The flipflop emulates a standard JK flipflop electronic circuit.  It can be set to a value (true) or reset (false) or it can set to 'toggle' mode and 'clocked' to bounce between these two states.
 The output Q reflects the behaviour above.  Qbar is the opposite of Q i.e. if Q is true, Qbar is false.
 

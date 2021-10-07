@@ -2,14 +2,15 @@ function twxToggle3D() {
   return {
     elementTag: 'octo-toggle3D',
       
-    label    : '3D Toggle',
+    label    : 'OCTO 3D Toggle',
     
     category : 'ar',
     groups    : ['input'],
     
     isVisibleInPalette: function(scope) {
       let projectSettings = scope.$root.currentProject || {};
-      return (projectSettings.projectType === 'eyewear');
+      return false; // NOW DEPRICATED    
+      //return (projectSettings.projectType === 'eyewear');
     },
 
     properties: [
