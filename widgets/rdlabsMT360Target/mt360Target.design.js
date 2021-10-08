@@ -109,7 +109,7 @@
               label: widgetLabel,
  isVisibleInPalette: function(scope) {
                        let builderSettings = scope.$root.builderSettings || {};
-                       return !!builderSettings.octo; // whilst we await support in the viewer..
+                       return true; //!!builderSettings.octo; // whilst we await support in the viewer..
                      },
            category: 'ar',
              groups: ['Targets'],
