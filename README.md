@@ -54,6 +54,7 @@ various perspectives.
 Note : The 3d occluding model is (currently) not included in the runtime display. 
 
 ### Area targets
+Note : depricated : product now includes this target type
 
 Area targets provide a means of locating and tracking the user in a larger spatial environment, say a room or a small factory space. 
 Instead of tracking against an object/shape or an image, you are tracking against the environment/surroundings.
@@ -79,10 +80,10 @@ occlusion effect that will ensure any digital augmentation will appear correctly
 Note this will soon be depricated as Studio has now integrated the Area Target widget into the product.
 
 ### Cloud Image Targets
-TBC
+depricated: product now includes this target type
 
 ### Custom Vumarks
-TBC
+depricated: product now includes this target type
 
 ## Inputs
 UI elements such as Hololens2-ready UI controls.
