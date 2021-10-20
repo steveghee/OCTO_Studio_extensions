@@ -52,11 +52,13 @@ function spatialHelper(renderer, tunnel, targets) {
       this.target.loc = this._positionHelpers( { position:locator.position.v, 
                                                      gaze:locator.gaze.v, 
                                                        up:locator.up.v });
-      var hpos = new Vector4().Set3a(this.headloc.position);
-      var locd = hpos.Sub(this.target.loc.position).Length();    
+      if (this.headloc != undefined) {
+        var hpos = new Vector4().Set3a(this.headloc.position);
+        var locd = hpos.Sub(this.target.loc.position).Length();    
 
-      this.inside    = (locd < this.cutoff) ? true : false; 
-      this._drawOnce = !this.inside; // only draw if we are outside of the fence
+        this.inside    = (locd < this.cutoff) ? true : false; 
+        this._drawOnce = !this.inside; // only draw if we are outside of the fence
+      }
     }
     else {
         this._toggleNavpath(false); 

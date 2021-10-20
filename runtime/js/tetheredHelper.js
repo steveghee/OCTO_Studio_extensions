@@ -30,6 +30,7 @@ function tetheredHelper(renderer, interval, panels, offset) {
   // tracked items ('panels') - it we do need to move them, kick off a small
   // animation to move the items to the final resting location
   this.headTether = function(arg) {
+      console.log('tether called with',JSON.stringify(arg));
     if (this.tethering === true) this._headTether(arg);
     if (this.transiting != undefined) this.transiting();  
   }
@@ -129,7 +130,7 @@ function tetheredHelper(renderer, interval, panels, offset) {
     var yup   = new Vector4().Set3(0,1,0);
     //if (Math.abs(yup.DotP(this.gaze)) < 0.707) up = yup; // keep item vertical when head is generally looking horizontal-ish
     var xd    = yup.CrossP(this.gaze).Normalize();
-    var nup   = this.gaze.CrossP(xd); // recalc up
+    var nup   = this.gaze.CrossP(xd).Normalize(); // recalc up
  
     // from gaze, up  we calculate the bitangent (nup) and from this we can calculate the view matrix
     this.em = new Matrix4().Set3V(xd,nup,this.gaze);
