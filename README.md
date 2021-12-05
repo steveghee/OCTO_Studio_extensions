@@ -19,7 +19,7 @@ The extension can be broken down into 4 main catagories
 1. Targets
 2. Inputs
 3. Containers
-4. Navigation
+4. Navigation **new : "zone of interest" widget
 5. Misc
 
 Lets look at each in turn.
@@ -131,6 +131,9 @@ Next, using "fields to include", you can set a list (comma separated, no spaces)
 TBC
 
 ## Navigation
+There are two widgets in this category
+
+###Navigator
 The navigation widget provies a simple means to helping guide/navigate the user to a location within the tracked space.  To use this feature, first add
 the navigation widget to your 3d scene.  You can choose how you want to help indicate the target location e.g. if you user is holding an ipad, you can choose the ipad 
 representation from the dropdown. There are other options available.
@@ -161,6 +164,21 @@ identify what that location e.g. e.g. the metadata could be a value that points 
 The navigator widget also works on the hololens, though the operation is slightly different in that on a mobile/tablet device, the path is dynamic (it will change as the user moves) whereas on the hololens, the path is static - it is computed once (either when the navigation point 
 is set, or whenever the path is shown (the Show() method).  This is for performance reasons.
 
+###Zones of Interest (**new**)
+The Zones of interest widget provies a mechanism to declare one or more zones (these are cylindrical is shape) and position these in 
+your space.  When then user navigates the scene and crossed into or exist a zone, the widget will output appropriate events that allows your experince to react to the user proximity.
+
+Similar to the navigator widget, you can declare/bind an array zones and the control will manage them for you.  You can also create/mark new zones on demand.
+This data can be in table form - perhaps the result of a thingworx service call - or you can set the value from javascript.
+
+  `$scope.view.wdg.zones.zoidata = [ 
+                                         { position: "0,0,0",    // defined as a string of xyz coordinates 
+                                              color: [1,0,0],    // optional data 
+                                             radius: 2           // optional; defines the radius of this specific zone
+                                         }
+                                       ];` 
+
+This section TO BE COMPLETED
 
 ## Misc
 

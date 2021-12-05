@@ -49,7 +49,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         // lets create a single tether manager
         //
         if (scope.$root != undefined && scope.$root.tetherManager === undefined)
-          scope.$root.tetherManager = new tetheredHelper(scope.renderer,$interval).Offset(scope.snap).Pause();
+          scope.$root.tetherManager = new tetheredHelper(scope.renderer,$interval).Offset(scope.snap).ControlsOnTransition(false).Pause();
         scope.data.tether = scope.$root.tetherManager;
         
         //
@@ -115,6 +115,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                                              }]
                                            ).Offset(scope.data.snap);
                     
+                //go or no go?    
+                if (scope.data.auto) scope.data.tether.Start();          
+                else                 scope.data.tether.Pause();
+                
                 //    
                 // inform any controls of the state of the tethering    
                 //
