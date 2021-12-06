@@ -74,10 +74,10 @@ function twxZoi() {
        showInput: true
       },
       {
-            name: 'visible',
-           label: 'ves-basic-web-widgets-extension:Visible',
+            name: 'disabled',
+           label: 'Disabled',
         datatype: 'boolean',
-         default: true,
+         default: false,
  isBindingTarget: true
       },
       {
@@ -157,7 +157,7 @@ function twxZoi() {
       var tml1 = '<div ng-repeat="obj in zoihelper.zois"><twx-dt-model id="{{obj.objid}}" x="{{obj.position.v[0]}}" y="0" z="{{obj.position.v[2]}}" opacity="0.7" rx="0" ry="0" rz="0" src="{{obj.modelsrc}}"  hidden="true" shader="zoipinger"></twx-dt-model></div>';                         
       var tml2 = '<div ng-repeat="obj in zoihelper.zois"><twx-dt-image id="{{obj.imgid}}" x="{{obj.position.v[0]}}" y="2" z="{{obj.position.v[2]}}" opacity="1.0" rx="0" ry="0" rz="0" height="0.25" width="0.25" src="{{obj.imagesrc}}"  billboard="false"  hidden="true" shader="pingergl;r f 0;g f 1;b f 0;direction f 1;rate f 3"></twx-dt-model></div>';                         
       var ctrl = '<div ng-zoi id-field="' + props.widgetId + '" isholo-field=' + forholo +
-                 ' extent-field={{me.radius}} visible-field={{me.visible}} value-field="me.value"'+
+                 ' extent-field={{me.radius}} disabled-field={{me.disabled}} value-field="me.value"'+
                  ' auto-field={{me.auto}} cutoff-field={{me.cutoff}} floor-field={{me.floor}} zoidata-field="me.zoidata"'+
                  ' src-field={{me.zoiSrc}} color-field={{me.zoiColor}} delegate-field="delegate"></div>\n';
       return ctrl+shade+tml1+tml2;

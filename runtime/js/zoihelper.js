@@ -109,13 +109,15 @@ function zoiHelper(renderer, targets) {
   //
   this.draw = function(arg) {
       
-    this.headloc = arg.position;
-    if (this.showing) {
+    this.headloc = arg;
+      
+    //do we have anything to draw?  
+    if (this.targets != undefined) {
 
       //
       // draw the ZOIs - ths may be as simple as turning them on/off
       //
-      var d = this._drawZOIs( { from:this.headloc } );
+      var d = this._drawZOIs( { from: this.headloc.position } );
     
       this.showing = this.showZOIs;
           
@@ -146,9 +148,6 @@ function zoiHelper(renderer, targets) {
 
     }
     
-    // and keep a record of the head position
-    this.headloc = arg;
-
   }
   
   //
@@ -274,7 +273,7 @@ function zoiHelper(renderer, targets) {
       minds.sort(function(a, b){return a.dist - b.dist});
     
     // do we need to change drawing 
-    if (this.dirty) {
+    if (this.showing && this.dirty) {
         
       this.dirty = false;
         

@@ -17,7 +17,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         srcField         : '@',
         autoField        : '@',
         colorField       : '@',
-        visibleField     : '@',
+        disabledField    : '@',
         isholoField      : '@',
         cutoffField      : '@',
         extentField      : '@',
@@ -43,7 +43,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                      helper: undefined,
                        args: undefined,
                       color: undefined,
-                    visible: undefined,
+                   disabled: false,
                     pending: undefined,
                       ready: false
                      };
@@ -67,7 +67,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           scope.$root.zoihelper = scope.data.helper;
           
           // are you uready to rock?
-          if (scope.data.ready && scope.data.visible != false)
+          if (scope.data.ready && scope.data.disabled == false)
             show();                       
         }
         
@@ -75,7 +75,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         // we are mainly driven by the external clock which is the renderer location callback
         //
         scope.$root.$on('tracking', function(evt, arg) { 
-          if (scope.data.ready && scope.data.visible) {
+          if (scope.data.ready && scope.data.disabled == false) {
             scope.data.args = arg;          
             updatezois();
           }
@@ -227,18 +227,15 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         //
         //
         //
-        scope.$watch('visibleField', function () {
+        scope.$watch('disabledField', function () {
                      
-          scope.data.visible = (scope.visibleField != undefined && scope.visibleField === 'true') ? true :false ;
-          
-          // kick off the next phase...
-          if (scope.data.visible === true) show();           
-          else                             hide();           
+          scope.data.disabled = (scope.disabledField != undefined && scope.disabledField === 'true') ? true :false ;
+      
         });
             
         var show = function(){
           //force visble      
-          scope.data.visible = true;;  
+          scope.data.disabled = false;  
           
           if (scope.data.helper != undefined) {
             scope.data.helper.show();          
@@ -263,7 +260,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             };
             delegate.capture = function () {
               if (scope.data.helper != undefined) {
-                scope.data.helper.addAtCurrent().show();
+                    
+                var newname = scope.idField + Date.now();    
+                scope.data.helper.addAtCurrent(newname).show();
                   
                 // async, we get the new value and add to the zoidata table
                 // this is a bidirectional bind, so others can register interest and get the value
