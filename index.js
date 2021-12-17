@@ -22,6 +22,7 @@ exports.runtimeAngularModulesRequires = ["groupy-ng",
                                          //"octopress3D-ng",
                                          //"image3D-ng", 
                                          //"tethered-ng",
+                                         //"octoPinger-ng",
                                          /////////////
                                          
                                          "navigator-ng",
@@ -29,6 +30,5 @@ exports.runtimeAngularModulesRequires = ["groupy-ng",
                                          "multiline3D-ng",
                                          "list3D-ng",
                                          "progress3D-ng",
-                                         "octoPinger-ng",
                                          "zoi-ng"
                                         ];
