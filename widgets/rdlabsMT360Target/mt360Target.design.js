@@ -14,15 +14,9 @@
     overlay.rx = Twx3dCommon.common3dProp('rx');
     overlay.ry = Twx3dCommon.common3dProp('ry');
     overlay.rz = Twx3dCommon.common3dProp('rz');
-    overlay.rx.isBindingTarget = false;
-    overlay.ry.isBindingTarget = false;
-    overlay.rz.isBindingTarget = false;
     overlay.x  = Twx3dCommon.common3dProp('x');
     overlay.y  = Twx3dCommon.common3dProp('y');
     overlay.z  = Twx3dCommon.common3dProp('z');
-    overlay.x. isBindingTarget = false;
-    overlay.y. isBindingTarget = false;
-    overlay.z. isBindingTarget = false;
 
     overlay.placeholder_img = Twx3dCommon.getPlaceHolderImgProperty('/extensions/images/360target.png');
     
