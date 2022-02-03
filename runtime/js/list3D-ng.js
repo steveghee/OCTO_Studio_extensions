@@ -118,14 +118,16 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 var pressed = !!scope.data.data[i].pressed;
                 result.push({     pressed: pressed,
                                notpressed: !pressed,
-                                     text: scope.data.data[i].text,
-                                      src: scope.data.data[i].src,
-                               srcpressed: scope.data.data[i].srcpressed,
+                                     text: !!scope.data.data[i].text       ? scope.data.data[i].text : "",
+                                      src: !!scope.data.data[i].src        ? scope.data.data[i].src : "",
+                               srcpressed: !!scope.data.data[i].srcpressed ? scope.data.data[i].srcpressed: "",
                                   visible: true
-                            });
+                              });
+    
             }
             // keep a copy as we need to know what change
             scope.datawindowField = result;
+            console.log('setting',JSON.stringify(result));
             
             var tf = scope.data.rows * scope.data.cols;
             scope.dnvisField = (scope.data.data.length > tf) && ((scope.data.rowIndex + scope.data.cols) < (scope.data.data.length - 1));

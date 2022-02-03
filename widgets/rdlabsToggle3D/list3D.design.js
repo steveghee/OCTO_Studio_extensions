@@ -249,8 +249,8 @@ function twxList3D() {
     ],
     
     dependencies: {
-      files         : ['js/list3D-ng.js', 'js/octopress3D-ng.js', 'js/image3D-ng.js', 'images/**'],
-      angularModules: ['list3D-ng','octopress3D-ng', 'image3D-ng']
+      files         : ['js/list3D-ng.js', 'images/**'],
+      angularModules: ['list3D-ng']
     },
   
     designTemplate: function () {
@@ -267,7 +267,7 @@ function twxList3D() {
     runtimeTemplate: function (props, twxWidgetEl, fullOriginalDoc, $, projectSettings) {
       var forholo = (projectSettings.projectType === 'eyewear');
         
-      var tmpl = '<div ng-list3d class="ng-hide list3DWidget ' + props.class + '" id-field="' + props.widgetId + '" isholo-field='+forholo+' multiselect-field={{me.multiselect}} rows-field={{me.rows}} cols-field={{me.cols}} height-field={{me.buttonheight}} width-field={{me.buttonwidth}} disabled-field={{me.disabled}} listdata-field="me.listdata" datawindow-field="me.datawindow" value-field="me.value" upvis-field="me.upvis" dnvis-field="me.dnvis" delegate-field="delegate"></div>\n';
+      var tmpl = '<div ng-list3d class="ng-hide list3DWidget ' + props.class + '" id-field="' + props.widgetId + '" isholo-field='+forholo+' multiselect-field={{me.multiselect}} rows-field={{me.rows}} cols-field={{me.cols}} height-field={{me.buttonheight}} width-field={{me.buttonwidth}} disabled-field={{me.disabled)} listdata-field="me.listdata" datawindow-field="me.datawindow" value-field="me.value" upvis-field="me.upvis" dnvis-field="me.dnvis" delegate-field="delegate"></div>\n';
       var ctrl = '';
       
       // we build up an array of buttons, cols wide, rows deep
@@ -289,19 +289,18 @@ function twxList3D() {
             
           // we need to write out an array of buttons
           var bid     = (rows * nc) + cols;
-          var rowtmpl = '<div ng-image3d  id-field="' + props.widgetId + '-' + bid + '" isholo-field='+forholo+' height-field={{me.buttonheight}} width-field={{me.buttonwidth}} backer-field={{me.showbacker}} font-field="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" '+
-                        'text-field={{me.datawindow['+bid+'].text}} src-field={{me.datawindow['+bid+'].srcpressed}} srcnotpressed-field={{me.datawindow['+bid+'].src}} '+
-                        'pressed-field="me.datawindow['+bid+'].pressed" notpressed-field="me.datawindow['+bid+'].notpressed" disabled-field={{me.disabled}}></div>\n';
-          var rowctrl = '<twx-dt-3dbutton id="' + props.widgetId + '-' + bid + '" class="list3Dwidget" ' + 
-                        'text="" ' + 
-                        'height="{{me.buttonheight}}" width="{{me.buttonwidth}}" '+
-                        'fontcolor="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" fontoutlinecolor="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" '+
-                        'color="{{me.disabled ? me.colordisabled : me.datawindow['+bid+'].pressed ? (me.pressedColor.endsWith(&apos;;&apos;)? me.pressedColor.slice(0, -1): me.pressedColor) : (me.buttonColor.endsWith(&apos;;&apos;)? me.buttonColor.slice(0, -1): me.buttonColor) }}" '+
-                        'backercolor="{{me.buttonColor.endsWith(&apos;;&apos;)? me.buttonColor.slice(0, -1): me.buttonColor}}" ' + 
-                        'x="{{'+dx+' + me.x}}" y="{{'+dy+' + me.y}}" z="{{me.z}}" ' + 
-                        'rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" ' + 
-                        'hidden="{{!app.fn.isTrue(me.visible) || !app.fn.isTrue(me.datawindow['+bid+'].visible) }}" '+
-                        'shader="{{me.shader}}" interactable-hint="true"/>\n';
+          var rowtmpl = '<ng-toggle3d  id-field="' + props.widgetId + '-' + bid + '" isholo-field='+forholo+' height-field="{{me.buttonheight}}" width-field="{{me.buttonwidth}}" font-field="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" backer="{{me.showbacker}}" ' +
+                        ' smallicon-field="false" multilinetext-field="false" pressed-field="me.datawindow['+bid+'].pressed" notpressed-field="me.datawindow['+bid+'].notpressed" disabled-field="me.disabled" src-field="{{me.datawindow['+bid+'].srcpressed}}" srcnotpressed-field="{{me.datawindow['+bid+'].src}}" text-field="{{me.datawindow['+bid+'].text}}" >\n';
+          var rowctrl = ' <twx-dt-3dbutton id="' + props.widgetId + '-' + bid + '" class="list3Dwidget" ' + 
+                        '  text="" '+
+                        '  height="{{me.buttonheight}}" width="{{me.buttonwidth}}" '+
+                        '  fontcolor="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" fontoutlinecolor="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" '+
+                        '  color="{{me.disabled ? me.colordisabled : me.datawindow['+bid+'].pressed ? (me.pressedColor.endsWith(&apos;;&apos;)? me.pressedColor.slice(0, -1): me.pressedColor) : (me.buttonColor.endsWith(&apos;;&apos;)? me.buttonColor.slice(0, -1): me.buttonColor) }}" '+
+                        '  backervisbility="{{me.showbacker}}" backercolor="{{me.buttonColor.endsWith(&apos;;&apos;)? me.buttonColor.slice(0, -1): me.buttonColor}}" ' + 
+                        '  x="{{'+dx+' + me.x}}" y="{{'+dy+' + me.y}}" z="{{me.z}}" ' + 
+                        '  rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" ' + 
+                        '  hidden="{{!app.fn.isTrue(me.visible) || !app.fn.isTrue(me.datawindow['+bid+'].visible) }}" '+
+                        '  shader="{{me.shader}}" interactable-hint="true"/>\n</ng-toggle3d>\n';
           dx += ddx;
           ctrl = ctrl + rowtmpl + rowctrl;
         }
@@ -321,31 +320,31 @@ function twxList3D() {
       
       //standard press3d widget inserted inline - this is the angular controller (handles rendering etc.)
       //
-      var uptmpl = '<div ng-press3d id-field="' + props.widgetId + 'upper" isholo-field='+forholo+' height-field="0.032" width-field="0.032" backer-field={{me.showbacker}} font-field="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" text-field="up" src-field="extensions/images/up-arrow.png" disabled-field={{me.disabled || !app.fn.isTrue(me.upvis)}}></div>\n';
+      var uptmpl = '<div ng-press3d id-field="' + props.widgetId + 'upper" isholo-field='+forholo+' height-field="0.032" width-field="0.032" backer-field="me.showbacker" font-field="me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor" text-field="up" src-field="extensions/images/up-arrow.png" disabled-field="(me.disabled || !app.fn.isTrue(me.upvis))"></div>\n';
       
       //and this is the tml button
       //
       var upctrl = '<twx-dt-3dbutton id="' + props.widgetId + 'upper" '+ 
-      'text="" ' +  // set to "" so that we can render the text into the button label directly 
+      'text="" src="extensions/images/up-arrow.png"' +  // set to "" so that we can render the text into the button label directly 
       'height="0.032" width="0.032" ' +
       'fontcolor="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" fontoutlinecolor="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" '+
       'color="{{(me.disabled || !app.fn.isTrue(me.upvis)) ? me.colordisabled : (me.buttonColor.endsWith(&apos;;&apos;)? me.buttonColor.slice(0, -1): me.buttonColor) }}" '+
       'backercolor="{{me.buttonColor.endsWith(&apos;;&apos;)? me.buttonColor.slice(0, -1): me.buttonColor}}" ' +
       'x="{{'+cx+' + me.x}}" y="{{me.y+'+cy+'}}" z="{{me.z}}" '+
       'rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" '+
-      'hidden="{{!app.fn.isTrue(me.visible)}}" shader="{{me.shader}}" interactable-hint="true"/>\n';
+      'backervisibility=="me.showbacker" hidden="{{!app.fn.isTrue(me.visible)}}" shader="{{me.shader}}" interactable-hint="true"/>\n';
       
       // same again
-      var dntmpl = '<div ng-press3d id-field="' + props.widgetId + 'downer" isholo-field='+forholo+' height-field="0.032" width-field="0.032"  backer-field={{me.showbacker}} font-field="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" text-field="down" src-field="extensions/images/dn-arrow.png" disabled-field={{me.disabled || !app.fn.isTrue(me.dnvis)}}></div>\n';
+      var dntmpl = '<div ng-press3d id-field="' + props.widgetId + 'downer" isholo-field='+forholo+' height-field="0.032" width-field="0.032"  backer-field="{{me.showbacker}}" font-field="me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor" text-field="down" src-field="extensions/images/dn-arrow.png" disabled-field="(me.disabed || !app.fn.isTrue(me.dnvis))"></div>\n';
       var dnctrl = '<twx-dt-3dbutton id="' + props.widgetId + 'downer" ' + 
-      'text="" ' +  // set to "" so that we can render the text into the button label directly
+      'text="" src="extensions/images/dn-arrow.png"' +  // set to "" so that we can render the text into the button label directly
       'height="0.032" width="0.032" '+
       'fontcolor="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" fontoutlinecolor="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" '+
       'color="{{(me.disabled || !app.fn.isTrue(me.dnvis))? me.colordisabled : (me.buttonColor.endsWith(&apos;;&apos;)? me.buttonColor.slice(0, -1): me.buttonColor) }}" '+
       'backercolor="{{me.buttonColor.endsWith(&apos;;&apos;)? me.buttonColor.slice(0, -1): me.buttonColor}}" ' +
       'x="{{'+cx+' + me.x}}" y="{{me.y-'+cy+'}}" z="{{me.z}}" '+
       'rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" '+
-      'hidden="{{!app.fn.isTrue(me.visible)}}" shader="{{me.shader}}" interactable-hint="true"/>\n';
+      'backervisibility=="me.showbacker" hidden="{{!app.fn.isTrue(me.visible)}}" shader="{{me.shader}}" interactable-hint="true"/>\n';
       ctrl = ctrl + uptmpl+upctrl+dntmpl+dnctrl;
       
       //and the holo shaders
