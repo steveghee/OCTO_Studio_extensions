@@ -44,7 +44,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 rowIndex : 0,
                 fontColor: '#ffffff',
                   pressed: false,
-               notpressed: true,
                  disabled: undefined,
                    backer: undefined,
                      text: '',
@@ -117,7 +116,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             for (var i=start;i<start+count; i++) {
                 var pressed = !!scope.data.data[i].pressed;
                 result.push({     pressed: pressed,
-                               notpressed: !pressed,
                                      text: !!scope.data.data[i].text       ? scope.data.data[i].text : "",
                                       src: !!scope.data.data[i].src        ? scope.data.data[i].src : "",
                                srcpressed: !!scope.data.data[i].srcpressed ? scope.data.data[i].srcpressed: "",
@@ -229,6 +227,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             let count = scope.data.rows * scope.data.cols;
             if (start + count > scope.data.data.length)
               count = scope.data.data.length - start;
+              
             let changeIndex = undefined;
             for (var i=0;i<count;i++) {
                 
@@ -240,9 +239,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 
               //now copy over all the data
               scope.data.data[scope.data.rowIndex+i].pressed    = scope.datawindowField[i].pressed;
-              scope.data.data[scope.data.rowIndex+i].notpressed = scope.datawindowField[i].notpressed;
               scope.data.data[scope.data.rowIndex+i].visible    = scope.datawindowField[i].visible;
-              
+            }
+            
+            // we need to run over the full array to get the selectedRows
+            scope.data.data.selectedRows=[];
+            for (var i=0;i<scope.data.data.length;i++) {
+              if (scope.data.data[i].pressed) 
+                scope.data.data.selectedRows.push(scope.data.data[i]);
             }
             
             // update the output field and fire any events
@@ -254,14 +258,18 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 let newp = scope.datawindowField[changeIndex-start].pressed;
                 for (var i=0;i<todo;i++) {
                   scope.data.data[i].pressed    = (i === changeIndex) ?  newp : false;
-                  scope.data.data[i].notpressed = (i === changeIndex) ? !newp : true;
                 }
+              
+                //and override selectedRows if selected
+                if (scope.data.data[changeIndex].pressed)
+                  scope.data.data.selectedRows = [scope.data.data[changeIndex]];
               }
                 
               var selrow = { pressed: scope.data.data[changeIndex].pressed,
                                value: scope.data.data[changeIndex].value };  
               scope.valueField = buildInfoTable( [ selrow ] );
-                           
+              scope.data.data.current = scope.data.data[changeIndex];
+              
               if (scope.data.data[changeIndex].pressed === true) {
                 scope.$parent.fireEvent('pressed',selrow.value);
               } else {
