@@ -289,15 +289,13 @@ function twxList3D() {
             
           // we need to write out an array of buttons
           var bid     = (rows * nc) + cols;
-          var rowtmpl = '<ng-toggle3d  id-field="' + props.widgetId + '-' + bid + '" isholo-field='+forholo+' height-field="{{me.buttonheight}}" width-field="{{me.buttonwidth}}" font-field="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" backer="{{me.showbacker}}" ' +
-                        ' smallicon-field="false" multilinetext-field="false" pressed-field="me.datawindow['+bid+'].pressed" notpressed-field="me.datawindow['+bid+'].notpressed" disabled-field="me.disabled" src-field="{{me.datawindow['+bid+'].srcpressed}}" srcnotpressed-field="{{me.datawindow['+bid+'].src}}" text-field="{{me.datawindow['+bid+'].text}}" >\n';
-          var rowctrl = ' <twx-dt-3dbutton id="' + props.widgetId + '-' + bid + '" class="list3Dwidget" ' + 
+          var rowtmpl = '<ng-toggle3d  id-field="' + props.widgetId + '-' + bid + '" isholo-field='+forholo+' height-field="{{me.buttonheight}}" width-field="{{me.buttonwidth}}" font-field="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" color-field="{{app.fn.sanitizeRgbColor(me.datawindow['+bid+'].pressed ? (me.pressedColor.endsWith(&apos;;&apos;)? me.pressedColor.slice(0, -1): me.pressedColor) : (me.buttonColor.endsWith(&apos;;&apos;)? me.buttonColor.slice(0, -1): me.buttonColor) )}}"' +
+                        ' smallicon-field="false" multilinetext-field="false" pressed-field="me.datawindow['+bid+'].pressed" disabled-field="me.disabled" src-field="{{me.datawindow['+bid+'].srcpressed}}" srcnotpressed-field="{{me.datawindow['+bid+'].src}}" text-field="{{me.datawindow['+bid+'].text}}" >\n';
+          var rowctrl = ' <twx-dt-3dbutton id="' + props.widgetId + '-' + bid + '" ' + 
                         '  text="" '+
                         '  height="{{me.buttonheight}}" width="{{me.buttonwidth}}" '+
-                        '  fontcolor="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" fontoutlinecolor="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" '+
-                        '  color="{{me.disabled ? me.colordisabled : me.datawindow['+bid+'].pressed ? (me.pressedColor.endsWith(&apos;;&apos;)? me.pressedColor.slice(0, -1): me.pressedColor) : (me.buttonColor.endsWith(&apos;;&apos;)? me.buttonColor.slice(0, -1): me.buttonColor) }}" '+
-                        '  backervisbility="{{me.showbacker}}" backercolor="{{me.buttonColor.endsWith(&apos;;&apos;)? me.buttonColor.slice(0, -1): me.buttonColor}}" ' + 
-                        '  x="{{'+dx+' + me.x}}" y="{{'+dy+' + me.y}}" z="{{me.z}}" ' + 
+                        '  backervisibility="false" backercolor="{{me.buttonColor.endsWith(&apos;;&apos;)? me.buttonColor.slice(0, -1): me.buttonColor}}" ' + 
+                        '  x="{{'+dx+' + me.x}}" y="{{'+dy+' + me.y}}" z="{{me.z}}" sx="1" sy="1" sz="1" ' + 
                         '  rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" ' + 
                         '  hidden="{{!app.fn.isTrue(me.visible) || !app.fn.isTrue(me.datawindow['+bid+'].visible) }}" '+
                         '  shader="{{me.shader}}" interactable-hint="true"/>\n</ng-toggle3d>\n';
