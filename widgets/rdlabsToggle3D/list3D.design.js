@@ -289,12 +289,12 @@ function twxList3D() {
             
           // we need to write out an array of buttons
           var bid     = (rows * nc) + cols;
-          var rowtmpl = '<ng-toggle3d  id-field="' + props.widgetId + '-' + bid + '" isholo-field='+forholo+' height-field="{{me.buttonheight}}" width-field="{{me.buttonwidth}}" font-field="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" color-field="{{app.fn.sanitizeRgbColor(me.datawindow['+bid+'].pressed ? (me.pressedColor.endsWith(&apos;;&apos;)? me.pressedColor.slice(0, -1): me.pressedColor) : (me.buttonColor.endsWith(&apos;;&apos;)? me.buttonColor.slice(0, -1): me.buttonColor) )}}"' +
+          var rowtmpl = '<ng-toggle3d  id-field="' + props.widgetId + '-' + bid + '" isholo-field='+forholo+' height-field="{{me.buttonheight}}" width-field="{{me.buttonwidth}}" font-field="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" color-field={{me.buttonColor}}' +
                         ' smallicon-field="false" multilinetext-field="false" pressed-field="me.datawindow['+bid+'].pressed" disabled-field="me.disabled" src-field="{{me.datawindow['+bid+'].srcpressed}}" srcnotpressed-field="{{me.datawindow['+bid+'].src}}" text-field="{{me.datawindow['+bid+'].text}}" >\n';
           var rowctrl = ' <twx-dt-3dbutton id="' + props.widgetId + '-' + bid + '" ' + 
                         '  text="" '+
                         '  height="{{me.buttonheight}}" width="{{me.buttonwidth}}" '+
-                        '  backervisibility="false" backercolor="{{me.buttonColor.endsWith(&apos;;&apos;)? me.buttonColor.slice(0, -1): me.buttonColor}}" ' + 
+                        '  backervisibility="false" ' + 
                         '  x="{{'+dx+' + me.x}}" y="{{'+dy+' + me.y}}" z="{{me.z}}" sx="1" sy="1" sz="1" ' + 
                         '  rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" ' + 
                         '  hidden="{{!app.fn.isTrue(me.visible) || !app.fn.isTrue(me.datawindow['+bid+'].visible) }}" '+
@@ -318,31 +318,23 @@ function twxList3D() {
       
       //standard press3d widget inserted inline - this is the angular controller (handles rendering etc.)
       //
-      var uptmpl = '<div ng-press3d id-field="' + props.widgetId + 'upper" isholo-field='+forholo+' height-field="0.032" width-field="0.032" backer-field="me.showbacker" font-field="me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor" text-field="up" src-field="extensions/images/up-arrow.png" disabled-field="(me.disabled || !app.fn.isTrue(me.upvis))"></div>\n';
+      var uptmpl = '<ng-toggle3d id-field="' + props.widgetId + 'upper" isholo-field='+forholo+' height-field="0.032" width-field="0.032"  font-field="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" text-field="up" src-field="extensions/images/up-arrow.png" disabled-field="(me.disabled || !app.fn.isTrue(me.upvis))" color-field="{{me.buttonColor}}" smallicon-field="true" multilinetext-field="true" >\n';
       
       //and this is the tml button
       //
       var upctrl = '<twx-dt-3dbutton id="' + props.widgetId + 'upper" '+ 
-      'text="" src="extensions/images/up-arrow.png"' +  // set to "" so that we can render the text into the button label directly 
+      'text=""' +  // set to "" so that we can render the text into the button label directly 
       'height="0.032" width="0.032" ' +
-      'fontcolor="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" fontoutlinecolor="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" '+
-      'color="{{(me.disabled || !app.fn.isTrue(me.upvis)) ? me.colordisabled : (me.buttonColor.endsWith(&apos;;&apos;)? me.buttonColor.slice(0, -1): me.buttonColor) }}" '+
-      'backercolor="{{me.buttonColor.endsWith(&apos;;&apos;)? me.buttonColor.slice(0, -1): me.buttonColor}}" ' +
-      'x="{{'+cx+' + me.x}}" y="{{me.y+'+cy+'}}" z="{{me.z}}" '+
-      'rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" '+
-      'backervisibility=="me.showbacker" hidden="{{!app.fn.isTrue(me.visible)}}" shader="{{me.shader}}" interactable-hint="true"/>\n';
+      'x="{{'+cx+' + me.x}}" y="{{me.y+'+cy+'}}" z="{{me.z}}" sx="1" sy="1" sz="1" rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" '+
+      'backervisibility=="false" hidden="{{!app.fn.isTrue(me.visible)}}" shader="{{me.shader}}" interactable-hint="true"/>\n</ng-toggle3d>\n';
       
       // same again
-      var dntmpl = '<div ng-press3d id-field="' + props.widgetId + 'downer" isholo-field='+forholo+' height-field="0.032" width-field="0.032"  backer-field="{{me.showbacker}}" font-field="me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor" text-field="down" src-field="extensions/images/dn-arrow.png" disabled-field="(me.disabed || !app.fn.isTrue(me.dnvis))"></div>\n';
+      var dntmpl = '<ng-toggle3d id-field="' + props.widgetId + 'downer" isholo-field='+forholo+' height-field="0.032" width-field="0.032" font-field="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" text-field="down" src-field="extensions/images/dn-arrow.png" disabled-field="(me.disabed || !app.fn.isTrue(me.dnvis))" color-field="{{me.buttonColor}}" smallicon-field="true" multilinetext-field="true"></div>\n';
       var dnctrl = '<twx-dt-3dbutton id="' + props.widgetId + 'downer" ' + 
       'text="" src="extensions/images/dn-arrow.png"' +  // set to "" so that we can render the text into the button label directly
       'height="0.032" width="0.032" '+
-      'fontcolor="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" fontoutlinecolor="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" '+
-      'color="{{(me.disabled || !app.fn.isTrue(me.dnvis))? me.colordisabled : (me.buttonColor.endsWith(&apos;;&apos;)? me.buttonColor.slice(0, -1): me.buttonColor) }}" '+
-      'backercolor="{{me.buttonColor.endsWith(&apos;;&apos;)? me.buttonColor.slice(0, -1): me.buttonColor}}" ' +
-      'x="{{'+cx+' + me.x}}" y="{{me.y-'+cy+'}}" z="{{me.z}}" '+
-      'rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" '+
-      'backervisibility=="me.showbacker" hidden="{{!app.fn.isTrue(me.visible)}}" shader="{{me.shader}}" interactable-hint="true"/>\n';
+      'x="{{'+cx+' + me.x}}" y="{{me.y-'+cy+'}}" z="{{me.z}}" sx="1" sy="1" sz="1" rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" '+
+      'backervisibility=="me.showbacker" hidden="{{!app.fn.isTrue(me.visible)}}" shader="{{me.shader}}" interactable-hint="true"/>\n</ng-toggle3d>\n';
       ctrl = ctrl + uptmpl+upctrl+dntmpl+dnctrl;
       
       //and the holo shaders
