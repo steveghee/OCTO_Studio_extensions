@@ -43,6 +43,14 @@ function twxList3D() {
        isVisible: true
       },
       {
+        name: 'displaySelect',
+        label: 'Display Field',
+        datatype: 'string',
+        default: '',
+        isBindingTarget: true,
+        showInput: true
+      },
+      {
             name: 'datawindow',
            label: 'Data Window',
         datatype: 'infotable',
@@ -249,8 +257,8 @@ function twxList3D() {
     ],
     
     dependencies: {
-      files         : ['js/list3D-ng.js', 'images/**'],
-      angularModules: ['list3D-ng']
+      files         : ['js/list3D-ng.js', 'images/**','js/widget3dUtils.js', 'js/toggle3D-ng.js'],
+      angularModules: ['list3D-ng','toggle3D-ng']
     },
   
     designTemplate: function () {
@@ -267,7 +275,7 @@ function twxList3D() {
     runtimeTemplate: function (props, twxWidgetEl, fullOriginalDoc, $, projectSettings) {
       var forholo = (projectSettings.projectType === 'eyewear');
         
-      var tmpl = '<div ng-list3d class="ng-hide list3DWidget ' + props.class + '" id-field="' + props.widgetId + '" isholo-field='+forholo+' multiselect-field={{me.multiselect}} rows-field={{me.rows}} cols-field={{me.cols}} height-field={{me.buttonheight}} width-field={{me.buttonwidth}} disabled-field={{me.disabled)} listdata-field="me.listdata" datawindow-field="me.datawindow" value-field="me.value" upvis-field="me.upvis" dnvis-field="me.dnvis" delegate-field="delegate"></div>\n';
+      var tmpl = '<div ng-list3d class="ng-hide list3DWidget ' + props.class + '" id-field="' + props.widgetId + '" isholo-field='+forholo+' multiselect-field={{me.multiselect}} rows-field={{me.rows}} cols-field={{me.cols}} height-field={{me.buttonheight}} width-field={{me.buttonwidth}} display-field={{me.displaySelect}} disabled-field={{me.disabled)} listdata-field="me.listdata" datawindow-field="me.datawindow" value-field="me.value" upvis-field="me.upvis" dnvis-field="me.dnvis" delegate-field="delegate"></div>\n';
       var ctrl = '';
       
       // we build up an array of buttons, cols wide, rows deep

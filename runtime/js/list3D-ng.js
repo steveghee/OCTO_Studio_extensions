@@ -21,6 +21,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         fontField          : '@',
         idField            : '@',  
         disabledField      : '@',
+        displayField       : '@',
         backerField        : '@',
         multiselectField   : '@',
         listdataField      : '=',
@@ -48,7 +49,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                    backer: undefined,
                      text: '',
                       src: '',
-            srcnotpressed: ''
+            srcnotpressed: '',
+                  display: 'display'
                      };
              
         //////////////////////////////////////////////////////////////////////
@@ -98,7 +100,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         var renderlist3D = function(trigger) {
             
           var triggered = trigger != undefined && trigger === true;  
-          var pressed = undefined;  
+          var pressed   = undefined;  
           $timeout(function(){
                    
             // and we COPY (rows*cols) fields across to the windowed output field...  
@@ -116,7 +118,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             for (var i=start;i<start+count; i++) {
                 var pressed = !!scope.data.data[i].pressed;
                 result.push({     pressed: pressed,
-                                     text: !!scope.data.data[i].text       ? scope.data.data[i].text : "",
+                                     text: !!scope.data.data[i][scope.data.display] ? scope.data.data[i][scope.data.display] : "",
                                       src: !!scope.data.data[i].src        ? scope.data.data[i].src : "",
                                srcpressed: !!scope.data.data[i].srcpressed ? scope.data.data[i].srcpressed: "",
                                   visible: true
@@ -175,7 +177,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         //////////////////////////////////////////////////////////////////////
         // monitor state - these wont change often
         //
-        scope.$watchGroup(['idField','widthField','heightField','fontField','rowsField','colsField','multiselectField'], function () {
+        scope.$watchGroup(['idField','widthField','heightField','fontField','rowsField','colsField','multiselectField','displayField'], function () {
           scope.data.id        = (scope.idField     != undefined) ? scope.idField                 : undefined;
           scope.data.width     = (scope.widthField  != undefined) ? parseFloat(scope.widthField)  : 0.04;
           scope.data.height    = (scope.heightField != undefined) ? parseFloat(scope.heightField) : 0.04;
@@ -183,6 +185,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           scope.data.rows      = (scope.rowsField   != undefined) ? parseInt(scope.rowsField)     : 1;
           scope.data.cols      = (scope.colsField   != undefined) ? parseInt(scope.colsField)     : 1;
           scope.data.multi     = (scope.multiselectField != undefined) ? isbool(scope.multiselectField) : true; // default to true
+          scope.data.display   = (scope.displayField!= undefined) ? scope.displayField            : 'display'; // default
         });
         
         //////////////////////////////////////////////////////////////////////
@@ -264,7 +267,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 if (scope.data.data[changeIndex].pressed)
                   scope.data.data.selectedRows = [scope.data.data[changeIndex]];
               }
-                
+              
+              //should we just build this from the metadata description?
               var selrow = { pressed: scope.data.data[changeIndex].pressed,
                                value: scope.data.data[changeIndex].value };  
               scope.valueField = buildInfoTable( [ selrow ] );
