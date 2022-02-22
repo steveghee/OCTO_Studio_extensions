@@ -206,7 +206,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         //
         scope.setSelected = function() {
           if (scope.data.ready &&
-              scope.data.help    != undefined && 
+              scope.data.helper  != undefined && 
               scope.data.zoidata != undefined) $timeout(function() { 
           
             scope.data.helper.Set(scope.data.zoidata).show();
