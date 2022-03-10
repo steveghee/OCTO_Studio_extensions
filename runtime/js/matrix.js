@@ -61,6 +61,10 @@ function Matrix4() {
         return this;
     }
     
+    this.Clone = function() {
+        return new Matrix4().SetM4(this);
+    }
+    
     this.FromString = function (str) {
         var pcs = str.trim().split(',');                // split by comma
         if (pcs.length < 6) pcs = str.trim().split(' ');// try spaces
@@ -78,7 +82,38 @@ function Matrix4() {
         }
         return this;
     }
-    
+    this.RotateFromQuaternion = function(q) {
+        var x = q.x,
+            y = q.y,
+            z = q.z,
+            w = q.w;
+        var x2 = x + x,
+            y2 = y + y,
+            z2 = z + z;
+        var xx = x * x2,
+            xy = x * y2,
+            xz = x * z2;
+        var yy = y * y2,
+            yz = y * z2,
+            zz = z * z2;
+        var wx = w * x2,
+            wy = w * y2,
+            wz = w * z2;
+        this.m[0][0] = (1 - (yy + zz));
+        this.m[0][1] = (xy + wz);
+        this.m[0][2] = (xz - wy);
+        this.m[0][3] = 0;
+        this.m[1][0] = (xy - wz);
+        this.m[1][1] = (1 - (xx + zz));
+        this.m[1][2] = (yz + wx);
+        this.m[1][3] = 0;
+        this.m[2][0] = (xz + wy);
+        this.m[2][1] = (yz - wx);
+        this.m[2][2] = (1 - (xx + yy));
+        this.m[2][3] = 0;
+        return this;
+
+    }
     this.Translate = function (x, y, z) {
         var t = [ [1, 0, 0, 0],
                   [0, 1, 0, 0],
@@ -163,11 +198,39 @@ function Matrix4() {
         return this.Multiply(r);
     }
   
+    this.RotateFromAxisAngleV = function (aa,deg) {
+        function deg2rad(d) { return (deg!=undefined) ? d * Math.PI / 180 : d; }
+        
+        var s  = Math.sin(deg2rad(aa.W()));
+        var c0 = Math.cos(deg2rad(aa.W()));
+        var c1 = 1 - c0;
+        
+        // assume normalised input vector
+        var u = aa.X();
+        var v = aa.Y();
+        var w = aa.Z();
+        var r = [
+            [(u * u * c1) + c0,      (u * v * c1) + (w * s), (u * w * c1) - (v * s), 0],
+            [(u * v * c1) - (w * s), (v * v * c1) + c0,      (v * w * c1) + (u * s), 0],
+            [(u * w * c1) + (v * s), (w * v * c1) - (u * s), (w * w * c1) + c0,      0],
+            [0,                      0,                      0,                      1]
+        ];
+        return this.Multiply(r);
+    }
+    
     this.RotateFromEuler = function(x, y, z, deg) {
         var mt = new Matrix4()
                      .Rotate([1,0,0], x, deg)
                      .Rotate([0,1,0], y, deg)
                      .Rotate([0,0,1], z, deg);
+        return this.Multiply(mt.m); 
+    }
+    
+    this.RotateFromEulerV = function(ev, deg) {
+        var mt = new Matrix4()
+                     .Rotate([1,0,0], ev.X(), deg)
+                     .Rotate([0,1,0], ev.Y(), deg)
+                     .Rotate([0,0,1], ev.Z(), deg);
         return this.Multiply(mt.m); 
     }
 
@@ -359,6 +422,14 @@ function Matrix4() {
         var pose = new Matrix4().Set4V(xd,nup,gaze,at);
         return pose;
     }
+    
+    // builds a pose matrix from a location and quaternion orientation
+    this.makePoseWithQuat = function(at,quat) {
+        // first rotate
+        var rot = new Matrix4().FromQuaternion(quat);
+        // then translate
+        return rot.Translate(at);
+    }
   
     this.Flatten = function () {
         var f = [];
@@ -463,7 +534,11 @@ function MatrixS(p0,p1,p2,light) {
 
 function Vector4() {
     this.v = [0, 0, 0, 1];
-
+    
+    this.Clone = function() {
+        return new Vector4().SetV4(this);
+    }
+    
     this.Set = function (x) {
         this.v[0] = x.v[0];
         this.v[1] = x.v[1];
@@ -566,9 +641,11 @@ function Vector4() {
 
     this.Normalize = function () {
         var rad  = this.Length();
-        this.v[0] = this.v[0] / rad,
-        this.v[1] = this.v[1] / rad,
-        this.v[2] = this.v[2] / rad
+        if (rad > 0) {
+            this.v[0] = this.v[0] / rad,
+            this.v[1] = this.v[1] / rad,
+            this.v[2] = this.v[2] / rad;
+        }
         return this;
     }
     
@@ -693,6 +770,40 @@ function Vector4() {
                 ((this.v[0] * b.m[0][3]) + (this.v[1] * b.m[1][3]) + (this.v[2] * b.m[2][3]) + (this.v[3] * b.m[3][3]))
                 );
         return dst;
+    }
+    
+    this.ApplyQuaternion = function(q) {
+        var x = this.v[0],
+            y = this.v[1],
+            z = this.v[2];
+        var qx = q.x,
+            qy = q.y,
+            qz = q.z,
+            qw = q.w; // calculate quat * vector
+
+        var ix =  qw * x + qy * z - qz * y;
+        var iy =  qw * y + qz * x - qx * z;
+        var iz =  qw * z + qx * y - qy * x;
+        var iw = -qx * x - qy * y - qz * z; // calculate result * inverse quat
+
+        this.v[0] = ix * qw + iw * -qx + iy * -qz - iz * -qy;
+        this.v[1] = iy * qw + iw * -qy + iz * -qx - ix * -qz;
+        this.v[2] = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+        return this;
+
+    }
+    
+    this.ClampScalar = function(min,max) {
+        function _clamp(x,min,max) {
+            if (x < min)      return min;
+            else if (x > max) return max;
+            else              return x;
+        }
+        var clamped = new Vector4().Set4(_clamp(this.v[0],min,max),
+                                         _clamp(this.v[1],min,max),
+                                         _clamp(this.v[2],min,max),
+                                         _clamp(this.v[3],min,max));
+        return clamped;
     }
     
     this.ToString = function (p) {
@@ -1013,4 +1124,308 @@ function Bbox() {
         }
     }
 }
+
+
+
+function Quat() {
+    
+    this.x = 0;
+    this.y = 0;
+    this.z = 0;
+    this.w = 1;
+    
+    this.Set4 = function(x,y,z,w) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.w = w;
+        return this;
+    }
+    this.Set4a = function(a) {
+        this.x = a[0];
+        this.y = a[1];
+        this.z = a[2];
+        this.w = a[3];
+        return this;
+    }
+    this.SetQ = function(quat) {
+        this.x = quat.x;
+        this.y = quat.y;
+        this.z = quat.z;
+        this.w = quat.w;
+        return this;
+    }
+    this.Clone = function(q) {
+        return new Quat().SetQ(q != undefined ? q : this);
+    }
+    this.FromEuler3 = function(x,y,z,deg) {
+        function deg2rad(d) { return (deg!=undefined) ? d * Math.PI / 180 : d; }
+        var cos = Math.cos;
+        var sin = Math.sin;
+        
+        var _x = deg2rad(x); 
+        var _y = deg2rad(y); 
+        var _z = deg2rad(z);
+        
+        var c1 = cos(_x / 2);
+        var c2 = cos(_y / 2);
+        var c3 = cos(_z / 2);
+        var s1 = sin(_x / 2);
+        var s2 = sin(_y / 2);
+        var s3 = sin(_z / 2);
+
+        this.x = s1 * c2 * c3 + c1 * s2 * s3;
+        this.y = c1 * s2 * c3 - s1 * c2 * s3;
+        this.z = c1 * c2 * s3 + s1 * s2 * c3;
+        this.w = c1 * c2 * c3 - s1 * s2 * s3;
+        
+        return this;
+    }
+    this.FromEuler = function(e,deg) {
+        return this.FromEuler3(e.attitude, e.heading, e.bank, deg);
+    }
+    this.FromAxisAngle = function(axis,angle,deg) {
+        // http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToQuaternion/index.htm
+        // assumes axis is normalized
+        function deg2rad(d) { return (deg!=undefined) ? d * Math.PI / 180 : d; }
+	
+        var halfAngle = deg2rad(angle) / 2,
+	 	    s = Math.sin(halfAngle);
+        this.x = axis[0] * s;
+        this.y = axis[1] * s;
+        this.z = axis[2] * s;
+        this.w = Math.cos(halfAngle);
+
+        return this;
+    }
+    this.FromMatrix = function(m) {
+        // set from rotation matrix
+        var te  = m.m;
+        var m11 = m.m[0][0], m12 = m.m[1][0], m13 = m.m[2][0];
+        var m21 = m.m[0][1], m22 = m.m[1][1], m23 = m.m[2][1];
+        var m31 = m.m[0][2], m32 = m.m[1][2], m33 = m.m[2][2];
+        var trace = m11 + m22 + m33;
+
+        if (trace > 0) {
+            var s = 0.5 / Math.sqrt(trace + 1.0);
+            this.w = 0.25 / s;
+            this.x = (m32 - m23) * s;
+            this.y = (m13 - m31) * s;
+            this.z = (m21 - m12) * s;
+        } else if (m11 > m22 && m11 > m33) {
+            var _s = 2.0 * Math.sqrt(1.0 + m11 - m22 - m33);
+                
+            this.w = (m32 - m23) / _s;
+            this.x = 0.25 * _s;
+            this.y = (m12 + m21) / _s;
+            this.z = (m13 + m31) / _s;
+        } else if (m22 > m33) {
+            var _s2 = 2.0 * Math.sqrt(1.0 + m22 - m11 - m33);
+
+            this.w = (m13 - m31) / _s2;
+            this.x = (m12 + m21) / _s2;
+            this.y = 0.25 * _s2;
+            this.z = (m23 + m32) / _s2;
+        } else {
+            var _s3 = 2.0 * Math.sqrt(1.0 + m33 - m11 - m22);
+
+            this.w = (m21 - m12) / _s3;
+            this.x = (m13 + m31) / _s3;
+            this.y = (m23 + m32) / _s3;
+            this.z = 0.25 * _s3;
+        }
+
+        return this;
+    }
+    this.From2V = function(vFrom,vTo) {
+        // assume normalized vectors
+        var EPS = 0.000001;
+        var r = vFrom.DotP(vTo) + 1;
+
+        if (r < EPS) {
+            r = 0;
+
+            if (Math.abs(vFrom.v[0]) > Math.abs(vFrom.v[2])) {
+                this.x = -vFrom.v[1];
+                this.y =  vFrom.v[0];
+                this.z = 0;
+                this.w = r;
+            } else {
+                this.x = 0;
+                this.y = -vFrom.v[2];
+                this.z =  vFrom.v[1];
+                this.w = r;
+            }
+        } else {
+            // crossVectors( vFrom, vTo ); // inlined to avoid cyclic dependency on Vector3
+            this.x = vFrom.v[1] * vTo.v[2] - vFrom.v[2] * vTo.v[1];
+            this.y = vFrom.v[2] * vTo.v[0] - vFrom.v[0] * vTo.v[2];
+            this.z = vFrom.v[0] * vTo.v[1] - vFrom.v[1] * vTo.v[0];
+            this.w = r;
+        }
+        
+        return this.Normalize();
+    }
+    this.ToAxisAngle = function() {
+        // http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToAngle/index.htm
+        // q is assumed to be normalized
+        var aa = new Vector4();
+        aa.v[3] = 2 * Math.acos(this.w);
+        var s = Math.sqrt(1 - this.w * this.w);
+
+        if (s < 0.0001) {
+            aa.v[0] = 1;
+            aa.v[1] = 0;
+            aa.v[2] = 0;
+        } else {
+            aa.v[0] = this.x / s;
+            aa.v[1] = this.y / s;
+            aa.v[2] = this.z / s;
+        }
+
+	return aa;
+    }
+    this.AngleTo = function(q,deg) {
+        function clamp(x,min,max) {
+            if (x < min)      return min;
+            else if (x > max) return max;
+            else              return x;
+        }
+        function rad2deg(d) { return (deg!=undefined) ? d * 180 / Math.PI : d; }
+
+        var a = 2 * Math.acos(Math.abs(clamp(this.DotP(q), -1, 1)));
+        return rad2deg(a);
+    }
+    this.RotateTowards= function(q,step) {
+        var angle = this.AngleTo(q);
+        if (angle === 0) return this;
+        var t = Math.min(1, step / angle);
+        this.Slerp(q, t);
+        return this;
+    }
+    this.Identity = function() {
+        this.Set4(0,0,0,1);
+        return this;
+    }
+    this.Invert = function() {
+        this.x *= -1;
+        this.y *= -1;
+        this.z *= -1;
+        return this;
+    }
+    this.DotP = function(v) {
+        return this.x * v.x +
+               this.y * v.y +
+               this.z * v.z +
+               this.w * v.w ;
+    }
+    this.Length2 = function() {
+        return this.x * this.x + 
+               this.y * this.y +
+               this.z * this.z + 
+               this.w * this.w ;
+    }
+    this.Length = function() {
+        return Math.sqrt(this.Length2());
+    }
+    this.Normalize = function() {
+        var l = this.Length();
+        if (l === 0) {
+            this.Set4(0,0,0,1);
+        } else {
+            p = 1 / l;
+            this.x = this.x * p;
+            this.y = this.y * p;
+            this.z = this.z * p;
+            this.w = this.w * p;
+        }
+        return this;
+    }
+    this.Multiply = function(b) {
+        var a = this;
+        // muultiply a * b;
+        var qax = a.x,
+            qay = a.y,
+            qaz = a.z,
+            qaw = a.w;
+        var qbx = b.x,
+            qby = b.y,
+            qbz = b.z,
+            qbw = b.w;
+        this.x = qax * qbw + qaw * qbx + qay * qbz - qaz * qby;
+        this.y = qay * qbw + qaw * qby + qaz * qbx - qax * qbz;
+        this.z = qaz * qbw + qaw * qbz + qax * qby - qay * qbx;
+        this.w = qaw * qbw - qax * qbx - qay * qby - qaz * qbz;
+        
+        return this;
+    }
+    this.Slerp = function(qb,t) {
+        var qa = this.Clone();
+        if (t<=0) return qa;
+        if (t>=1) return qb;
+        
+        var x = this.x, 
+            y = this.y,
+            z = this.z, 
+            w = this.w;
+        var cosHalfTheta = w * qb.w + x * qb.x + y * qb.y + z * qb.z;
+        
+        if (cosHalfTheta < 0) {
+            qa.w = -qb.w;
+            qa.x = -qb.x;
+            qa.y = -qb.y;
+            qa.z = -qb.z;
+            cosHalfTheta = -cosHalfTheta;
+        } else {
+            qa.SetQ(qb);
+        }
+
+        if (cosHalfTheta >= 1.0) {
+            qa.w = w;
+            qa.x = x;
+            qa.y = y;
+            qa.z = z;
+            return qa;
+        }
+
+        var sqrSinHalfTheta = 1.0 - cosHalfTheta * cosHalfTheta;
+        
+        if (sqrSinHalfTheta <= Number.EPSILON) {
+            var s = 1 - t;
+            qa.w = s * w + t * qa.w;
+            qa.x = s * x + t * qa.x;
+            qa.y = s * y + t * qa.y;
+            qa.z = s * z + t * qa.z;
+            return qa.Normalize();
+        }
+
+        var sinHalfTheta = Math.sqrt(sqrSinHalfTheta);
+        var halfTheta    = Math.atan2(sinHalfTheta, cosHalfTheta);
+        var ratioA = Math.sin((1 - t) * halfTheta) / sinHalfTheta,
+            ratioB = Math.sin(t       * halfTheta) / sinHalfTheta;
+            
+        qa.w = w * ratioA + qa.w * ratioB;
+        qa.x = x * ratioA + qa.x * ratioB;
+        qa.y = y * ratioA + qa.y * ratioB;
+        qa.z = z * ratioA + qa.z * ratioB;
+        return qa;        
+    } 
+    this.Tween = function (qb,t) {
+        return this.Slerp(qb,t);
+    }
+    this.ToString = function (p) {
+        var s;
+        if (p!=undefined) s = `[${this.x.toFixed(p)} ${this.y.toFixed(p)} ${this.z.toFixed(p)} ${this.w.toFixed(p)}]`;
+        else s = `[${this.x} ${this.y} ${this.z} ${this.w}]`;
+        return s;
+    }
+
+}
+
+exports.Matrix4 = Matrix4;
+exports.MatrixO = MatrixO;
+exports.MatrixP = MatrixP;	
+exports.Vector4 = Vector4;
+exports.BBox    = Bbox;
+exports.Quat    = Quat;
 
