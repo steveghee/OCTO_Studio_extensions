@@ -229,6 +229,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             let selrow = { position: rp.position, 
                                gaze: rp.gaze, 
                                  up: rp.up,
+                             cutoff: rp.cutoff,
                            metadata: rp.metadata
                          }; // we only want these fields
             
@@ -236,6 +237,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                                 gaze: new Vector4().FromString(selrow.gaze),
                                   up: new Vector4().FromString(selrow.up) };
             scope.data.navigator.setAt(locator).show();
+            
+            // if the poi is actually a zoi (zone) then let's use the radius
+            if (rp.cutoff != undefined)
+              scope.data.navigator.Cutoff(rp.cutoff, scope.data.auto, scope.entered, scope.exited);
             
             // and set the shared output - note : this needs to be an infotable
             scope.valueField = buildInfoTable( [selrow] );
