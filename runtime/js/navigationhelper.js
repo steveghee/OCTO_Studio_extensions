@@ -25,6 +25,7 @@ function spatialHelper(renderer, tunnel, targets) {
   this.target.hname = this.target.head   != undefined ? "head"   : undefined;
   this.target.floor = this.target.floorOffset != undefined ? this.target.floorOffset : 0;
   this.target.point = this.isHololens && this.target.arrow != undefined ? true : false;
+  this.target.base  = this.target.color; // in case we override it
   
   this.cutoff       = 0.5;
   this.autoCutoff   = false;
@@ -59,6 +60,10 @@ function spatialHelper(renderer, tunnel, targets) {
         this.inside    = (locd < this.cutoff) ? true : false; 
         this._drawOnce = !this.inside; // only draw if we are outside of the fence
       }
+      
+      // individual items can override the target color
+      this.target.color = locator.color != undefined ? locator.color :  this.target.base;
+    
     }
     else {
         this._toggleNavpath(false); 

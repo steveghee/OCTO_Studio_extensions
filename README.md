@@ -145,7 +145,8 @@ This data can be in table form - perhaps the result of a thingworx service call 
                                          { position: "0,0,0",    // defined as a string of xyz coordinates 
                                                gaze: "0,0,1",    // defined as a string, this is a unit vector pointing away from the view
                                                  up: "0, 1, 0",  // defined as a string, this is a unit vector pointing up through the device
-                                           metadata: "optional"  // optional data that can be used to describe what this row indicates
+                                             cutoff: 1.2,        // optional, if provided this will override the widget-level cutoff setting FOR THIS poi
+                                           metadata: "optional"  // optional data that can be used to describe what this row indicates. can be string or {} object
                                          }
                                        ];` 
 
@@ -173,8 +174,8 @@ This data can be in table form - perhaps the result of a thingworx service call 
 
   `$scope.view.wdg.zones.zoidata = [ 
                                          { position: "0,0,0",    // defined as a string of xyz coordinates 
-                                              color: [1,0,0],    // optional data 
-                                             radius: 2           // optional; defines the radius of this specific zone
+                                              color: [1,0,0],    // optional information to define/override color of POI indicator 
+                                             cutoff: 2           // optional; defines the radius of this specific zone
                                          }
                                        ];` 
 

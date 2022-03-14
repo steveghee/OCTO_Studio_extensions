@@ -26,7 +26,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         multiselectField   : '@',
         listdataField      : '=',
         datawindowField    : '=',
-        valueField         : '=',
         upvisField         : '=',
         dnvisField         : '=',
         delegateField      : '='
@@ -255,6 +254,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             // update the output field and fire any events
             if (changeIndex != undefined) {
                 
+              var chgrow = scope.data.data[changeIndex];
+                
               // if we;re not in multiselect mode, we must now deselect all the other buttons  
               if (scope.data.multi === false) {  
                 let todo = scope.data.data.length;
@@ -264,20 +265,16 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 }
               
                 //and override selectedRows if selected
-                if (scope.data.data[changeIndex].pressed)
-                  scope.data.data.selectedRows = [scope.data.data[changeIndex]];
+                if (chgrow.pressed)
+                  scope.data.data.selectedRows = [chgrow];
               }
               
-              //should we just build this from the metadata description?
-              var selrow = { pressed: scope.data.data[changeIndex].pressed,
-                               value: scope.data.data[changeIndex].value };  
-              scope.valueField = buildInfoTable( [ selrow ] );
-              scope.data.data.current = scope.data.data[changeIndex];
+              scope.data.data.current = chgrow;
               
               if (scope.data.data[changeIndex].pressed === true) {
-                scope.$parent.fireEvent('pressed',selrow.value);
+                scope.$parent.fireEvent('pressed',chgrow);
               } else {
-                scope.$parent.fireEvent('unpressed',selrow.value);
+                scope.$parent.fireEvent('unpressed',chgrow);
               }
 
             }

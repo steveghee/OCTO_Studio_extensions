@@ -185,6 +185,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             dataShape: {
               fieldDefinitions: {
                 name: {aspects: {}, baseType: "STRING", name: "name"      },            
+              cutoff: {aspects: {}, baseType: "NUMBER", name: "cutoff"    },            
             position: {aspects: {}, baseType: "STRING", name: "position"  }            
               }
             }

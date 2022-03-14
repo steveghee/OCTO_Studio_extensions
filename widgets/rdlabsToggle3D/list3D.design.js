@@ -60,14 +60,6 @@ function twxList3D() {
        isVisible: false
       },
       {
-            name: 'value',
-           label: 'Value',
-        datatype: 'infotable',
- isBindingSource: true,
- isBindingTarget: false,
-       showInput: false,
-      },
-      {
             name: 'buttonheight',
            label: 'Button Height',
         datatype: 'string',
@@ -275,7 +267,7 @@ function twxList3D() {
     runtimeTemplate: function (props, twxWidgetEl, fullOriginalDoc, $, projectSettings) {
       var forholo = (projectSettings.projectType === 'eyewear');
         
-      var tmpl = '<div ng-list3d class="ng-hide list3DWidget ' + props.class + '" id-field="' + props.widgetId + '" isholo-field='+forholo+' multiselect-field={{me.multiselect}} rows-field={{me.rows}} cols-field={{me.cols}} height-field={{me.buttonheight}} width-field={{me.buttonwidth}} display-field={{me.displaySelect}} disabled-field={{me.disabled)} listdata-field="me.listdata" datawindow-field="me.datawindow" value-field="me.value" upvis-field="me.upvis" dnvis-field="me.dnvis" delegate-field="delegate"></div>\n';
+      var tmpl = '<div ng-list3d class="ng-hide list3DWidget ' + props.class + '" id-field="' + props.widgetId + '" isholo-field='+forholo+' multiselect-field={{me.multiselect}} rows-field={{me.rows}} cols-field={{me.cols}} height-field={{me.buttonheight}} width-field={{me.buttonwidth}} display-field={{me.displaySelect}} disabled-field={{me.disabled)} listdata-field="me.listdata" datawindow-field="me.datawindow" upvis-field="me.upvis" dnvis-field="me.dnvis" delegate-field="delegate"></div>\n';
       var ctrl = '';
       
       // we build up an array of buttons, cols wide, rows deep
@@ -297,7 +289,7 @@ function twxList3D() {
             
           // we need to write out an array of buttons
           var bid     = (rows * nc) + cols;
-          var rowtmpl = '<ng-toggle3d  id-field="' + props.widgetId + '-' + bid + '" isholo-field='+forholo+' height-field="{{me.buttonheight}}" width-field="{{me.buttonwidth}}" font-field="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" color-field={{me.buttonColor}}' +
+          var rowtmpl = '<ng-toggle3d  id-field="' + props.widgetId + '-' + bid + '" isholo-field='+forholo+' height-field="{{me.buttonheight}}" width-field="{{me.buttonwidth}}" font-field="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" color-field="{{me.datawindow['+bid+'].pressed ? me.pressedColor : me.buttonColor}}" ' +
                         ' smallicon-field="false" multilinetext-field="false" pressed-field="me.datawindow['+bid+'].pressed" disabled-field="me.disabled" src-field="{{me.datawindow['+bid+'].srcpressed}}" srcnotpressed-field="{{me.datawindow['+bid+'].src}}" text-field="{{me.datawindow['+bid+'].text}}" >\n';
           var rowctrl = ' <twx-dt-3dbutton id="' + props.widgetId + '-' + bid + '" ' + 
                         '  text="" '+
@@ -337,7 +329,7 @@ function twxList3D() {
       'backervisibility=="false" hidden="{{!app.fn.isTrue(me.visible)}}" shader="{{me.shader}}" interactable-hint="true"/>\n</ng-toggle3d>\n';
       
       // same again
-      var dntmpl = '<ng-toggle3d id-field="' + props.widgetId + 'downer" isholo-field='+forholo+' height-field="0.032" width-field="0.032" font-field="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" text-field="down" src-field="extensions/images/dn-arrow.png" disabled-field="(me.disabed || !app.fn.isTrue(me.dnvis))" color-field="{{me.buttonColor}}" smallicon-field="true" multilinetext-field="true"></div>\n';
+      var dntmpl = '<ng-toggle3d id-field="' + props.widgetId + 'downer" isholo-field='+forholo+' height-field="0.032" width-field="0.032" font-field="{{me.fontColor.endsWith(&apos;;&apos;)? me.fontColor.slice(0, -1): me.fontColor}}" text-field="down" src-field="extensions/images/dn-arrow.png" disabled-field="(me.disabled || !app.fn.isTrue(me.dnvis))" color-field="{{me.buttonColor}}" smallicon-field="true" multilinetext-field="true"></div>\n';
       var dnctrl = '<twx-dt-3dbutton id="' + props.widgetId + 'downer" ' + 
       'text="" src="extensions/images/dn-arrow.png"' +  // set to "" so that we can render the text into the button label directly
       'height="0.032" width="0.032" '+

@@ -230,12 +230,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                                gaze: rp.gaze, 
                                  up: rp.up,
                              cutoff: rp.cutoff,
+                              color: rp.color,
                            metadata: rp.metadata
                          }; // we only want these fields
             
             var locator = { position: new Vector4().FromString(selrow.position),
                                 gaze: new Vector4().FromString(selrow.gaze),
-                                  up: new Vector4().FromString(selrow.up) };
+                                  up: new Vector4().FromString(selrow.up),
+                               color: selrow.color };
             scope.data.navigator.setAt(locator).show();
             
             // if the poi is actually a zoi (zone) then let's use the radius
