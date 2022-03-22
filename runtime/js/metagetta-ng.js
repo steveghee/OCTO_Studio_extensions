@@ -64,9 +64,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                                             rows: [] 
                                          } ;  
                           for (var p in res) {
-                            for (var v in res[p]) {  
-                              retobj.rows.push({name:ask[0], value:res[p][v]});
-                            }
+                              retobj.rows.push({name:ask[0], value:res[p]});
+//                            for (var v in res[p]) {  
+//                              retobj.rows.push({name:ask[0], value:res[p][v]});
+//                            }
                           }
                           scope.data.results = retobj;
 
