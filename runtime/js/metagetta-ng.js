@@ -15,6 +15,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
       scope: {
         modelField    : '@',
         includeField  : '@',
+  singleaslistField   : '@',
         infoField     : '=',
         resultsField  : '='
       },
@@ -27,9 +28,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                       include: undefined,
                          info: undefined,
                      disabled: false,
+            formatsingleaslist: true,    
                       results: []
                      };
                      
+                             //
         // look through the presented/selected items, picking out the metadata
         //
         var apply = function() {
@@ -37,6 +40,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               PTC.Metadata.fromId(scope.data.id)
                  .then( (meta) => {
                                                      
+                  var isSingleList = scope.data.info.length == 1;  
+                  
                   // if we have specified one or more property names ...                                   
                   if (scope.data.include != undefined && scope.data.include.length > 0) {
                       
@@ -50,34 +55,77 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                       var res = meta.get(idpath, ask);
                       
                       if (res != undefined && res.length === ask.length) {
-                        var retobj = {};  
-                        retobj.model = scope.data.id;  
-                        retobj.path  = idpath;  
-                        for (var p=0;p<ask.length;p++) {
-                          // add each result as a new property in the return body  
-                          retobj[ask[p]] = res[p];
+                          
+                        // return name/value pair list  
+                        if (isSingleList && scope.data.formatsingleaslist == true) {
+                            
+                          var retobj   = { model: scope.data.id,
+                                            path: idpath, 
+                                            rows: [] 
+                                         } ;  
+                          for (var p in res) {
+                            for (var v in res[p]) {  
+                              retobj.rows.push({name:ask[0], value:res[p][v]});
+                            }
+                          }
+                          scope.data.results = retobj;
+
+                        } else {
+                          
+                          // user has asked for specific fields, so we return an array
+                          // of objects containing the specified named fields
+                          var retobj = {};  
+                          retobj.model = scope.data.id;  
+                          retobj.path  = idpath;  
+                          for (var p=0;p<ask.length;p++) {
+                            // add each result as a new property in the return body  
+                            retobj[ask[p]] = res[p];
+                          }
+                          scope.data.results.push(retobj);
                         }
-                        scope.data.results.push(retobj);
+                        
                       }
                     }
                   } else {
+                      
                     // otherwise, let's see if there a list of properties we can get  
                     scope.data.results = [];  
                     for (var i=0;i<scope.data.info.length;i++) {
                       var idpath = scope.data.info[i].path;      
                       var res = meta._getRawProps()[idpath];
-                      console.log(res);
                       
                       if (res != undefined) {
-                        var retobj = {};  
-                        retobj.model = scope.data.id;  
-                        retobj.path  = idpath;  
-                        retobj.categories = {};
-                        for (var p in res) {
-                          // add each result as a new property in the return body  
-                          retobj.categories[p] = res[p];
-                        }
-                        scope.data.results.push(retobj);
+                          
+                        if (isSingleList && scope.data.formatsingleaslist == true) {
+                            
+                          // lets try outputting a name/value  infotable to make it
+                          // easier to represent results in a repeater etc.
+                          var retobj = { model: scope.data.id,
+                                          path: idpath,
+                                          rows: [] 
+                                       } ;  
+                          for (var p in res) {
+                            for (var v in res[p]) {  
+                              retobj.rows.push({name:v, category:p, value:res[p][v]});
+                            }
+                          }
+
+                          scope.data.results = retobj;
+                          
+                        } else {
+                            
+                          // output an array of objects with all the properties
+                          // named
+                          var retobj = {};  
+                          retobj.model = scope.data.id;  
+                          retobj.path  = idpath;  
+                          retobj.categories = {};
+                          for (var p in res) {
+                            // add each result as a new property in the return body  
+                            retobj.categories[p] = res[p];
+                          }
+                          scope.data.results.push(retobj);
+                        }    
                       }
                     }
                      
@@ -128,6 +176,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             
               scope.data.info = [];
               scope.data.info.push({ model: scope.data.id, path: pathid });
+              //scope.data.info.model = scope.data.id;
+              //scope.data.info.path  = pathid;
               apply();
             })
             .catch((err) => { console.log('metadata extraction failed with reason : ' + err) 
@@ -141,6 +191,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         //
         scope.$watch('includeField', function () {
           scope.data.include = (scope.includeField != undefined && scope.includeField.length>0) ? scope.includeField.split(',') : undefined;
+          apply();
+        });
+            
+        scope.$watch('singleaslistField', function () {
+          scope.data.formatsingleaslist = (scope.singleaslistField != undefined && scope.singleaslistField === 'true') ? true :false ;
           apply();
         });
             

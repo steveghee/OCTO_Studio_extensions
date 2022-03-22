@@ -509,6 +509,19 @@ function Matrix4() {
         return simple;
     }
     
+    this.toPosGazeUp = function() {
+        var clamp = function(x) {
+            if (Math.abs(x) < 1e-6)
+              return 0;
+            else 
+              return x;
+        }
+        var simple = {};
+        simple.pos  = new Vector4().Set3(clamp(this.m[3][0]), clamp(this.m[3][1]), clamp(this.m[3][2]));
+        simple.gaze = new Vector4().Set3(clamp(this.m[2][0]), clamp(this.m[2][1]), clamp(this.m[2][2]));
+        simple.up   = new Vector4().Set3(clamp(this.m[1][0]), clamp(this.m[1][1]), clamp(this.m[1][2]));
+        return simple;
+    }
 }
 
 // quick way to do perspective matrices

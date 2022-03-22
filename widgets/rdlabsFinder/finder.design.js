@@ -3,7 +3,10 @@ function twxFinder() {
     elementTag: 'twx-finder',
 
     label: 'Finder',
-    category : 'ar',
+    
+    //category : 'ar',  // by NOT specifying a category, this widget can
+    //                     exist in any template
+    
     groups    : ['OCTO Labs'],
     isVisibleInPalette: function(scope) {
       let builderSettings = scope.$root.builderSettings || {};
