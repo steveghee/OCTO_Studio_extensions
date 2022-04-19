@@ -61,6 +61,29 @@ function Matrix4() {
         return this;
     }
     
+    this.SetM3 = function(m) {
+        this.m[0][0] = m.m[0][0];
+        this.m[0][1] = m.m[0][1];
+        this.m[0][2] = m.m[0][2];
+        this.m[0][3] = 0;
+
+        this.m[1][0] = m.m[1][0];
+        this.m[1][1] = m.m[1][1];
+        this.m[1][2] = m.m[1][2];
+        this.m[1][3] = 0;
+        
+        this.m[2][0] = m.m[2][0];
+        this.m[2][1] = m.m[2][1];
+        this.m[2][2] = m.m[2][2];
+        this.m[2][3] = 0;
+        
+        this.m[3][0] = 0;
+        this.m[3][1] = 0;
+        this.m[3][2] = 0;
+        this.m[3][3] = 1;
+        return this;
+    }
+    
     this.Clone = function() {
         return new Matrix4().SetM4(this);
     }
@@ -82,6 +105,7 @@ function Matrix4() {
         }
         return this;
     }
+    
     this.RotateFromQuaternion = function(q) {
         var x = q.x,
             y = q.y,
@@ -99,21 +123,14 @@ function Matrix4() {
         var wx = w * x2,
             wy = w * y2,
             wz = w * z2;
-        this.m[0][0] = (1 - (yy + zz));
-        this.m[0][1] = (xy + wz);
-        this.m[0][2] = (xz - wy);
-        this.m[0][3] = 0;
-        this.m[1][0] = (xy - wz);
-        this.m[1][1] = (1 - (xx + zz));
-        this.m[1][2] = (yz + wx);
-        this.m[1][3] = 0;
-        this.m[2][0] = (xz + wy);
-        this.m[2][1] = (yz - wx);
-        this.m[2][2] = (1 - (xx + yy));
-        this.m[2][3] = 0;
-        return this;
-
+            
+        var r =[ [ (1 - (yy + zz)), (xy + wz),       (xz - wy), 0],
+                 [ (xy - wz),       (1 - (xx + zz)), (yz + wx), 0],
+                 [ (xz + wy),       (yz - wx), (1 - (xx + yy)), 0],
+                 [ 0,               0,               0,         1] ];
+        return this.Multiply(r);
     }
+    
     this.Translate = function (x, y, z) {
         var t = [ [1, 0, 0, 0],
                   [0, 1, 0, 0],
@@ -197,6 +214,8 @@ function Matrix4() {
         ];
         return this.Multiply(r);
     }
+    
+    this.RotateFromAxisAngle = this.Rotate;
   
     this.RotateFromAxisAngleV = function (aa,deg) {
         function deg2rad(d) { return (deg!=undefined) ? d * Math.PI / 180 : d; }
@@ -426,7 +445,7 @@ function Matrix4() {
     // builds a pose matrix from a location and quaternion orientation
     this.makePoseWithQuat = function(at,quat) {
         // first rotate
-        var rot = new Matrix4().FromQuaternion(quat);
+        var rot = new Matrix4().RotateFromQuaternion(quat);
         // then translate
         return rot.Translate(at);
     }
@@ -493,6 +512,18 @@ function Matrix4() {
         return s;
     }
     
+    this.To3x3String = function (p,c) {
+        var s = '';
+        for (var i = 0; i < 3; i++) {
+            if (p!=undefined) s = s.concat(this.m[i].map(x => parseFloat(x).toFixed(p)).toString());
+            else s = s.concat(this.m[i].slice(0,3).toString());
+            s = s.concat(',');
+        }
+        // now replace the commas with spaces
+        if (c == undefined) s = s.replace(/,/g, ' ');
+        return s;
+    }
+    
     this.ToPosEuler = function(toDeg) {
         var clamp = function(x) {
             if (Math.abs(x) < 1e-6)
@@ -522,7 +553,20 @@ function Matrix4() {
         simple.up   = new Vector4().Set3(clamp(this.m[1][0]), clamp(this.m[1][1]), clamp(this.m[1][2]));
         return simple;
     }
-}
+    
+    this.ToPosRotM3 = function() {
+        var clamp = function(x) {
+            if (Math.abs(x) < 1e-6)
+              return 0;
+            else 
+              return x;
+        }
+
+        var simple = {};
+        simple.pos = new Vector4().Set3(clamp(this.m[3][0]), clamp(this.m[3][1]), clamp(this.m[3][2]));
+        simple.rot = new Matrix4().SetM3(this);
+        return simple;
+    }}
 
 // quick way to do perspective matrices
 function MatrixP() { }
@@ -721,6 +765,11 @@ function Vector4() {
     
     this.Scale = function (s) {
         var scale = new Vector4().Set3(this.v[0]*s, this.v[1]*s, this.v[2]*s);
+        return scale;
+    }
+    
+    this.ScaleV4 = function (v) {
+        var scale = new Vector4().Set3(this.v[0]*v.v[0], this.v[1]*v.v[1], this.v[2]*v.v[2]);
         return scale;
     }
     

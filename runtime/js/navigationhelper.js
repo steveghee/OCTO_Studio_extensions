@@ -341,9 +341,9 @@ function spatialHelper(renderer, tunnel, targets) {
     var p2 = gz.Scale(fc).Add(p3); // control point is halfway between eye and starting point, central to gaze vector
     
     // this is the same for all, so calculate this once
-    console.log(this.color);
-    var navfoggedshade = this.color != undefined ? 'navfogged;r f '+this.color[0]+';g f '+this.color[1]+';b f '+this.color[2] 
-                                                 : 'navfogged';
+    var navfoggedshade = twx.app.isPreview()     ? "Default" : 
+                         this.color != undefined ? 'navfogged;r f '+this.color[0]+';g f '+this.color[1]+';b f '+this.color[2] 
+                                                 : 'navfogged;r f 1;g f 1;b f 1';
 
     // here we go : classic cubic bezier spline curve
     var nsp1 = this.nsteps+1;
