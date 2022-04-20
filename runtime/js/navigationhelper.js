@@ -330,18 +330,18 @@ function spatialHelper(renderer, tunnel, targets) {
   ////////////////////////////////////////////////////////////////
   this._drawPathOnce = function(arg) {
       
-    var at = this.target.loc.position;            // staring point
+    var at = this.target.loc.position;            // we want to get to the staring point
     var gt = new Vector4().Set3(this.target.loc.gaze.X(),0,this.target.loc.gaze.Z()).Normalize();  
-    var p0 = new Vector4().Set3(at.X(),      ( at.Y() - this.target.floor) / 2    , at.Z() );//.Sub(gt.Scale(this.cutoff));      // staring point
+    var p0 = new Vector4().Set3(at.X(),      ( at.Y() - this.target.floor) / 2    , at.Z() );   // staring point
     var gz = new Vector4().Set3(arg.gaze[0], 0,                                     arg.gaze[2]).Normalize();
-    var p3 = new Vector4().Set3(arg.from[0], (arg.from[1] - this.target.floor) / 2, arg.from[2]).Add(gz); 
+    var p3 = new Vector4().Set3(arg.from[0], (arg.from[1] - this.target.floor) / 2, arg.from[2]).Add(gz); // we are currently here 
     var gd = p0.Distance(p3,[1,0,1]);
     var fc = gd/2 < 1 ? 1 : gd/2;  // this factor drives the intensity of the control points that steer the path in/out; min value is 1.
     var p1 = p0.Sub(gt.Scale(fc)); // incoming direction
     var p2 = gz.Scale(fc).Add(p3); // control point is halfway between eye and starting point, central to gaze vector
     
     // this is the same for all, so calculate this once
-    var navfoggedshade = twx.app.isPreview()     ? "Default" : 
+    var navfoggedshade = twx.app.isPreview()     ? "" : 
                          this.color != undefined ? 'navfogged;r f '+this.color[0]+';g f '+this.color[1]+';b f '+this.color[2] 
                                                  : 'navfogged;r f 1;g f 1;b f 1';
 
