@@ -25,6 +25,9 @@ exports.runtimeAngularModulesRequires = ["groupy-ng",
                                          //"octoPinger-ng",
                                          /////////////
                                          
+                                         "sxslplayer-ng",
+                                         
+                                         
                                          "navigator-ng",
                                          "lighttube-ng", 
                                          "multiline3D-ng",
