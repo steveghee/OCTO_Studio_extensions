@@ -3,8 +3,8 @@ function twxSxslplayer() {
     elementTag: 'twx-octosxslplayer',
 
     label: 'SXSL Player',
-    
-    //category : 'ar',
+
+    category : 'ar',
     
     groups    : ['OCTO Labs'],
     isVisibleInPalette: function(scope) {
