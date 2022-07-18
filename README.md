@@ -51,7 +51,9 @@ Note the 3d pvz model is displayed as 'occluding' as this should help the author
 around the target, and understand what the user will/not see when viewing from 
 various perspectives.  
 
-Note : The 3d occluding model is (currently) not included in the runtime display. 
+Note also : The 3d occluding model is (currently) not included in the runtime display. 
+
+Finally, the widget is in fact a generic target that will support any model target, so you can use standard and advanced/360 targets with this widget.  You don't have to use advanced/360 targets.
 
 ### Area targets
 Note : depricated : product now includes this target type
