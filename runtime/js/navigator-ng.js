@@ -225,7 +225,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               scope.data.poiselected < scope.data.poidata.length) $timeout(function() { 
           
             //build the locator
-            let rp     = scope.data.poidata[scope.data.poiselected];
+            let dp     = (typeof scope.data.poidata === 'string') ? JSON.parse(scope.data.poidata) : scope.data.poidata;
+            let rp     = Array.isArray(dp) ? dp[scope.data.poiselected] : dp;
             let selrow = { position: rp.position, 
                                gaze: rp.gaze, 
                                  up: rp.up,
@@ -274,6 +275,22 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           scope.data.poidata = scope.poidataField ;
           scope.setSelected();
         });
+            
+        scope.$watch(
+          function() { return JSON.stringify(scope.poidataField.selectedRows)},
+          function(value) {
+            // we need to work out which row (index)
+            if (scope.data.poidata != undefined && 
+                scope.data.poidata.length > 1) scope.data.poidata.forEach(function(row,idx) {
+                    
+              if (row._isSelected == true) {
+                console.log(row,idx);    
+                
+                scope.data.poiselected = idx;
+                scope.setSelected();
+              }
+            });
+          });
             
         //
         //
