@@ -277,7 +277,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         });
             
         scope.$watch(
-          function() { return JSON.stringify(scope.poidataField.selectedRows)},
+          function() { 
+            return scope.poidataField != undefined && scope.poidataField.selectedRows != undefined ? JSON.stringify(scope.poidataField.selectedRows) : JSON.stringify(scope.poidataField) 
+          },
           function(value) {
             // we need to work out which row (index)
             if (scope.data.poidata != undefined && 
