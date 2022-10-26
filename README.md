@@ -27,7 +27,10 @@ Lets look at each in turn.
 ## Targets
 
 ### 360 Model targets
-aka Trained Model targets, this is a new class of model target which can be trained (using Vuforia Engine services) to be able to recognise and
+Note : possibly depricated soon : product now includes updated mode target, including advanced target
+
+
+aka Trained or Adnvanced Model targets, this is a new class of model target which can be trained (using Vuforia Engine services) to be able to recognise and
 snap to a model target from any angle.  This if course differs to the standard model target where there is a specific perspective (otten indicated via a helpful 'guide view'). With Trained / 360 models targets, 
 recognition can be 'trained' to occur from a broad range of angles, all the way up to 360 around the target item.
 
@@ -57,29 +60,6 @@ Finally, the widget is in fact a generic target that will support any model targ
 
 ### Area targets
 Note : depricated : product now includes this target type
-
-Area targets provide a means of locating and tracking the user in a larger spatial environment, say a room or a small factory space. 
-Instead of tracking against an object/shape or an image, you are tracking against the environment/surroundings.
-
-Generation of the target is not included in this extension. Instead, the user should use their Vuforia Engine account to download the new Area Target Generator application, and view the documentation on the Engine website in order
-to familiarise themselves with the User Interface and functionality of this tool.
-
-In principal, the steps are as follows
-
-1. scan your environment using a recommended camera.  There is a direct integration to Matterport included in the Area Target generator, and these cameras are perfect for small-medium sized locations.
-2. upload your scan to the Matterport account. 
-3. Follow the instructions in the Area Target web documentation to identify the results of the scan and to pass this information to the Target Generator
-4. The Area Target generator will create the .dat and .xml target descriptor files
-5. The area target generates a 3d polygonal representation of your space, named _authoring, and a lightweight _navmesh representation which can be used for occlusion. 
-6. Copy the .dat and .xml, _authoring and _navmesh (the latter two are glb files) to your project resources folder
-7. Drag the Area Target widget into your Studio canvas
-8. Select the .dat file as the target data base for the widget. The 3d representation (same name - see step 5 above) will now appear in Studio
-9. You can now place any augmented content in this space 
-10. Run the experience and you should locate and track relative to the target. Your augmentations will appear where you placed them in the editor. 
-11. If you check the 'occlusion' checkbox, the occlusion (_navmesh) glb file will be included in the project, and will be used at runtime to provide an
-occlusion effect that will ensure any digital augmentation will appear correctly occluded by the physical space e.g. an item behind a solid cannot be seen.
-
-Note this will soon be depricated as Studio has now integrated the Area Target widget into the product.
 
 ### Cloud Image Targets
 depricated: product now includes this target type
@@ -136,36 +116,8 @@ TBC
 There are two widgets in this category
 
 ###Navigator
-The navigation widget provies a simple means to helping guide/navigate the user to a location within the tracked space.  To use this feature, first add
-the navigation widget to your 3d scene.  You can choose how you want to help indicate the target location e.g. if you user is holding an ipad, you can choose the ipad 
-representation from the dropdown. There are other options available.
+Note : depricated : product now includes this capability in the form of the wayfinder
 
-The location itself can be set via data that is bound to the widget; you can link an array of locations and drive which is the current 'selected' location.  
-This data can be in table form - perhaps the result of a thingworx service call - or you can set the value from javascript.
-
-  `$scope.view.wdg.navigator.poidata = [ 
-                                         { position: "0,0,0",    // defined as a string of xyz coordinates 
-                                               gaze: "0,0,1",    // defined as a string, this is a unit vector pointing away from the view
-                                                 up: "0, 1, 0",  // defined as a string, this is a unit vector pointing up through the device
-                                             cutoff: 1.2,        // optional, if provided this will override the widget-level cutoff setting FOR THIS poi
-                                           metadata: "optional"  // optional data that can be used to describe what this row indicates. can be string or {} object
-                                         }
-                                       ];` 
-
-With and array, the 'Selected' field will define which row is active.
-The 'value' field (output) reflects the current active target i.e. the selected row of the table.
-
-With a value set, the navigation wiget will monitor the user location and will draw a 'ribbon' from the user device to the end location - this ribbon helps guide the
-user which way to walk/navigate to reach the target location. As the user approaches the target, the ribbon will fade.
-
-The navgation widget includes settings that will control the widget reacts as the uer approaches the chosen point - cutoff distance defines a radius around the point, and when
-the user crosses this radius, the 'arrived' event is fired. You can use this to trigger some behaviour.  Note that the event is only fired as the user enters from outside of the 
-radial zone.  Stepping back across the threshold does not trigger the event again.  If auto-cutoff is checked, following the 'arrived' event, the widget will hide the end marker 
-items and will wait for a new location to be defined.  Use the metadata to help indicate what the position data means, such then when you 'arrive' at a location, you can immediately 
-identify what that location e.g. e.g. the metadata could be a value that points you whatever task you should perform when you arrive at the location. 
-
-The navigator widget also works on the hololens, though the operation is slightly different in that on a mobile/tablet device, the path is dynamic (it will change as the user moves) whereas on the hololens, the path is static - it is computed once (either when the navigation point 
-is set, or whenever the path is shown (the Show() method).  This is for performance reasons.
 
 ###Zones of Interest (**new**)
 The Zones of interest widget provies a mechanism to declare one or more zones (these are cylindrical is shape) and position these in 

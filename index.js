@@ -17,18 +17,18 @@ exports.runtimeAngularModulesRequires = ["groupy-ng",
                                          "incrementer-ng", 
                                          "logic-ng",
                                          
-                                         ///////////// being depricated soon
+                                         ///////////// depricated
                                          //"octotoggle3D-ng",
                                          //"octopress3D-ng",
                                          //"image3D-ng", 
                                          //"tethered-ng",
                                          //"octoPinger-ng",
-                                         /////////////
+                                         //"navigator-ng",
+                                         ////////////////////////
                                          
+                                         //new - mainly alpha testing
                                          "sxslplayer-ng",
                                          
-                                         
-                                         "navigator-ng",
                                          "lighttube-ng", 
                                          "multiline3D-ng",
                                          "list3D-ng",

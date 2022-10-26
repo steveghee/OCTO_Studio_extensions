@@ -9,10 +9,9 @@ function twxTethered() {
     
     isVisibleInPalette: function(scope) {
       let projectSettings = scope.$root.currentProject || {};
-      let builderSettings = scope.$root.builderSettings || {};
-      return (!!builderSettings.octo && (projectSettings.projectType === 'eyewear'));
+      return false; // NOW DEPRICATED    
+      //return (!!builderSettings.octo && (projectSettings.projectType === 'eyewear'));
     },
-   
 
     properties: [
       {

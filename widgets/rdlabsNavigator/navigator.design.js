@@ -6,6 +6,10 @@ function twxNavigator() {
     
     category : 'ar',
     groups   : ['Navigation'],
+    isVisibleInPalette: function(scope) {
+      let builderSettings = scope.$root.builderSettings || {};
+      return false; // NOW DEPRICATED    
+    },
     
     properties: [
       {
