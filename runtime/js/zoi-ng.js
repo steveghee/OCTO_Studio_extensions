@@ -156,12 +156,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         });
             
         //
-        // height offset of feet from virtual floor (tracking.y = 0)
+        // height offset offset feet from virtual floor (tracking.y = 0)
         //
         scope.$watch('floorField', function () {
           scope.data.floor  = (scope.floorField  != undefined) ? parseFloat(scope.floorField)  : 0;                 
           if (scope.data.helper != undefined) {
-            scope.data.helper.Offset(scope.data.floor);
+              scope.data.helper.Offset(scope.data.floor);
+              updatezois();
           }
         });
             

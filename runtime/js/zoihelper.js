@@ -163,7 +163,7 @@ function zoiHelper(renderer, targets) {
   //
   // set the height offset 
   //
-  this.Offset = function(offset) { this.targets.floor = offset; return this; }
+  this.Offset = function(offset) { this.floor = offset; this.dirty = true; return this; }
   
   //
   // cutoff values can be specified PER poi, so this is a fallback case
