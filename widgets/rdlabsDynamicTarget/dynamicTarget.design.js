@@ -23,11 +23,9 @@
     overlay.dataset = {
             name: 'dataset',
            label: 'ves-ar-extension:Data Set',
-        datatype: 'resource_url',
+        datatype: 'string',
          default: '',
-    resource_url: true,
- allowedPatterns: ['.dat'],
-           tFrag: 'src="#_src_#"',
+           tFrag: 'ng-src="{{me.dataset + \'?id=\' + me.targetId}}"',
        sortOrder: 1,
  isBindingTarget: true,
        isVisible: true
@@ -35,14 +33,22 @@
     overlay.imgurl = {
             name: 'url',
            label: 'ves-ar-extension:Image',
-        datatype: 'resource_url',
-  resource_image: true,
- allowedPatterns: ['.png', '.jpg', '.svg', '.jpeg', '.gif','.bmp'],
+        datatype: 'string',
        isVisible: true,
            tFrag: 'guide-src="{{me.url}}"',
  isBindingTarget: true,
        sortOrder: 2
         };
+        overlay.size = {
+            name: 'size',
+           label: 'width (m) override',
+        datatype: 'string',
+         default: '',
+           tFrag: 'size="{{me.size}}"',
+ isBindingSource: false,
+ isBindingTarget: true,
+       sortOrder: 3
+    };
         overlay.istracked = {
             name: 'istracked',
            label: 'ves-ar-extension:Tracked',
@@ -77,19 +83,19 @@
          return projectSettings.projectType === 'eyewear';
        }
     };
-    
+
     var removals = ['billboard', 'occlude', 'opacity', 'visible', 'shader', 'scale', 'decal'];
-    
+
     // create the default props list (add the ones we created, remove the list above)
     var props = Twx3dCommon.new3dProps(overlay, removals);
     // and create the template
     var template = Twx3dCommon.buildRuntimeTemplate("twx-dt-target", props, true);
-    
+
     // create a design template - this is a 3D image (can be dragged etc.)
     var designTemplate = '<twx-dt-model id="#widgetId#" src="{{me.maskurl}}" opacity="1" hidden="false" sx="1" sy="1" sz="1" x="0" y="0" z="0" rx="0" ry="0" rz="0" occlude="true" decal="false" shader=""></twx-dt-model>';
 
     var retObj = {
-        
+
          elementTag: "octodynamic-dt-target",
               label: widgetLabel,
  isVisibleInPalette: function(scope) {
@@ -111,17 +117,8 @@
             default: '',
            datatype: 'string',
           isVisible: false
-           },
-           {
-               name: 'size',
-              label: 'Width (override)',
-           readonly: false,
-    isBindingTarget: true,
-            default: '',
-           datatype: 'string',
-          isVisible: true
            }
-      
+
          ]),
              events: [
                {
@@ -144,27 +141,18 @@
 
     runtimeTemplate: function (props) {
                        var tmpl = template.replace("#widgetId#", props.widgetId);
-                       
-                       // strip off .dat extension: 'app/resources/Uploaded/DB2.dat' -> 'app/resources/Uploaded/DB2'
-                       var data = props.dataset ? props.dataset.replace(/\.[^\.]*$/, '') : '';
-                       
-                       if (props.size != '') 
-                         tmpl = tmpl.replace('#_src_#"', '#_src_#" size='+props.size);
-                       
-                       // result is like: src="vuforia-model:///app/resources/Uploaded/DB2?id=T1"
-                       tmpl = tmpl.replace('#_src_#', data + '?id=' + props.targetId);
                        return tmpl;
                      },
-                   
+
            delegate: function () {
 
                        // called when a widgets properties are altered
                        this.widgetUpdated = function (widgetCtrl, currentProps, changedProps, oldProps) {
-            
+
                        }
                        return this;
                      }
-                   
+
     };
 
     TargetUtils.registerWidgetAsTarget(retObj);
