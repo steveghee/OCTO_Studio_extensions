@@ -49,7 +49,41 @@
  isBindingTarget: true,
        sortOrder: 3
     };
-        overlay.istracked = {
+    
+    overlay.enablescalegesture = {
+      name: 'enablescalegesture',
+      label: '@ptc/ves-ar-extension:Enable Scale Gesture',
+      datatype: 'boolean',
+      default: false,
+      isBindingSource: false,
+      isBindingTarget: true,
+      sortOrder: 5002,
+      isVisible: true,
+    };
+
+    overlay.enabletranslategesture = {
+      name: 'enabletranslategesture',
+      label: '@ptc/ves-ar-extension:Enable Pan Gesture',
+      datatype: 'boolean',
+      default: true,
+      isBindingSource: false,
+      isBindingTarget: true,
+      sortOrder: 5000,
+      isVisible: true,
+    };
+
+    overlay.enablerotategesture = {
+      name: 'enablerotategesture',
+      label: '@ptc/ves-ar-extension:Enable Rotate Gesture',
+      datatype: 'boolean',
+      default: true,
+      isBindingSource: false,
+      isBindingTarget: true,
+      sortOrder: 5001,
+      isVisible: true,
+    };
+
+    overlay.istracked = {
             name: 'istracked',
            label: 'ves-ar-extension:Tracked',
         datatype: 'boolean',
