@@ -19,7 +19,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         modelField    : '@',
         colorField    : '@',
         isholoField   : '@',
-        infoField     : '='
+        infoField     : '=',
+        delegateField : '='
       },
       template: '<div></div>',
       link: function (scope, element, attr) {
@@ -174,8 +175,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               if (scope.data.undo != undefined)
                 tolist(scope.data.undo, (scope.data.polarity === 'true') ? dotlite : normal, scope.renderer);
                 //tolist(scope.data.undo, (scope.data.polarity === 'true') ? dotlite : unlite, scope.renderer);
-              scope.data.model    = scope.modelField;
-              scope.data.undo = [];  
+              scope.data.model = scope.modelField != "" ? scope.modelField : scope.data.model;
+              scope.data.undo  = [];  
               changed = true;  
             }           
             
@@ -242,7 +243,16 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           function(value) {
             if (value != undefined) 
               apply();
+          });
+        
+        scope.$watch('delegateField', function (delegate) {
+          if (delegate) {
+            delegate.reset = function () {
+              reapply();
+            };
+          }
         });
+
       }
     };
   }
