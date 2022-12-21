@@ -79,6 +79,13 @@ function twxMapper() {
         label: 'Completed'
       },
     ],
+    
+  services: [
+      {
+         name: 'reset',
+        label: 'Reset'
+      }
+    ],
 
     designTemplate: function () {
       return '<div class="mapperWidget"></div>';
@@ -92,8 +99,7 @@ function twxMapper() {
     runtimeTemplate: function (props, twxWidgetEl, fullOriginalDoc, $, projectSettings) {
       var forholo = (projectSettings.projectType === 'eyewear');
       var isholo  = forholo ;   
-        
-      var ps1gl ='<script name="mapper_screendoorgl" type="x-shader/x-fragment">precision mediump float;  void main() { float fx = sin(gl_FragCoord.x/2.); float fy = sin(gl_FragCoord.y/2.); float alpha = fx*fy; if (alpha < 0.) discard; else gl_FragColor = vec4(fx,fy,alpha,0.);}</script>';
+      var ps1gl ='<script name="mapper_screendoorgl" type="x-shader/x-fragment">precision mediump float; #define PI 3.14159265358979323846 vec2 rotate2D(vec2 _st, float _angle) { _st -= 0.5;_st =  mat2(cos(_angle),-sin(_angle), sin(_angle),cos(_angle)) * _st; _st += 0.5; return _st;} vec2 tile(vec2 _st, float _zoom){ _st *= _zoom; return fract(_st);}float box(vec2 _st, vec2 _size, float _smoothEdges){ _size = vec2(0.5)-_size*0.5; vec2 aa = vec2(_smoothEdges*0.5); vec2 uv = smoothstep(_size,_size+aa,_st); uv *= smoothstep(_size,_size+aa,vec2(1.0)-_st); return uv.x*uv.y;} void main(void){ vec2 st = gl_FragCoord.xy / 32. ;vec3 color = vec3(0.0); st = tile(st,4.); st = rotate2D(st,PI*0.25); float b = box(st,vec2(0.7),0.01); if (b < 0.01) discard; gl_FragColor = vec4(b,b,b,1.0); }</script>';
       var vs1gl ='<script name="mapper_screendoorgl" type="x-shader/x-vertex">attribute vec4 vertexPosition;uniform mat4 modelViewProjectionMatrix;void main() {gl_Position = modelViewProjectionMatrix * vertexPosition;}</script>';
       var ps1hl ='<script name="mapper_screendoorhl" type="x-shader/x-fragment">  cbuffer ShaderConstantBuffer : register(b0) {  float4 highlightColor; bool useTexture; bool useLight; float transparency; int pad; }; cbuffer RenderConstantBuffer : register(b1) { float tick; float3 ding; }; struct PixelShaderInput { half4 pos : SV_POSITION; }; min16float4 main(PixelShaderInput input) : SV_TARGET {  min16float4 color = min16float4(0.0,0.0,0.0,0.0); min16float4 finalShadedColor = color; return finalShadedColor; } </script>';
       var vs1hl ='<script name="mapper_screendoorhl" type="x-shader/x-vertex"> cbuffer ModelConstantBuffer : register(b0) { float4x4 model; float4x4 inverse; }; cbuffer MaterialConstantBuffer : register(b1) { float4 diffuseColor; }; cbuffer ViewProjectionConstantBuffer : register(b2) { float4x4 viewProjection[2]; float4x4 viewInverse; }; struct VertexShaderInput { half4 pos : POSITION; uint instId : SV_InstanceID; }; struct VertexShaderOutput { half4 pos : SV_POSITION; uint rtvId : SV_RenderTargetArrayIndex; }; VertexShaderOutput main(VertexShaderInput input) { VertexShaderOutput output; half4 pos = half4(input.pos); int idx = input.instId % 2; pos = mul(pos, model); pos = mul(pos, viewProjection[idx]); output.pos = (half4)pos; output.rtvId = idx; return output; } </script>';
@@ -108,7 +114,7 @@ function twxMapper() {
       var ps3gl = '<script name="mapper_desaturatedgl" type="x-shader/x-fragment"> precision mediump float; const float PI=3.1415926; varying vec3 vertex; varying vec3 normal; uniform vec4 surfaceColor; const vec4 ambientColor = vec4(0.15, 0.15, 0.15, 1.0); const vec4 specColor    = vec4(0.05, 0.05, 0.05, 1.0); vec4 luma(vec4 cin) {float min = min( min(cin.x, cin.y), cin.z ); float max = max( max(cin.x, cin.y), cin.z ); float v = (max+min)/2.; return vec4(v,v,v,cin.w); } void main() {vec4 color = luma(surfaceColor); vec3 lightPos    = vec3(1.,1.,1.); vec3 lightDir    = -normalize(lightPos); vec3 finalNormal = normalize(normal); float lambertian = dot(lightDir,finalNormal); float specular   = 0.0; vec3 viewDir     = normalize(-vertex); if (lambertian < 0.0) finalNormal = - finalNormal; vec3 reflectDir = reflect(-lightDir, finalNormal); float specAngle = max(dot(reflectDir, viewDir), 0.0); specular = pow(specAngle, 4.0); color = ambientColor * color + color * abs(lambertian)   + specColor * specular; color.a = 1.; gl_FragColor=vec4(color); } </script>'
       var vs3gl = '<script name="mapper_desaturatedgl" type="x-shader/x-vertex"> attribute vec3 vertexPosition; attribute vec3 vertexNormal; varying   vec3 normal; varying   vec3 vertex; uniform   mat4 modelViewProjectionMatrix; uniform   mat4 normalMatrix; void main() {vec4 vp     = vec4(vertexPosition, 1.0); gl_Position = modelViewProjectionMatrix * vp; normal      = vec3(normalize(normalMatrix * vec4(vertexNormal,0.0))); vertex      = vp.xyz; } </script>'
       
-      var tmpl = '<div ng-mapper isholo-field='+isholo+' info-field="me.data" shader-field={{me.shader}} color-field={{me.color}} default-field={{me.default}} polarity-field={{me.physical}} model-field={{me.model}}></div>';
+      var tmpl = '<div ng-mapper isholo-field='+isholo+' info-field="me.data" shader-field={{me.shader}} color-field={{me.color}} default-field={{me.default}} polarity-field={{me.physical}} model-field={{me.model}} delegate-field="delegate"></div>';
       return tmpl+ps1gl+vs1gl+ps2gl+vs2gl+ps3gl+vs3gl+ps1hl+vs1hl+ps2hl+vs2hl+ps3hl+vs3hl;
     }
   }
