@@ -3,21 +3,32 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 }
 
 var findcmds = {
-    "starts": function (a, b) { return a.startsWith(b); },
-    "not"   : function (a, b) { return a.not     (b); },
-    "same"  : function (a, b) { return a.sameAs  (b); },
-    "like"  : function (a, b) { return a.like    (b); },
-    "unlike": function (a, b) { return a.unlike  (b)  },
-    "eq"    : function (a, b) { return a.equal   (b); },
-    "ne"    : function (a, b) { return a.notEqual(b); },
-    "lt"    : function (a, b) { return a.lessThan     (parseFloat(b)); },
-    "gt"    : function (a, b) { return a.greaterThan  (parseFloat(b)); },
-    "le"    : function (a, b) { return a.lessThanEq   (parseFloat(b)); },
-    "ge"    : function (a, b) { return a.greaterThanEq(parseFloat(b)); },
-    "in"    : function (a,b,c){ return a.in (parseFloat(b), parseFloat(c)); },
-    "out"   : function (a,b,c){ return a.out(parseFloat(b), parseFloat(c)); },
-    "before": function (a,b)  { return a.before(Date.parse(b)); },
-    "after" : function (a,b)  { return a.after (Date.parse(b)); },
+    "starts": function (m, a, b) { return m.find(a).startsWith(b); },
+    "not"   : function (m, a, b) { return m.find(a).not     (b); },
+    "same"  : function (m, a, b) { return m.find(a).sameAs  (b); },
+    "like"  : function (m, a, b) { return m.find(a).like    (b); },
+    "unlike": function (m, a, b) { return m.find(a).unlike  (b)  },
+    "eq"    : function (m, a, b) { return m.find(a).equal   (b); },
+    "ne"    : function (m, a, b) { return m.find(a).notEqual(b); },
+    "lt"    : function (m, a, b) { return m.find(a).lessThan     (parseFloat(b)); },
+    "gt"    : function (m, a, b) { return m.find(a).greaterThan  (parseFloat(b)); },
+    "le"    : function (m, a, b) { return m.find(a).lessThanEq   (parseFloat(b)); },
+    "ge"    : function (m, a, b) { return m.find(a).greaterThanEq(parseFloat(b)); },
+    "in"    : function (m, a,b,c){ return m.find(a).in (parseFloat(b), parseFloat(c)); },
+    "out"   : function (m, a,b,c){ return m.find(a).out(parseFloat(b), parseFloat(c)); },
+    "before": function (m, a, b) { return m.find(a).before(Date.parse(b)); },
+    "after" : function (m, a, b) { return m.find(a).after (Date.parse(b)); },
+    "within": function (m, a, b) { 
+      var whereFunc = function(a,b) {
+        var prop = a;
+        var test = b;
+        return function(idpath) {
+          const pn = this.get(idpath, prop);
+          return pn != undefined ? test.search(pn) >= 0 : false;
+        }
+      }
+      return m.find(a).findCustom(whereFunc(a,b)); 
+    }
 };
 
 (function () {
@@ -104,7 +115,7 @@ var findcmds = {
                   for(var r=0;r<reqs.length;r++) {
                       
                       // process each request
-                      var tres = cmd(meta.find(scope.nameField.trim()),reqs[r].trim()).getSelected(selectFunc);
+                      var tres = cmd(meta, scope.nameField.trim(), reqs[r].trim()).getSelected(selectFunc);
                       
                       //and merge the values into the result
                       if (tres != undefined)
