@@ -149,6 +149,5 @@ function twxMultiLineLabel3D() {
   };
 }
 
-//SPG remove, temporarily, until studio bug is fixed 
-//twxAppBuilder.widget('twxMultiLineLabel3D', twxMultiLineLabel3D);
+twxAppBuilder.widget('twxMultiLineLabel3D', twxMultiLineLabel3D);
 
