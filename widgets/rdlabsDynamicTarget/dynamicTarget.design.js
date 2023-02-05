@@ -147,10 +147,11 @@
            {
                name: 'targetId',
               label: 'Target ID',
-           readonly: true,
+           readonly: false,
             default: '',
+    isBindingTarget: true,
            datatype: 'string',
-          isVisible: false
+          isVisible: true
            }
 
          ]),
