@@ -19,6 +19,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         modelField    : '@',
         colorField    : '@',
         isholoField   : '@',
+     autoselectField  : '@',
         infoField     : '=',
         delegateField : '='
       },
@@ -43,7 +44,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                  unliteShader: defaultUnliteShader,
                  dotlitShader: defaultDotlitShader,
                          prev: [],
-                      results: []
+                      results: [],
+           autoSelectChildren: true
                      };
         scope.renderer = $window.cordova ? vuforia : $injector.get('threeJsTmlRenderer');
         
@@ -72,7 +74,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               shader:scope.data.unliteShader+toHolo(),
               hidden:false,
              opacity:0.5,phantom:false,
-               decal:false
+               decal:false,occlude:false
             });      
         };
         var dotlite = function(nodeId,rd) {
@@ -80,8 +82,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             {
               shader:scope.data.dotlitShader+toHolo(),
               hidden:false,
-             opacity:0.8,phantom:true,
-               decal:true
+             opacity:0.5,phantom:false,
+               decal:false,occlude:true
             });      
         };
         var normal = function(nodeId,rd) {
@@ -90,7 +92,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               shader:"Default",
               hidden:false,
              opacity:1,phantom:false,
-               decal:false
+               decal:false,occlude:false
             });      
         };
         var tolist = function(ids,cb,rd) {
@@ -101,6 +103,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         };
 
         var apply = function(re) {
+            
+          function isParent(a,b) {
+            var c = b.path + '/';  
+            return (!(a.path === b.path) && a.path.startsWith(c));
+          }
           scope.data.prev = scope.data.results;
           scope.data.results = (Array.isArray(scope.infoField)) ? scope.infoField : [];
           
@@ -118,22 +125,25 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           var left = (scope.data.results != undefined && scope.data.results.length > 0 &&
                       scope.data.prev    != undefined && scope.data.prev.length >0) 
                    ? Enumerable.from(scope.data.results)
-                               .except(scope.data.prev,"$.path")
+                               //.except(scope.data.prev,"$.path")
                                .toArray() 
                    : scope.data.results;
                    
-          var mixin = (scope.data.undo != undefined) 
-                    ? Enumerable.from(scope.data.undo)
-                                .where(a=>Enumerable.from(scope.data.results)
-                                                    .where(b=>a.path.startsWith(b.path))
-                                                    .toArray()
-                                                    .length > 0)
-                                .toArray()
-                   : []; // empty
-          left = Enumerable.from(left)                
-                           .union(mixin)
-                           .toArray();
-      
+          if (scope.data.autoSelectChildren) {         
+            // if the list contains parent ids, we need to 'auto-select' their children
+            // 
+            var mixin = (scope.data.undo != undefined) 
+                      ? Enumerable.from(scope.data.undo)
+                                  .where(a=>Enumerable.from(scope.data.results)
+                                                      .where(b=>isParent(a,b))
+                                                      .toArray()
+                                                      .length > 0)
+                                  .toArray()
+                     : []; // empty
+            left = Enumerable.from(left)                
+                             .union(mixin)
+                             .toArray();
+          }
 
           // and work out how many unique OLD items need to be cleared out
           if (re === undefined && scope.data.undo != undefined && scope.data.undo.length > 0) {
@@ -176,12 +186,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 tolist(scope.data.undo, (scope.data.polarity === 'true') ? dotlite : normal, scope.renderer);
                 //tolist(scope.data.undo, (scope.data.polarity === 'true') ? dotlite : unlite, scope.renderer);
               scope.data.model = scope.modelField != "" ? scope.modelField : scope.data.model;
-              scope.data.undo  = [];  
+              scope.data.undo  = [];
+              scope.data.prev  = [];
               changed = true;  
             }           
             
             if (scope.shaderField != scope.data.shader) {  
-              scope.data.shader       = scope.shaderField;
+              scope.data.shader = scope.shaderField;
               if (scope.data.shader != undefined && scope.data.shader != '') 
                 scope.data.hiliteShader = scope.data.shader;  
               changed = true;  
@@ -202,17 +213,16 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
         };
         
-        
-        scope.$watch('polarityField', function () {
-          updateMapper();
-        });
-
-        scope.$watch('shaderField', function () {
+        scope.$watchGroup(['polarityField','shaderField','modelField','defaultField','infoField'], function () {
           updateMapper();
         });
 
         scope.$watch('isholoField', function () {
           scope.data.isholo = scope.isholoField != undefined ? scope.isholoField : false;
+        });
+            
+        scope.$watch('autoselectField', function () {
+          scope.data.autoSelectChildren = scope.autoselectField != undefined ? toBool(scope.autoselectField) : true;
         });
             
         scope.$watch('colorField', function () {
@@ -224,22 +234,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           updateMapper();
         });
 
-        scope.$watch('defaultField', function () {
-          updateMapper();
-        });
-
-        scope.$watch('modelField', function () {
-                           
-          updateMapper();
-        });
-
-        scope.$watch('infoField', function () {
-          updateMapper();
-        });
-            
         // if there is a SUBSET of data defined, lets watch to see if that list changes    
         scope.$watch(
-          function() { return JSON.stringify(scope.infoField.selectedRows)},
+          function() { 
+              return scope.infoField != undefined && scope.infoField.selectedRows != undefined ? JSON.stringify(scope.infoField.selectedRows) 
+                                                                                               : JSON.stringify(scope.infoField) 
+          },
           function(value) {
             if (value != undefined) 
               apply();
