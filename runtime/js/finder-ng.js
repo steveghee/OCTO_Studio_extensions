@@ -158,7 +158,8 @@ var findcmds = {
         // watch for changes in the definition of what we need to find   
         //
         scope.$watchGroup(['nameField','valueField','categoryField','includeField'], function () {
-          updateFinder();
+          if (scope.data.auto)
+            updateFinder();
         });
             
         // watch for changes in the definition of what we need to find    
@@ -167,7 +168,8 @@ var findcmds = {
           scope.data.auto = (scope.autoField    != undefined && scope.autoField === 'true') ? true :false ;
           scope.data.op   = (scope.opField      != undefined && scope.opField      != '') ? scope.opField : undefined;
           scope.data.id   = (scope.modelidField != undefined && scope.modelidField != '') ? scope.modelidField : undefined;
-          updateFinder();
+          if (scope.data.auto) 
+            updateFinder();
         });
             
         // if there is a SUBSET of data defined, lets watch to see if that list changes    
