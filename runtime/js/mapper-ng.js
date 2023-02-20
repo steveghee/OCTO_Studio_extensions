@@ -73,7 +73,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             {
               shader:scope.data.unliteShader+toHolo(),
               hidden:false,
-             opacity:0.5,phantom:false,
+             opacity:0.5,phantom:true,
                decal:false,occlude:false
             });      
         };
