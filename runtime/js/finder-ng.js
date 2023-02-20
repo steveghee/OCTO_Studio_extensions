@@ -89,7 +89,7 @@ var findcmds = {
                                    
                   //now lets see if we can get the other properies that user is asking for 
                   var ask = scope.includeField.split(',');
-                  var res = this.get(idpath, ask.trim());
+                  var res = this.get(idpath, ask);
                   if (res != undefined && res.length === ask.length) for (var p=0;p<ask.length;p++) {
                       
                     // add each result as a new property in the return body  
