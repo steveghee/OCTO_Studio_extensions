@@ -17,6 +17,7 @@ exports.runtimeAngularModulesRequires = ["groupy-ng",
                                          "incrementer-ng", 
                                          "logic-ng",
                                          "abswitch-ng",
+                                         "fieldgetter-ng",
                                          
                                          ///////////// depricated
                                          //"octotoggle3D-ng",
