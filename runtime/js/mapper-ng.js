@@ -63,8 +63,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             {
               shader:scope.data.hiliteShader+toHolo()+scope.data.hiliteColor, 
               hidden:false,
-             opacity:1.0,
-             phantom:false,
+             opacity:scope.data.polarity?0.8:1.0,
+             phantom:scope.data.polarity,
                decal:false
             });      
         };
@@ -153,7 +153,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                                  .toArray() 
                      : scope.data.undo;
                                  
-            tolist(diff,(scope.data.polarity === 'true') ? dotlite : unlite, scope.renderer);
+            tolist(diff,(scope.data.polarity) ? dotlite : unlite, scope.renderer);
             
             //we need to keep a keep a running tally of ALL items we've undone
             scope.data.undo = (scope.data.undo != undefined && diff != undefined) 
@@ -175,7 +175,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         };
 
         var updateMapper = function(){
-          scope.data.polarity = scope.polarityField;
+          scope.data.polarity = toBool(scope.polarityField);
           $timeout(function () {
 
             // what has changed?
@@ -183,7 +183,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             
             if (scope.modelField != scope.data.model) {  
               if (scope.data.undo != undefined)
-                tolist(scope.data.undo, (scope.data.polarity === 'true') ? dotlite : normal, scope.renderer);
+                tolist(scope.data.undo, (scope.data.polarity) ? dotlite : normal, scope.renderer);
                 //tolist(scope.data.undo, (scope.data.polarity === 'true') ? dotlite : unlite, scope.renderer);
               scope.data.model = scope.modelField != "" ? scope.modelField : scope.data.model;
               scope.data.undo  = [];

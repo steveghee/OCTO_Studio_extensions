@@ -38,7 +38,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                      };
                      
         var reset = function() {
-          scope.data.value = setStart(scope.data.start);                         
+          scope.data.value = setStart(scope.data.start);  
+          scope.data.count = 0;
         };
                                
         var M2PI = 2.0 * Math.PI;
@@ -162,7 +163,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             
         scope.$watch('delegateField', function (delegate) {
           if (delegate) {
-            delegate.reset   = function () { reset();   };
+              delegate.reset   = function () { 
+                reset(); 
+                updateBouncer();
+              };
           }
         });
 
