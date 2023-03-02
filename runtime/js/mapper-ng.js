@@ -109,7 +109,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             return (!(a.path === b.path) && a.path.startsWith(c));
           }
           scope.data.prev = scope.data.results;
-          scope.data.results = (Array.isArray(scope.infoField)) ? scope.infoField : [];
+          scope.data.results = (Array.isArray(scope.infoField)) ? scope.infoField 
+                             : scope.infoField.path != undefined ? [{model:scope.infoField.model,path:scope.infoField.path}]
+                                                                 : [];
           
           // if the data item has 'selectedRows' then lets use the SUBSET of data to control the list
           if (scope.data.results != undefined && scope.infoField.selectedRows != undefined)
@@ -173,6 +175,15 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         var reapply = function() {
           apply(true);
         };
+        
+        var reset = function() {
+          if (scope.data.undo != undefined)
+            tolist(scope.data.undo, (scope.data.polarity) ? dotlite : normal, scope.renderer);
+            //tolist(scope.data.undo, (scope.data.polarity === 'true') ? dotlite : unlite, scope.renderer);
+          scope.data.model = scope.modelField != "" ? scope.modelField : scope.data.model;
+          scope.data.undo  = [];
+          scope.data.prev  = [];
+        }
 
         var updateMapper = function(){
           scope.data.polarity = toBool(scope.polarityField);
@@ -182,12 +193,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             var changed = false;       
             
             if (scope.modelField != scope.data.model) {  
-              if (scope.data.undo != undefined)
-                tolist(scope.data.undo, (scope.data.polarity) ? dotlite : normal, scope.renderer);
-                //tolist(scope.data.undo, (scope.data.polarity === 'true') ? dotlite : unlite, scope.renderer);
-              scope.data.model = scope.modelField != "" ? scope.modelField : scope.data.model;
-              scope.data.undo  = [];
-              scope.data.prev  = [];
+              reset();
               changed = true;  
             }           
             
@@ -248,6 +254,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         scope.$watch('delegateField', function (delegate) {
           if (delegate) {
             delegate.reset = function () {
+              reset();  
               reapply();
             };
           }

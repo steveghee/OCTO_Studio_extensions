@@ -42,11 +42,15 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                    });
                           
                    scope.resultField = resolved;
-              
+                   var keys = Object.keys(resolved);
+                   if (keys.length > 0) scope.$parent.fireEvent('resolved');
+                   else                     scope.$parent.fireEvent('unresolved');
+             
                  })
                  .error(function(data, status, headers, config) {
                    console.log(status);           
                    scope.rsultField = [];     
+                   scope.$parent.fireEvent('failed');
                  });
           } else {
             scope.resultField = [];

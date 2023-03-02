@@ -1,8 +1,8 @@
-function twxIDResolution() {
+function twxAmp() {
   return {
-    elementTag: 'twx-idresolution',
+    elementTag: 'twx-amp',
 
-    label: 'ID Resolution',
+    label: 'Amp',
     // note : only specify category if you want to limit usage to a specific experience type
     //category: 'ar',  
     // in this case, we want this widget to be available anywhere, so we do NOT specify a category
@@ -14,50 +14,45 @@ function twxIDResolution() {
 
     properties: [
       {
-             name: 'urn',
-            label: 'Identity',
-         datatype: 'string',
+             name: 'input',
+            label: 'Input',
+         datatype: 'number',
+  isBindingTarget: true,
+        showInput: true
+      },
+      {
+             name: 'gain',
+            label: 'Gain',
+         datatype: 'number',
+  isBindingSource: false,
   isBindingTarget: true,
         showInput: true
       },
       {
              name: 'result',
-            label: 'Result',
-         datatype: 'string',
+            label: 'Output',
+         datatype: 'number',
   isBindingSource: true,
   isBindingTarget: false,
         showInput: false
       },
     ],
-    events: [
-      {
-        name: 'resolved',
-        label: 'Resolved'
-      },
-      {
-        name: 'failed',
-        label: 'Failed'
-      },
-      {
-        name: 'unresolved',
-        label: 'Unresolved'
-      }
-    ],
 
     dependencies: {
-      files         : ['js/idresolution-ng.js'],
-      angularModules: ['idresolution-ng']
+      files         : ['js/amp-ng.js'],
+      angularModules: ['amp-ng']
     },
 
+
     designTemplate: function () {
-      return '<div class="idResolutionWidget">{{me.field}}</div>';
+      return '<div class="ampWidget">{{me.gain}}</div>';
     },
 
     runtimeTemplate: function (props) {
-      var tmpl = '<div ng-idresolution result-field="me.result" urn-field={{me.urn}}></div>';
+      var tmpl = '<div ng-amp result-field="me.result" input-field={{me.input}} gain-field={{me.gain}}>{{me.gain}}</div>';
       return tmpl;
     }
   }
 }
 
-twxAppBuilder.widget('twxIDResolution', twxIDResolution);
+twxAppBuilder.widget('twxAmp', twxAmp);
