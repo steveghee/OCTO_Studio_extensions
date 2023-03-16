@@ -4,7 +4,7 @@ A list of extensions for the Vuforia Studio platform
 These include
 * low-level (TML) support for new Vuforia Engine features e.g. Area and Traned model targets
 * 3d UI widgets for the hololens e.g. buttons, toggles, tethered backplate
-* 3d assistance tools e,g 'pinger' (attract attention), navigator
+* 3d assistance tools e,g 'pinger' (attract attention), navigator, markup
 * non-graphical logic elements e.g. AND/OR gates, flipflops, latches
 
 ## Installation
@@ -20,15 +20,34 @@ The extension can be broken down into 4 main catagories
 2. Inputs
 3. Containers
 4. Navigation **new : "zone of interest" widget
-5. Misc
+5. Misc ** new : image markup widget 
 
 Lets look at each in turn.
 
 ## Targets
+### Dynamic Target (new)
+
+Work In Progress
+
+The dynamic target widget can be used to bind external target references e.g. targets that are created and stored in the Experience Service repository or a Thingworx file repository.
+These target dat/xml and guide view sets can be referenced as url, and this widget will load them.
+
+Suggestions for using this widget
+1. prepare your external targets in suitable repositories
+2. know the type of target - the url you provide will define the target type
+for example, a model target is defined as "vuforia-model:///path to target/tartname?id=targetid".  You must fill in the parmaters correctly
+a spatial target is simplly "spatial://"
+
+To make your experience dynamic, you wlil pass the target information to the experience at launch - you can do this by passing application parameters in the launch url
+these parameters can be formed using services such as the Identity Resolution Service (IRS) - part of the Experience Server - or you can form the url yourself e.g. using a QR code.
+
+Bind your application parameter to the 'dataset' and 'guide' parameters of the dynamic target widget.  These paameters, when supplied at runtime, will then supply the values needed to load the target.
+
+An mention abve, this widget is still work in progress, so there's a few issues to be ironed out still.  Basic testing shows that spatial, image and model targets all work.
+
+
 
 ### 360 Model targets
-Note : possibly depricated soon : product now includes updated mode target, including advanced target
-
 
 aka Trained or Adnvanced Model targets, this is a new class of model target which can be trained (using Vuforia Engine services) to be able to recognise and
 snap to a model target from any angle.  This if course differs to the standard model target where there is a specific perspective (otten indicated via a helpful 'guide view'). With Trained / 360 models targets, 
@@ -137,9 +156,22 @@ This section TO BE COMPLETED
 
 ## Misc
 
+### Image markup (** new **)
+The markup widget can be used to provide in-situ markup (pen,text, shapes) over an 
+image e.g. a photo collected from the camera widget.  Connect the image_url output from the camera to the image_url input of the markup; connect the picture taken even from the camera to the start markup service of the markup widget. When you take a picture, the markup editor
+will open and you can draw on the image. Click ok to generate a new image - you can route this to thingworx or similar.
+
 ### Logic and state management
 Included are a collection of simple logic 'gates' (based on core principals and building blocks used in microelectronics).
 These building blocks can be used to controlling state within you application.
+
+#### ABSwitch
+A simple A/B switch, where 'output' is a binary choice between input 'A' and input B'.
+The 'polarity' field drives the selection; if polarity is true, input A is chosen. Inputs and output are strings.
+
+#### Amp
+A simple amplifier widget that takes two numerical input signals, 'input' and 'gain', and emits an 'output' which is the
+product of the two values e.g. `output = input * gain`
 
 #### Flip Flop
 The flipflop emulates a standard JK flipflop electronic circuit.  It can be set to a value (true) or reset (false) or it can set to 'toggle' mode and 'clocked' to bounce between these two states.
