@@ -24,6 +24,17 @@ var findcmds = {
         var test = b;
         return function(idpath) {
           const pn = this.get(idpath, prop);
+          return pn != undefined ? pn.search(test) >= 0 : false;
+        }
+      }
+      return m.find(a).findCustom(whereFunc(a,b)); 
+    },
+    "contains": function (m, a, b) { 
+      var whereFunc = function(a,b) {
+        var prop = a;
+        var test = b;
+        return function(idpath) {
+          const pn = this.get(idpath, prop);
           return pn != undefined ? test.search(pn) >= 0 : false;
         }
       }

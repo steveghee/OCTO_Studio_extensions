@@ -1,6 +1,6 @@
 function twxSvg() {
   return {
-    elementTag: 'twx-svg',
+    elementTag: 'octo-svg',
 
     label: 'Svg',
     // note : only specify category if you want to limit usage to a specific experience type
@@ -31,6 +31,13 @@ function twxSvg() {
  isBindingSource: false,
  isBindingTarget: true,
        showInput: true
+      },
+      {
+            name: 'visible',
+           label: 'ves-basic-web-widgets-extension:Visible',
+        datatype: 'boolean',
+         default: true,
+ isBindingTarget: true
       }
 
     ],
@@ -40,7 +47,7 @@ function twxSvg() {
     },
 
     runtimeTemplate: function (props) {
-      return '<div><object id="'+props.widgetId+'" type="image/svg+xml" data="{{me.src}}" class="{{me.class}}" twx-native-events></object></div>';
+      return '<div ng-show="app.fn.isTrue(me.visible)"><object id="'+props.widgetId+'" type="image/svg+xml" data="{{me.src}}" class="{{me.class}}" twx-native-events></object></div>';
     }
   }
 }

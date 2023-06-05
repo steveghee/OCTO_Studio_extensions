@@ -57,7 +57,8 @@ function twxFinder() {
             {label: 'Less than'   , value: "lt"},
             {label: 'Before'      , value: "before"},
             {label: 'After'       , value: "after"},
-            {label: 'Within'      , value: "within"}
+            {label: 'Within'      , value: "within"},
+            {label: 'Contains'    , value: "contains"}
         ],
       },
       {
