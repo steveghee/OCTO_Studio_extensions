@@ -1,8 +1,12 @@
 # OCTO_Studio_extensions
 A list of extensions for the Vuforia Studio platform
 
+Pleasse note : these are provided as example only. Whilst I do my utmost to keep them working, these are purely examples of 'useful' 
+tools, capabiliites etc. that the user might find valuable in building an experience using Vuforia Studio.  
+They are provided free of charge, and can be used, adapted, altered freely, but they are completely unsupported.
+
 These include
-* low-level (TML) support for new Vuforia Engine features e.g. Area and Traned model targets
+* low-level (TML) support for new Vuforia Engine features e.g. Area and Trained model targets
 * 3d UI widgets for the hololens e.g. buttons, toggles, tethered backplate
 * 3d assistance tools e,g 'pinger' (attract attention), navigator, markup
 * non-graphical logic elements e.g. AND/OR gates, flipflops, latches
@@ -19,8 +23,8 @@ The extension can be broken down into 4 main catagories
 1. Targets
 2. Inputs
 3. Containers
-4. Navigation **new : "zone of interest" widget
-5. Misc ** new : image markup widget 
+4. Navigation
+5. Misc 
 
 Lets look at each in turn.
 
