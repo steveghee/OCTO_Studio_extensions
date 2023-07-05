@@ -583,7 +583,7 @@ this.sxsl2Player = function(config,helper,procValidator,stepValidator,context) {
           
             // prepare responses for action processor
             me.step.ack.proof.response = me.step.ack.proof.pending;
-            me.step.ack.proof.pending=undefined;
+            me.step.ack.proof.pending = undefined;
           }
         
         } else {
