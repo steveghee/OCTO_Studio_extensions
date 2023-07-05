@@ -398,7 +398,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         }
         var selectedErrorCode = function() {
           var value = scope.data.errorcodelist.value;
-          console.log('you clicked',value);
+          //console.log('you clicked',value);
+          
           if (value != undefined) {
 
             // if we have children, we show them
@@ -979,8 +980,7 @@ scope.sxsl2Actions = function(context) {
       
       var me = this.context;
       refs.forEach(function(ref) {
-        console.log(ref);
-        
+                   
         //if the mime isnt defined, lets see if we can figure it out from the file extension
         if (ref.mime == undefined) {
           var fext = ref.url.slice(ref.url.lastIndexOf('.'));
@@ -1339,7 +1339,7 @@ scope.sxsl2Actions = function(context) {
   }
 
   this.generic = (a) => {
-    console.log(a)
+    //console.log(a)
     
     // a step described as one or more actions; we can have optional introduction and conclusion too, so to render out 
     // a step/action, we will show the intro, each action  as it is consumed, and the outro. For multi-action steps, we show the
