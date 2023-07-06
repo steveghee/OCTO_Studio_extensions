@@ -416,22 +416,51 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             }
           }
         };
-        
+                
         var minimise = function() {
           const t1 = document.querySelector('div.instruction-container');
           t1.className = 'instruction-container-hide';
           const t2 = document.querySelector('div#instruction-max');
           t2.className = 'thumbnail-show';
+          
+           const t3 = document.querySelector('div#preview');
+           t3.className = 'PreviewPanelCollapsed';
+           const t4 = document.querySelector('div#panel');
+           t4.className = 'preview-panelCollapsed';
         }
         var maximise = function() {
           const t1 = document.querySelector('div#instructions');
           t1.className = 'instruction-container'; 
           const t2 = document.querySelector('div#instruction-max');
           t2.className = 'thumbnail-hide';            
-        }
+          
+          const t3 = document.querySelector('div#preview');
+          t3.className = 'PreviewPanel';
+          const t4 = document.querySelector('div#panel');
+          t4.className = 'preview-panel';
+      }
         var expandContract = function() {
           const t1 = document.querySelector('img#thumbnail');
-          t1.className = t1.className == 'thumbnail-hide' ? 'thumbnail-show' : 'thumbnail-hide'; 
+          if (t1.className == 'thumbnail-hide') {
+            //expand
+            t1.className = 'thumbnail-show';
+            
+            // but collapse the references
+            const t3 = document.querySelector('div#preview');
+            t3.className = 'PreviewPanelCollapsed';
+            const t4 = document.querySelector('div#panel');
+            t4.className = 'preview-panelCollapsed';
+
+        } else {
+              //contract
+            t1.className = 'thumbnail-hide'; 
+            
+            const t3 = document.querySelector('div#preview');
+            t3.className = 'PreviewPanel';
+            const t4 = document.querySelector('div#panel');
+            t4.className = 'preview-panel';
+          }
+          
         }
         var showpassfail = function() {
           const t1 = document.querySelector('div#passfail');
@@ -854,10 +883,30 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
   btnack.addEventListener("change", function() {
                            scope.next('y');
   });
-};
+  };
+  
+  function createReferences() {
+    const container = document.querySelector('.twx-2d-overlay > twx-container-content');
+    scope.referenceWindow = document.createElement('div');
+  
+    scope.referenceWindow.innerHTML = "\
+    <div id='panel' class='preview-panel'>\
+        <div id='action' class='previews'>\
+          <img id='thumbnail1' class='preview-show' src='app/resources/Uploaded/earthNight.jpg'/>\
+          <img id='thumbnail2' class='preview-show' src='app/resources/Uploaded/earthNight.jpg'/>\
+          <img id='thumbnail3' class='preview-show' src='app/resources/Uploaded/earthNight.jpg'/>\
+          <img id='thumbnail4' class='preview-show' src='app/resources/Uploaded/earthNight.jpg'/>\
+       </div>\
+    </div>"
+    scope.referenceWindow.id='preview';
+    scope.referenceWindow.className = 'PreviewPanel';
+
+    container.insertBefore(scope.referenceWindow, container.firstChild);
+  };
 
         scope.$root.$on("$ionicView.afterEnter", function (event) {
-          createHTML();
+                        createHTML();
+                        createReferences();
 //          startSxslPlayer();
         });
 
