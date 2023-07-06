@@ -425,7 +425,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           
            const t3 = document.querySelector('div#preview');
            t3.className = 'PreviewPanelCollapsed';
-           const t4 = document.querySelector('div#panel');
+           const t4 = document.querySelector('div#previewPanel');
            t4.className = 'preview-panelCollapsed';
         }
         var maximise = function() {
@@ -436,7 +436,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           
           const t3 = document.querySelector('div#preview');
           t3.className = 'PreviewPanel';
-          const t4 = document.querySelector('div#panel');
+          const t4 = document.querySelector('div#previewPanel');
           t4.className = 'preview-panel';
       }
         var expandContract = function() {
@@ -448,7 +448,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             // but collapse the references
             const t3 = document.querySelector('div#preview');
             t3.className = 'PreviewPanelCollapsed';
-            const t4 = document.querySelector('div#panel');
+            const t4 = document.querySelector('div#previewPanel');
             t4.className = 'preview-panelCollapsed';
 
         } else {
@@ -457,7 +457,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             
             const t3 = document.querySelector('div#preview');
             t3.className = 'PreviewPanel';
-            const t4 = document.querySelector('div#panel');
+            const t4 = document.querySelector('div#previewPanel');
             t4.className = 'preview-panel';
           }
           
@@ -890,8 +890,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
     scope.referenceWindow = document.createElement('div');
   
     scope.referenceWindow.innerHTML = "\
-    <div id='panel' class='preview-panel'>\
-        <div id='action' class='previews'>\
+    <div id='previewPanel' class='preview-panel'>\
+        <div id='previewList' class='previews'>\
           <img id='thumbnail1' class='preview-show' src='app/resources/Uploaded/earthNight.jpg'/>\
           <img id='thumbnail2' class='preview-show' src='app/resources/Uploaded/earthNight.jpg'/>\
           <img id='thumbnail3' class='preview-show' src='app/resources/Uploaded/earthNight.jpg'/>\
@@ -900,8 +900,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
     </div>"
     scope.referenceWindow.id='preview';
     scope.referenceWindow.className = 'PreviewPanel';
-
+    
     container.insertBefore(scope.referenceWindow, container.firstChild);
+    
+    scope.previewList = document.querySelector('div#previewList');
+
   };
 
         scope.$root.$on("$ionicView.afterEnter", function (event) {
@@ -1019,6 +1022,15 @@ scope.sxsl2Actions = function(context) {
   // could be added.   
   //
   this.showReferences = (refs) => {
+      
+    //generate inline html  
+    function processList(list) {
+        var inner = "";
+        list.forEach(function(ref) {
+                     inner = inner + ref;
+                 });
+            return inner;
+    }
     
     // deliver any references (images etc.) - if there are none, hide the viewer
     if (refs != undefined) {
@@ -1047,14 +1059,14 @@ scope.sxsl2Actions = function(context) {
           
           case "video/mp4":
             buckets.video.push(ref);
-            mergedBucket.push(ref);
+            mergedBucket.push('<video class="preview-show"><source src="'+ref.url+'"/></video>');
             break;
           
           case "image/jpeg":
           case "image/png":
           case "image/gif":
             buckets.image.push(ref);
-            mergedBucket.push(ref);
+            mergedBucket.push('<img src="'+ref.url+'" class="preview-show"/>');
             break;
             
           //handle others e.g. docs etc.
@@ -1065,6 +1077,7 @@ scope.sxsl2Actions = function(context) {
       
       // ideally, we'd make this pluggable so that the action code doesnt know about the UI
       //
+      scope.previewList.innerHTML = processList(mergedBucket);
       //$scope.view.wdg['references-repeater'].data = mergedBucket;
       //twx.app.fn.triggerWidgetService('refsDisplay', 'showpopup');
     } else {
