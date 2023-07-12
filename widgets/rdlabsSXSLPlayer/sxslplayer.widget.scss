@@ -472,3 +472,55 @@ div::-webkit-scrollbar{
   right: -180px;
   padding: 12px;
 }
+
+
+
+
+.viewer-image {
+    height: 100%;
+    width: 100%;
+    padding: 12px;
+}
+.viewer-panel {
+  height: 100%;
+
+}
+.ViewerPanel {
+
+   position: fixed;
+   bottom: 102px;
+   top: 72px;
+   width: 100%;
+   right: 0px;
+
+   border-radius: 4px;
+   background-color: rgba(165, 165, 165, .8);
+   box-shadow: 0px 0px 0px 1px rgba(0, 0, 0, .8), 0px 6px 16px rgba(0, 0, 0, .33) !important;
+   backdrop-filter: blur(15px) !important;
+   -webkit-backdrop-filter: blur(15px) !important;
+
+   display: flex;
+   align-items: center;
+   justify-content: center;
+}
+.ViewerPanelCollapsed {
+  
+    display: none;
+}
+.cmdView {
+    width: 95%;
+    height: 48px;
+    padding-top: 7px;
+    display: inline-flex;
+}
+.infoView {
+width: 90%;
+    height: 48px;
+    padding-top: 10px;
+    position: absolute;
+    left: 22px;
+}
+.closer {
+    right: 7px; 
+    position: absolute;
+}

@@ -422,23 +422,55 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           t1.className = 'instruction-container-hide';
           const t2 = document.querySelector('div#instruction-max');
           t2.className = 'thumbnail-show';
-          
-           const t3 = document.querySelector('div#preview');
-           t3.className = 'PreviewPanelCollapsed';
-           const t4 = document.querySelector('div#previewPanel');
-           t4.className = 'preview-panelCollapsed';
+          minimisePreview()
+        }
+        var minimisePreview = function() {
+          const t3 = document.querySelector('div#preview');
+          t3.className = 'PreviewPanelCollapsed';
+          const t4 = document.querySelector('div#previewPanel');
+          t4.className = 'preview-panelCollapsed';
+        }
+        var hidePreview = function() {
+          const t1 = document.querySelector('div.instruction-container');
+          t1.className = 'instruction-container-hide';
+          const t2 = document.querySelector('div#instruction-max');
+          t2.className = 'thumbnail-show';
+          const t3 = document.querySelector('div#preview');
+          t3.className = 'preview-hide';
+          const t4 = document.querySelector('div#viewer');
+          t4.className = 'ViewerPanel';
+
+        }
+        var showReview = function(src) {
+          const t1 = document.querySelector('div.instruction-container');
+          t1.className = 'instruction-container-hide';
+          const t2 = document.querySelector('div#instruction-max');
+          t2.className = 'thumbnail-show';
+          const t3 = document.querySelector('div#preview');
+          t3.className = 'preview-hide';
+          const t4 = document.querySelector('div#viewer');
+          t4.className = 'ViewerPanel';
+          const t5 = document.querySelector('img#viewImage');
+          t5.src = src;
+        }
+        var hideReview = function() {
+          maximise();
         }
         var maximise = function() {
           const t1 = document.querySelector('div#instructions');
           t1.className = 'instruction-container'; 
           const t2 = document.querySelector('div#instruction-max');
           t2.className = 'thumbnail-hide';            
-          
+          const t3 = document.querySelector('div#viewer');
+          t3.className = 'preview-hide';
+          maximisePreview();
+        }
+        var maximisePreview = function() {
           const t3 = document.querySelector('div#preview');
           t3.className = 'PreviewPanel';
           const t4 = document.querySelector('div#previewPanel');
           t4.className = 'preview-panel';
-      }
+        }
         var expandContract = function() {
           const t1 = document.querySelector('img#thumbnail');
           if (t1.className == 'thumbnail-hide') {
@@ -885,32 +917,57 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
   });
   };
   
+
+  function createMaxViewer() {
+    const container = document.querySelector('.twx-2d-overlay > twx-container-content');
+    scope.viewerWindow = document.createElement('div');
+  
+    scope.viewerWindow.innerHTML = "\
+    <div id='viewerPanel' class='viewer-panel'>\
+      <div class='cmdView'>\
+        <div id='viewinfo' class='infoView'>view info</div>\
+        <button id='minimiseView' class='acc-button acc-button-round acc-icon-close closer'/> \
+      </div>\
+      <div id='viewerList' class='viewer'>\
+<img id='viewImage' class='viewer-image' src='app/resources/Uploaded/earthNight.jpg'/>\
+      </div>\
+    </div>"
+    scope.viewerWindow.id='viewer';
+    scope.viewerWindow.className = 'preview-hide';
+    
+    container.insertBefore(scope.viewerWindow, container.firstChild);
+    
+    scope.viewerList = document.querySelector('div#viewerList');
+  const btn2b = document.querySelector('button#minimiseView');
+  btn2b.addEventListener("click", hideReview);
+
+  };
+  
   function createReferences() {
     const container = document.querySelector('.twx-2d-overlay > twx-container-content');
     scope.referenceWindow = document.createElement('div');
   
     scope.referenceWindow.innerHTML = "\
-    <div id='previewPanel' class='preview-panel'>\
-        <div id='previewList' class='previews'>\
-          <img id='thumbnail1' class='preview-show' src='app/resources/Uploaded/earthNight.jpg'/>\
-          <img id='thumbnail2' class='preview-show' src='app/resources/Uploaded/earthNight.jpg'/>\
-          <img id='thumbnail3' class='preview-show' src='app/resources/Uploaded/earthNight.jpg'/>\
-          <img id='thumbnail4' class='preview-show' src='app/resources/Uploaded/earthNight.jpg'/>\
-       </div>\
+    <div id='previewPanel' class='preview-panelCollapsed'>\
+      <div id='previewList' class='previews'>\
+      </div>\
     </div>"
     scope.referenceWindow.id='preview';
-    scope.referenceWindow.className = 'PreviewPanel';
+    scope.referenceWindow.className = 'PreviewPanelCollapsed';
     
     container.insertBefore(scope.referenceWindow, container.firstChild);
     
     scope.previewList = document.querySelector('div#previewList');
+  const btn2b = document.querySelector('div#previewList');
+  btn2b.addEventListener("click", hidePreview);
 
   };
 
         scope.$root.$on("$ionicView.afterEnter", function (event) {
                         createHTML();
                         createReferences();
-//          startSxslPlayer();
+                        createMaxViewer()
+                        // startSxslPlayer();
         });
 
 //
@@ -1077,7 +1134,18 @@ scope.sxsl2Actions = function(context) {
       
       // ideally, we'd make this pluggable so that the action code doesnt know about the UI
       //
-      scope.previewList.innerHTML = processList(mergedBucket);
+      if (mergedBucket.length > 0) {
+          maximisePreview();
+          scope.previewList.innerHTML = processList(mergedBucket);
+          
+          const collection = document.getElementsByClassName("preview-show");
+          for (let i = 0; i < collection.length; i++) {
+            collection[i].addEventListener("click", function() { showReview(collection[i].src); });
+          }
+
+      }else {
+          minimisePreview();
+      }
       //$scope.view.wdg['references-repeater'].data = mergedBucket;
       //twx.app.fn.triggerWidgetService('refsDisplay', 'showpopup');
     } else {
