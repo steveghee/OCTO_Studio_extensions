@@ -38,7 +38,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                      anchor: "",
                       guide: "",
         sxslPlayerMinimised: undefined,
-        sxslPlayer: undefined,
+                 sxslPlayer: undefined,
+                  firstStep: true
                    };
              
         scope.renderer    = $window.cordova ? vuforia : $injector.get('threeJsTmlRenderer');
@@ -84,7 +85,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                                  event: "stepstart",
                                   time: Date.now()
                                 } );
-                                      
+                   
+               if (scope.data.firstStep) {
+                 scope.data.firstStep = false;
+                 expandContract();
+               }
              });
                  
              var epe = proc.events.on('procEnd',  function(evt,proc)   { 
