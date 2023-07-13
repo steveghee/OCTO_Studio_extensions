@@ -39,7 +39,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                       guide: "",
         sxslPlayerMinimised: undefined,
                  sxslPlayer: undefined,
-                  firstStep: true
+                  firstStep: true,
+                       pois: []
                    };
              
         scope.renderer    = $window.cordova ? vuforia : $injector.get('threeJsTmlRenderer');
@@ -88,7 +89,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                    
                if (scope.data.firstStep) {
                  scope.data.firstStep = false;
+                   
                  expandContract();
+                 scope.addNamedPOI('context',scope.data.context.model,undefined,undefined,scope.data.context.scale,false,false);//scope.data.context.tag=="occlusion");
+
                }
              });
                  
@@ -446,7 +450,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           t4.className = 'ViewerPanel';
 
         }
-        var showReview = function(src) {
+        var showReview = function(src,isVideo) {
           const t1 = document.querySelector('div.instruction-container');
           t1.className = 'instruction-container-hide';
           const t2 = document.querySelector('div#instruction-max');
@@ -455,8 +459,21 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           t3.className = 'preview-hide';
           const t4 = document.querySelector('div#viewer');
           t4.className = 'ViewerPanel';
-          const t5 = document.querySelector('img#viewImage');
-          t5.src = src;
+          if (isVideo) {
+            const t5 = document.querySelector('video#viewVideo');
+            t5.firstChild.src = src;
+            t5.className = 'viewer-image';
+            
+            const t6 = document.querySelector('img#viewImage');
+            t6.className = 'preview-hide';
+          } else {
+            const t5 = document.querySelector('img#viewImage');
+            t5.src = src;
+            t5.className = 'viewer-image';
+            
+            const t6 = document.querySelector('video#viewVideo');
+            t6.className = 'preview-hide';
+          }
         }
         var hideReview = function() {
           maximise();
@@ -587,12 +604,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               case "full":
                 contextual.model = scope.data.anchor + model.url;
                 contextual.mime  = model.mimeType;
+                contextual.scale = model.scale != undefined ? model.scale : 1;
                 contextual.tag   = tag;
                 console.log("using",tag);
                 break;
               case "occlusion":
                 if (contextual.tag === undefined || contextual.tag != "full") {
                   contextual.model = scope.data.anchor + model.url;
+                  contextual.scale = model.scale != undefined ? model.scale : 1;
                   contextual.mime  = model.mimeType;
                   contextual.tag   = tag;
                 }
@@ -604,7 +623,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               } 
             });
           });
-  
+
           contextual.target = {};
           var targetExists = document.querySelector("twx-dt-target");
           if (targetExists != null) {
@@ -674,7 +693,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   
                   //and with the target now defined, we can build out the base resources
                   //context = occluder or desaturated base
-                  addNamedShape("context",contextual.model,true);
+  
                   //subjects
                   //annotations
                   //tools
@@ -751,7 +770,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               //for now. let's just grab the context block...      
               var context = proc.contexts != undefined ? proc.contexts[Object.keys(proc.contexts)[0]] : undefined;
               scope.data.context = getContext(context);
-                  
+              
               // and the steps
               scope.data.steplist = getSteps(proc);
               startSxslPlayer();
@@ -934,7 +953,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         <button id='minimiseView' class='acc-button acc-button-round acc-icon-close closer'/> \
       </div>\
       <div id='viewerList' class='viewer'>\
-<img id='viewImage' class='viewer-image' src='app/resources/Uploaded/earthNight.jpg'/>\
+        <img id='viewImage' class='preview-hide'/>\
+        <video id='viewVideo' class='preview-hide' autoplay><source src='' type='video/mp4' ></video>\
       </div>\
     </div>"
     scope.viewerWindow.id='viewer';
@@ -943,8 +963,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
     container.insertBefore(scope.viewerWindow, container.firstChild);
     
     scope.viewerList = document.querySelector('div#viewerList');
-  const btn2b = document.querySelector('button#minimiseView');
-  btn2b.addEventListener("click", hideReview);
+    const btn2b = document.querySelector('button#minimiseView');
+    btn2b.addEventListener("click", hideReview);
 
   };
   
@@ -963,21 +983,23 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
     container.insertBefore(scope.referenceWindow, container.firstChild);
     
     scope.previewList = document.querySelector('div#previewList');
-  const btn2b = document.querySelector('div#previewList');
-  btn2b.addEventListener("click", hidePreview);
+//  const btn2b = document.querySelector('div#previewList');
+//  btn2b.addEventListener("click", hidePreview);
 
   };
 
         scope.$root.$on("$ionicView.afterEnter", function (event) {
-                        createHTML();
-                        createReferences();
-                        createMaxViewer()
-                        // startSxslPlayer();
+          createHTML();
+          createReferences();
+          createMaxViewer();
+          
+          // startSxslPlayer();
         });
-
-//
-// lets keeo a record of all the items in case we need them later
-scope.pois = {};
+        scope.$root.$on("$ionicView.beforeLeave", function (event) {
+          // clean up
+                        
+          // deallocate any event listeners we registered ($on, addEventListener etc.)              
+        });
 
 //
 // example showing how to add a shape
@@ -987,7 +1009,9 @@ scope.pois = {};
 // (see above)
 //
 function genrotation(normal) {
-  if (normal == undefined) return [0,0,0];
+  if (normal == undefined) 
+    return [0,0,0];
+    
   //otherwise
   var up = new Vector4().Set3a(normal);
   var rg = new Vector4().Set3(1,0,0);
@@ -997,18 +1021,37 @@ function genrotation(normal) {
   return rot.v;
 }
 
-scope.addNamedPOI = function(name,shape,pos,rot,scale,hide) { 
-  scope.renderer.addPVS('tracker1', name, shape, undefined, undefined, 
-  () => { 
+// add them as we need them - a better version might use a re-usable pool of shapes but let's keep 
+// it simple for now
+scope.addNamedPOI = function(name,shape,pos,rot,scale,hide,context) { 
+    
+  //does this item exist already - are we reusing it
+  if (scope.data.pois[name] != undefined) {
+      
+    this.renderer.setProperties (name,{hidden:false});
+    scope.data.pois[name].hidden = false;
+    return;
+  }
+
+  // otherwise, create a new one
+  scope.data.pois[name] = { active:false };
+  scope.renderer.addPVS(scope.data.context.target.id, name, shape, undefined, undefined, () => { 
     
     // we added the model, so set the location
-    scope.renderer.setTranslation(name,pos[0],pos[1],pos[2]);
-    scope.renderer.setRotation   (name,rot[0],rot[1],rot[2]);
+    if (pos != undefined) scope.renderer.setTranslation(name,pos[0],pos[1],pos[2]);
+    else                  scope.renderer.setTranslation(name,0,0,0);
+    if (rot != undefined) scope.renderer.setRotation   (name,rot[0],rot[1],rot[2]);
+    else                  scope.renderer.setRotation   (name,0,0,0);
     scope.renderer.setScale      (name,scale,scale,scale);
-    scope.renderer.setProperties (name,{hidden:hide,shader:"proximityHilite_gl",occlude:false,phantom:false,decal:false});
+    if (context != undefined) {
+      scope.renderer.setProperties (name,{hidden:hide,shader:"sxsl_desaturatedgl",occlude:context,phantom:!context,opacity:0.7,decal:false});
+    } else {
+      scope.renderer.setProperties (name,{hidden:hide,shader:"sxsl_proximityHilitegl",occlude:false,phantom:false,decal:false});
+      
+      // we can use this later...
+      scope.data.pois[name] = { pos:pos, rot:rot, scale:scale, hidden:hide, active:true, animated:false, sequenceToLoad:undefined }
+    }
   
-    // we can use this later...
-    $scope.view.pois[name]       = { pos:pos, rot:rot, scale:scale, hidden:hide, active:true }
   }, 
   (err) => {
     // something went wrong
@@ -1016,22 +1059,47 @@ scope.addNamedPOI = function(name,shape,pos,rot,scale,hide) {
   }); 
 } 
 scope.showPOIs = function() {
-  for(const name in $scope.view.pois) {
-    this.renderer.setProperties (name,{hidden:false});
-    $scope.view.pois[name].hidden = false;
+  for(const name in scope.data.pois) {
+    var me = scope.data.pois[name];
+    if (me.active) {  
+      this.renderer.setProperties (name,{hidden:false});
+      me.hidden = false;
+    }
   }
 }
 scope.hidePOIs = function() {
-  for(const name in $scope.view.pois) {
-    this.renderer.setProperties (name,{hidden:true});
-    $scope.view.pois[name].hidden = true;
+  for(const name in scope.data.pois) {
+    var me = scope.data.pois[name];
+    if (me.active) {  
+      this.renderer.setProperties (name,{hidden:true});
+      //TODO :we should also disable any animations here  
+      me.hidden = true;
+    }
   }
 }
 scope.deactivatePOIs = function() {
   for(const name in $scope.view.pois) {
     this.renderer.setProperties (name,{hidden:true});
-    $scope.view.pois[name].hidden = true;
-    $scope.view.pois[name].active = false;
+    scope.data.pois[name].hidden = true;
+    scope.data.pois[name].active = false;
+  }
+}
+scope.animatePOIs = function(start) {
+  for(const name in scope.data.pois) {
+    var me = scope.data.pois[name];
+    
+    if (!start && me.animated == true) {
+        
+      this.renderer.setProperties (name,{hidden:true});
+      //TODO; stop animation  
+      me.animated = false;
+      
+    } else if (me.active && start && !me.animated && me.sequenceToLoad != undefined) {
+        
+      // load and then start sequence
+      console.log('TODO: load sequence',me.sequenceToLoad);  
+      //note that load is async so the final me.animated should be set once the sequence has fully loaded  
+    }
   }
 }
 
@@ -1144,17 +1212,26 @@ scope.sxsl2Actions = function(context) {
           scope.previewList.innerHTML = processList(mergedBucket);
           
           const collection = document.getElementsByClassName("preview-show");
-          for (let i = 0; i < collection.length; i++) {
-            collection[i].addEventListener("click", function() { showReview(collection[i].src); });
+          for (var i = 0; i < collection.length; i++) {
+            var c = collection[i];  
+            var tag = c.tagName != undefined ? c.tagName : "";    
+            var src = tag=='VIDEO' ? c.firstChild.src : c.src;  
+            console.log('listener',i,'src',src,'tag',tag);  
+            c.addEventListener("click", (function(i,src,tag) { 
+              return function() {                           
+              console.log('listener',i,'src',src,'tag',tag);  
+              showReview(src, tag=='VIDEO'); 
+              }
+              }
+            )(i,src,tag));
           }
 
-      }else {
+      } else {
           minimisePreview();
       }
-      //$scope.view.wdg['references-repeater'].data = mergedBucket;
-      //twx.app.fn.triggerWidgetService('refsDisplay', 'showpopup');
+      
     } else {
-      //twx.app.fn.triggerWidgetService('refsDisplay', 'hidepopup');
+      minimisePreview();
     }
    
   }
@@ -1492,10 +1569,8 @@ scope.sxsl2Actions = function(context) {
     
     a.step.ongoing = pdesc + odesc ;
     
-    // --sb--
     scope.instLabel.innerHTML  = pdesc+"<span style='color:black;font-size:100%'>" + odesc + "</span>";
     console.log('action desc='+scope.instLabel.innerHTML);
-    //this.htmlWindow.innerHTML  = odesc;
 
     //$scope.view.wdg.actionClass.imgsrc = actionClassLookup(a.type); 
     //$scope.view.wdg.actionClass.visible = true; 
@@ -1510,20 +1585,28 @@ scope.sxsl2Actions = function(context) {
     //unpack the action subject(s) - also look for associated animations
     //which subject type (resource) can i view - 3d or 2d
     //$scope.view.wdg.alternative.visible = false;
-    //$scope.hidePOIs();
+    scope.hidePOIs();
 
     var isSubjectAnimated    = false;
     var isAnnotationAnimated = false;
     var isToolAnimated       = false;
     if (a.subjects!=undefined) a.subjects.forEach(function(sub) {
+                                                  
+      var assetId = sub.id;                                            
       if (sub.asset  != undefined) sub.asset.resources.forEach(function(res) {
         if(res.mimeType=="application/vnd.ptc.pvz" || res.mimeType=="model/gltf-binary") {
-          //$scope.view.wdg.subjects.src     = $scope.app.params.anchor + (res.composition == "partset" ? res.modelUrl : res.url);
-          //$scope.view.wdg.subjects.visible = true;
+          var src     = scope.data.anchor + (res.composition == "partset" ? res.modelUrl : res.url);
+         
+          scope.addNamedPOI(assetId,src,res.translation,genrotation(res.normal),1,false);
           
           // this is speculative - ideally the sxsl wil tell us there is a specific pvi linked to this step
-          //$scope.view.wdg.subjects.sequenceToLoad = (res.composition == "partset" ? res.sceneName : "Figure 1");
-          isSubjectAnimated = false;//$scope.view.wdg.subjects.sequenceToLoad != undefined;
+          scope.data.pois[assetId].sequenceToLoad = (res.composition == "partset" ? res.sceneName : "Figure 1");
+          isSubjectAnimated = scope.data.pois[assetId].sequenceToLoad != undefined;
+        }
+        if(res.mimeType=="application/vnd.ptc.pvi") { 
+          if (scope.data.pois[assetId] == undefined) scope.data.pois[res.id] = {};
+          scope.data.pois[assetId].sequenceToLoad = res.content.animationName;
+          isAnimated = true;
         }
         if(res.mimeType=="image/png") {
           //$scope.view.wdg.alternative.imgsrc = $scope.app.params.anchor + res.url;
@@ -1534,7 +1617,7 @@ scope.sxsl2Actions = function(context) {
           //$scope.view.wdg.alternative.visible = true;
         }
         else if(res.mimeType=="application/vnd.ptc.poi") { 
-          //$scope.addNamedPOI(res.id,'app/resources/Uploaded/diamond.pvz',res.translation,genrotation(res.normal),0.1,false);
+          scope.addNamedPOI(res.id,'../extensions/images/diamond.pvz',res.translation,genrotation(res.normal),0.1,false);
         }
         else if(res.mimeType=="application/vnd.ptc.partref") { 
           //$scope.view.wdg.subjects.src = $scope.app.params.context.hero;
@@ -1542,10 +1625,8 @@ scope.sxsl2Actions = function(context) {
         }
       })
     })
-    if (!isSubjectAnimated) {
-      //twx.app.fn.triggerWidgetService("subjects", 'stop');
-      //$scope.view.wdg.subjects.sequence       = undefined;
-      //$scope.view.wdg.subjects.sequenceToLoad = undefined;
+    if (isSubjectAnimated) {
+      scope.animatePOIs(true); 
     }
     
     if (a.annotations != undefined) {

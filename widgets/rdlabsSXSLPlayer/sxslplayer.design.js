@@ -122,7 +122,7 @@ function twxSxslplayer() {
     ],
     
     dependencies: {
-      files         : ['js/linq.js', 'js/sxslPlayerHelper.js', 'js/sxslPlayer-ng.js'],
+      files         : ['js/matrix.js', 'js/linq.js', 'js/sxslPlayerHelper.js', 'js/sxslPlayer-ng.js', 'images/diamond.pvz'],
       angularModules: ['sxslplayer-ng']
     },
 
@@ -149,8 +149,11 @@ function twxSxslplayer() {
       var ps3gl = '<script name="sxsl_desaturatedgl" type="x-shader/x-fragment"> precision mediump float; const float PI=3.1415926; varying vec3 vertex; varying vec3 normal; uniform vec4 surfaceColor; const vec4 ambientColor = vec4(0.15, 0.15, 0.15, 1.0); const vec4 specColor    = vec4(0.05, 0.05, 0.05, 1.0); vec4 luma(vec4 cin) {float min = min( min(cin.x, cin.y), cin.z ); float max = max( max(cin.x, cin.y), cin.z ); float v = (max+min)/2.; return vec4(v,v,v,cin.w); } void main() {vec4 color = luma(surfaceColor); vec3 lightPos    = vec3(1.,1.,1.); vec3 lightDir    = -normalize(lightPos); vec3 finalNormal = normalize(normal); float lambertian = dot(lightDir,finalNormal); float specular   = 0.0; vec3 viewDir     = normalize(-vertex); if (lambertian < 0.0) finalNormal = - finalNormal; vec3 reflectDir = reflect(-lightDir, finalNormal); float specAngle = max(dot(reflectDir, viewDir), 0.0); specular = pow(specAngle, 4.0); color = ambientColor * color + color * abs(lambertian)   + specColor * specular; color.a = 1.; gl_FragColor=vec4(color); } </script>'
       var vs3gl = '<script name="sxsl_desaturatedgl" type="x-shader/x-vertex"> attribute vec3 vertexPosition; attribute vec3 vertexNormal; varying   vec3 normal; varying   vec3 vertex; uniform   mat4 modelViewProjectionMatrix; uniform   mat4 normalMatrix; void main() {vec4 vp     = vec4(vertexPosition, 1.0); gl_Position = modelViewProjectionMatrix * vp; normal      = vec3(normalize(normalMatrix * vec4(vertexNormal,0.0))); vertex      = vp.xyz; } </script>'
       
+      var ps4gl = '<script name="sxsl_proximityHilitegl" type="x-shader/x-fragment">  precision mediump float;  const float PI=3.1415926;   varying vec3 vertex;  varying vec3 normal;  varying vec2 texcoord;  varying vec4 vcolor;  varying float dist; uniform sampler2D tex0;  uniform vec4 surfaceColor;  uniform float cutoutDepth;  const vec4 ambientColor = vec4(0.15, 0.15, 0.15, 1.0);   const vec4 specColor    = vec4(0.05, 0.05, 0.05, 1.0);  void main() {    vec4 color = vec4(1.,.5,.25,1.); surfaceColor + texture2D(tex0,texcoord);;				     vec3 lightPos = vec3(1.,1.,1.);    vec3 lightDir = -normalize(lightPos);    vec3 finalNormal = normalize(normal);				    float lambertian = dot(lightDir,finalNormal);    float specular = 0.0;    vec3 viewDir = normalize(-vertex);    if (lambertian < 0.0)       finalNormal = - finalNormal;    vec3 reflectDir = reflect(-lightDir, finalNormal);    float specAngle = max(dot(reflectDir, viewDir), 0.0);    specular = pow(specAngle, 4.0);    color = ambientColor * color + color * abs(lambertian);					    float d2 = cutoutDepth/2.;    color.a  = smoothstep(d2,cutoutDepth,dist);    gl_FragColor=vec4(color);  }</script>';
+      var vs4gl = '<script name="sxsl_proximityHilitegl" type="x-shader/x-vertex">  attribute vec3 vertexPosition;  attribute vec3 vertexNormal;  attribute vec2 vertexTexCoord;			  varying vec2 texcoord;  varying vec3 normal;    varying vec3 vertex;  varying float dist;    uniform mat4 modelViewProjectionMatrix;  uniform mat4 modelViewMatrix;  uniform mat4 normalMatrix;  void main() {    vec4 vp     = vec4(vertexPosition, 1.0);    gl_Position = modelViewProjectionMatrix * vp;    normal      = vec3(normalize(normalMatrix * vec4(vertexNormal,0.0)));    texcoord    = vertexTexCoord;    vertex      = vp.xyz;    vec3 vv     = vec3(modelViewMatrix * vp);    dist        = length(vv); } </script>';
+      
       var tmpl = '<div ng-sxslplayer disabled-field={{me.disabled}} physical-field={{me.physical}} resource-field={{me.sxsldata}} running-field="me.running" canrun-field="me.canrun" clock-field="me.tick" reasoncode-field={{me.reasoncode}} context-field="me.context" steplist-field="me.steplist" delegate-field="delegate"></div>';
-      return tmpl+ps1gl+vs1gl+ps2gl+vs2gl+ps3gl+vs3gl+ps1hl+vs1hl+ps2hl+vs2hl+ps3hl+vs3hl;
+      return tmpl+ps1gl+vs1gl+ps2gl+vs2gl+ps3gl+vs3gl+ps1hl+vs1hl+ps2hl+vs2hl+ps3hl+vs3hl+ps4gl+vs4gl;
     }
   }
 }

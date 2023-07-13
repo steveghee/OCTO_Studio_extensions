@@ -50,10 +50,10 @@ this.sxslAction = function(a,s,i,last,e) {
                    occluder: mctx != undefined ? mctx[0].url : undefined };
           }
           let asset = this.context[sub.contextId].assets[sub.assetId];     
-          this.subjects.push( { context: fctx, asset: asset });
+          this.subjects.push( { context: fctx, asset: asset, id:sub.assetId });
         } else {
           //no context, so is the resource defined inline?
-          this.subjects.push( { asset: sub });
+          this.subjects.push( { asset: sub, id:sub.assetId });
         }
       }
     } 
