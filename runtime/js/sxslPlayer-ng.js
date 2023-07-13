@@ -92,6 +92,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                    
                  expandContract();
                  scope.addNamedPOI('context',scope.data.context.model,undefined,undefined,scope.data.context.scale,false,false);//scope.data.context.tag=="occlusion");
+ 
 
                }
              });
@@ -587,7 +588,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         }
       
         function addNamedShape(name,shape,show, pass,fail) { 
-          scope.renderer.addPVS('tracker1', name, shape, undefined, undefined, () => { 
+          scope.renderer.addPVS(scope.data.context.target.id, name, shape, undefined, undefined, () => { 
     
             // we added the model, so set the location
             scope.renderer.setTranslation(name,0,0,0);
@@ -682,17 +683,18 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             // now create the tracker here
             var markerDef = [{src:contextual.target.target}];
             scope.renderer.loadTrackerDef(markerDef, (successMarkerSrcs) => {
-              
-              scope.renderer.addTracker("tracker1", () => {
+                                          
+              contextual.target.tracker = 'tracker1';                            
+              scope.renderer.addTracker(contextual.target.tracker, () => {
                 
-                scope.renderer.addMarker('tracker1', contextual.target.id, contextual.target.target, undefined, () => {
+                scope.renderer.addMarker(contextual.target.tracker, contextual.target.id, contextual.target.target, undefined, () => {
                                          
                   scope.renderer.setTranslation(name,0,0,0);
                   scope.renderer.setRotation   (name,0,0,0);
                   scope.renderer.setScale      (name,1,1,1);
                   
                   if (typeof(scope.renderer.addTargetGuide) === "function") {
-                    scope.renderer.addTargetGuide({tracker: 'tracker1', target: contextual.target.target, src: contextual.target.guide});
+                    scope.renderer.addTargetGuide({tracker: contextual.target.tracker, target: contextual.target.target, src: contextual.target.guide});
                   } else {
                     var targetGuideDiv = document.querySelector("div.targetGuide");
                     if (targetGuideDiv && contextual.target.guide != undefined) {
@@ -741,6 +743,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           }
           scope.contextField = 'istracked set to true '+ args;
         });
+            
         scope.$root.$on('trackinglost', function(event, args) {
           var targetGuideDiv = document.querySelector("div.targetGuide");
           if (targetGuideDiv) {
@@ -1052,7 +1055,7 @@ scope.addNamedPOI = function(name,shape,pos,rot,scale,hide,context) {
 
   // otherwise, create a new one
   scope.data.pois[name] = { active:false };
-  scope.renderer.addPVS(scope.data.context.target.id, name, shape, undefined, undefined, () => { 
+  scope.renderer.addPVS(scope.data.context.target.tracker, name, shape, undefined, undefined, () => { 
     
     // we added the model, so set the location
     if (pos != undefined) scope.renderer.setTranslation(name,pos[0],pos[1],pos[2]);
@@ -1069,6 +1072,9 @@ scope.addNamedPOI = function(name,shape,pos,rot,scale,hide,context) {
       scope.data.pois[name] = { pos:pos, rot:rot, scale:scale, hidden:hide, active:true, animated:false, sequenceToLoad:undefined }
     }
   
+    var pscope = scope.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent;
+    pscope.$applyAsync();
+
   }, 
   (err) => {
     // something went wrong
@@ -1634,7 +1640,7 @@ scope.sxsl2Actions = function(context) {
           //$scope.view.wdg.alternative.visible = true;
         }
         else if(res.mimeType=="application/vnd.ptc.poi") { 
-          scope.addNamedPOI(res.id,'../extensions/images/diamond.pvz',res.translation,genrotation(res.normal),0.1,false);
+          scope.addNamedPOI(res.id,'extensions/images/diamond.pvz',res.translation,genrotation(res.normal),0.1,false);
         }
         else if(res.mimeType=="application/vnd.ptc.partref") { 
           //$scope.view.wdg.subjects.src = $scope.app.params.context.hero;
