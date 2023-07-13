@@ -81,7 +81,7 @@ this.sxslAction = function(a,s,i,last,e) {
                    occluder: mctx != undefined ? mctx[0].url : undefined };
           }
           let asset = this.context[sub.contextId].assets[sub.assetId];     
-          this.annotations.push( { context: fctx, asset: asset });
+          this.annotations.push( { context: fctx, asset: asset, id:sub.assetId });
         }    
       }
     } 

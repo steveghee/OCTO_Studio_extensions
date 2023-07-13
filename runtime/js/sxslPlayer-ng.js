@@ -204,9 +204,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                      showverify();
                      break;
                    case "PassFail": 
-                     showpassfail()
-                     //if (ack.reasonType=="Code") twx.app.fn.triggerWidgetService('errcode', 'setq');
-                     //else                        twx.app.fn.triggerWidgetService('passfail', 'setq');
+                     if (ack.reasonType=="Code") showpasserrorcode();
+                     else                        showpassfail();
                      break;
                    default: 
                     break;  
@@ -525,6 +524,24 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           t3.className = 'actions-show';
           const t4 = document.querySelector('div#capture');
           t4.className = 'capture-hide';
+          const t5 = document.querySelector('div#errorcodes');
+          t5.className = 'passfailverify-hide';
+          const t6 = document.querySelector('button#fail');
+          t6.className = 'acc-button acc-button-fail';
+        }
+        var showpasserrorcode = function() {
+          const t1 = document.querySelector('div#passfail');
+          t1.className = 'passfailverify-show';
+          const t2 = document.querySelector('div#verify') ;
+          t2.className = 'passfailverify-hide';
+          const t3 = document.querySelector('div#actions');
+          t3.className = 'actions-show';
+          const t4 = document.querySelector('div#capture');
+          t4.className = 'capture-hide';
+          const t5 = document.querySelector('div#errorcodes');
+          t5.className = 'acc-select acc-button-fail';
+          const t6 = document.querySelector('button#fail');
+          t6.className = 'passfailverify-hide';
         }
         var hidepassfail = function() {
           const t1 = document.querySelector('div#passfail');
@@ -888,7 +905,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           <option class='acc-item' value='Material'>Material</option>\
         </select>\
       </div>\
-      <div style='left:24px;'><button id='fail' class='acc-button acc-button-fail' >Fail</button></div>\
+      <div id='failcode' style='left:24px;'><button id='fail' class='acc-button acc-button-fail' >Fail</button></div>\
       <div style='right:24px;position:absolute;'><button id='pass' class='acc-button' >Pass</button></div>\
     </div>\
   </div>\
@@ -1630,9 +1647,11 @@ scope.sxsl2Actions = function(context) {
     }
     
     if (a.annotations != undefined) {
-      //$scope.view.wdg.annotations.sequenceToLoad = a.annotations[0].asset.resources[0].sceneName; 
-      //$scope.view.wdg.annotations.src = $scope.app.params.anchor + a.annotations[0].asset.resources[0].modelUrl;
-      isAnnotationAnimated = false;//$scope.view.wdg.annotations.sequenceToLoad != undefined;
+      var me = a.annotations[0];
+      var src = scope.data.anchor + me.asset.resources[0].modelUrl;
+      scope.addNamedPOI(me.id,src,undefined,undefined,1,false);
+      scope.data.pois[me.id].sequenceToLoad = me.asset.resources[0].sceneName; 
+      isAnnotationAnimated = scope.data.pois[me.id].sequenceToLoad != undefined;
     } else {
       //$scope.view.wdg.annotations.visible  = false;
       //$scope.view.wdg.annotations.src      = undefined;
@@ -1650,9 +1669,12 @@ scope.sxsl2Actions = function(context) {
       // does the tool have any animation defined?
       // note technically we should do this PER tool - in general, we'll assume one tool per action, for this POC at least
       if (a.tools[0] != undefined && a.tools[0].asset != undefined) {
-        //$scope.view.wdg.tools.sequenceToLoad = a.tools[0].asset.resources[0].sceneName; 
-        //$scope.view.wdg.tools.src = $scope.app.params.anchor + a.tools[0].asset.resources[0].modelUrl;
-        isToolAnimated = false;//$scope.view.wdg.tools.sequenceToLoad != undefined;
+          
+        var me = a.tools[0];
+        var src = scope.data.anchor + me.asset.resources[0].modelUrl;
+        scope.addNamedPOI(me.id,src,undefined,undefined,1,false);
+        scope.data.pois[me.id].sequenceToLoad = me.asset.resources[0].sceneName; 
+        isToolAnimated = scope.data.pois[me.id].sequenceToLoad != undefined;
       }
                 
       // we also want to collect #tools * any details values
