@@ -24,7 +24,8 @@ The extension can be broken down into 4 main catagories
 2. Inputs
 3. Containers
 4. Navigation
-5. Misc 
+5. Step by Step Instructions (new)
+6. Misc 
 
 Lets look at each in turn.
 
@@ -157,6 +158,21 @@ This data can be in table form - perhaps the result of a thingworx service call 
                                        ];` 
 
 This section TO BE COMPLETED
+
+## Step by Step Instructions (aka SXSL)
+sxsl is a language (implemented as a json data format) for defining step-by-step instructions.  
+the sxsl widget provides a convenient player, including built-in UI, which will execute this sxsl language and will deliver AR-enabled instructions.
+
+The src property should be et to point to a valid sxsl defintion/file.  It is assumed that the associated 2d/3d resources, including any 
+associated tracking targets, are included in the same relative location as the the sxsl json.
+
+The steplist property provides an infotable which lists all the available steps - you can display this in a list/repeater to view and select/jump to specific steps. Only valid next steps are presented.
+
+Stepclock provides an (optional) timecheck on the progress of each instruction step; sxsl allows for a 'target' time to be defined, and this value, along with the running clock (in milliseconds) is provided.  You can choose if and how you want to present this information.
+
+The widget will display the instruction control UI, including any 2d (image, video) references.  
+
+Events are fired to allow users to integrate this widget into other processes.
 
 ## Misc
 
