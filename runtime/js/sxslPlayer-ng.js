@@ -13,6 +13,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
     return {
       restrict: 'EA',
       scope: {
+         loggingField : '@',
         disabledField : '@',
         physicalField : '@',
         resourceField : '@',
@@ -22,6 +23,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
          runningField : '=',
            clockField : '=',
          contextField : '=',
+          statusField : '=',
         steplistField : '=',
         delegateField : '='
       },
@@ -34,6 +36,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                      isHolo: false,
                         src: undefined, 
                     context: undefined,
+             loggingEnabled: false,
                  reasonCode: {}, 
                    steplist: [], 
                    physical: true,
@@ -856,10 +859,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                      
         });
             
-        scope.$watchGroup(['physicalField','disabledField','holoField'], function () {
+        scope.$watchGroup(['physicalField','disabledField','holoField','loggingField'], function () {
           scope.data.physical = (scope.physicalField    != undefined && scope.physicalField === 'true') ? true :false ;
           scope.data.disabled = (scope.disabledField    != undefined && scope.disabledField === 'true') ? true :false ;
           scope.data.isHolo   = (scope.holoField        != undefined && scope.holoField=='true') ? true :false ;
+          scope.data.loggingEnabled = (scope.loggingField     != undefined && scope.loggingField=='true') ? true :false ;
           executesxslPlayer();
         });
             
@@ -881,10 +885,17 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
         scope.$watch('delegateField', function (delegate) {
           if (delegate) {
-            delegate.resume = function () { 
+            delegate.resume = function() { 
               if (scope.canrunField == true) 
                 scope.resume(true) 
             };
+            delegate.ready = function() {
+              if (scope.canrunField == true) 
+              $timeout(function() {
+                  //TODO : rename this event     
+                  scope.$parent.$emit("updateWorkTask.serviceInvokeComplete");
+                },10);
+            }
           }
         });
             
@@ -1915,21 +1926,20 @@ scope.data.logger = function(procID) {
       me.sending = nextMessage[0];
       
       console.log('incremental sending',JSON.stringify(me.sending));
+
       me.incrementing = true;
       
       //TODO - this should probably be piping the value to an outbound 'field' which would trigger
       //       any linked service e.g. thingworx
-      if (me.id != undefined)
-       twx.app.fn.triggerDataService('PTC.InspectionAccelerator.Imp.Manager', 'updateWorkTask', { 'workstationID': $scope.app.params.workstationID,
-                                                                                                     'workTaskID': $scope.app.params.Workorder.workinstructionID.toString(),
-                                                                                                   'serialNumber': $scope.app.params.Workorder.serialnumber, 
-                                                                                                      'straction': JSON.stringify(me.sending)
-                                                                                                } ); 
-      else
-        // we dont get the kickback from twx is we are test mode, so we need to send it ourselves   
-        $timeout(function() {
-          scope.$parent.$emit("updateWorkTask.serviceInvokeComplete");
+      if (scope.data.loggingEnabled) {
+        scope.statusField = me.sending;
+        scope.$parent.$emit("statusUpdate");    
+      } else if (me.id == undefined) {
+          // we dont get the kickback from twx is we are test mode, so we need to send it ourselves   
+          $timeout(function() {
+            scope.$parent.$emit("updateWorkTask.serviceInvokeComplete");
         },10);
+      }
       
       return;
     }
@@ -1947,7 +1957,7 @@ scope.data.logger = function(procID) {
     // schedule for submission to Thingworx
     this.pending.push(data);
     
-    // log this for the end (confirmation screen to the user)
+    // loggingEnabled this for the end (confirmation screen to the user)
     this.results.push(data);
 
     // we need to queue these up as they take time to process...

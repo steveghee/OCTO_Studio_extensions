@@ -82,7 +82,7 @@ function twxSxslplayer() {
          default: [],
         isBindingSource: true,
         isBindingTarget: false,
-        showInput: true
+        showInput: false
       },
       {
             name: 'reasoncode',
@@ -92,10 +92,32 @@ function twxSxslplayer() {
         isBindingSource: false,
         isBindingTarget: true,
         showInput: true
-     }
+      },
+      {
+            name: 'status',
+           label: 'Status',
+        datatype: 'infotable',
+         default: {},
+        isBindingSource: true,
+        isBindingTarget: false,
+        showInput: false
+      },
+      {
+        name: 'logIncremental',
+        label: 'Enable Status Logging',
+        datatype: 'boolean',
+        default:false,
+        isBindingSource: false,
+        isBindingTarget: true,
+        showInput: true
+      }
     ],
 
     events: [
+        {
+            name: 'statusUpdate',
+            label: 'Status Update'
+        },
         {
             name: 'procStart',
             label: 'Procedure Started'
@@ -114,11 +136,26 @@ function twxSxslplayer() {
         }
     ],
 
+      defaultBindings: [
+        {
+          sourceType: 'event',
+          sourceEvent: 'statusUpdate',
+          targetPath: 'ready',
+          targetType: 'widget',
+          handlerService: 'ready'
+        },
+      ],
+
     services: [
       {
         name: 'resume',
         label: 'Resume'
+      },
+      {
+        name: 'ready',
+        label: 'Ready'
       }
+
     ],
     
     dependencies: {
@@ -152,7 +189,7 @@ function twxSxslplayer() {
       var ps4gl = '<script name="sxsl_proximityHilitegl" type="x-shader/x-fragment">  precision mediump float;  const float PI=3.1415926;   varying vec3 vertex;  varying vec3 normal;  varying vec2 texcoord;  varying vec4 vcolor;  varying float dist; uniform sampler2D tex0;  uniform vec4 surfaceColor;  uniform float cutoutDepth;  const vec4 ambientColor = vec4(0.15, 0.15, 0.15, 1.0);   const vec4 specColor    = vec4(0.05, 0.05, 0.05, 1.0);  void main() {    vec4 color = vec4(1.,.5,.25,1.); surfaceColor + texture2D(tex0,texcoord);;				     vec3 lightPos = vec3(1.,1.,1.);    vec3 lightDir = -normalize(lightPos);    vec3 finalNormal = normalize(normal);				    float lambertian = dot(lightDir,finalNormal);    float specular = 0.0;    vec3 viewDir = normalize(-vertex);    if (lambertian < 0.0)       finalNormal = - finalNormal;    vec3 reflectDir = reflect(-lightDir, finalNormal);    float specAngle = max(dot(reflectDir, viewDir), 0.0);    specular = pow(specAngle, 4.0);    color = ambientColor * color + color * abs(lambertian);					    float d2 = cutoutDepth/2.;    color.a  = smoothstep(d2,cutoutDepth,dist);    gl_FragColor=vec4(color);  }</script>';
       var vs4gl = '<script name="sxsl_proximityHilitegl" type="x-shader/x-vertex">  attribute vec3 vertexPosition;  attribute vec3 vertexNormal;  attribute vec2 vertexTexCoord;			  varying vec2 texcoord;  varying vec3 normal;    varying vec3 vertex;  varying float dist;    uniform mat4 modelViewProjectionMatrix;  uniform mat4 modelViewMatrix;  uniform mat4 normalMatrix;  void main() {    vec4 vp     = vec4(vertexPosition, 1.0);    gl_Position = modelViewProjectionMatrix * vp;    normal      = vec3(normalize(normalMatrix * vec4(vertexNormal,0.0)));    texcoord    = vertexTexCoord;    vertex      = vp.xyz;    vec3 vv     = vec3(modelViewMatrix * vp);    dist        = length(vv); } </script>';
       
-      var tmpl = `<div ng-sxslplayer holo-field=${isholo} disabled-field={{me.disabled}} physical-field={{me.physical}} resource-field={{me.sxsldata}} running-field="me.running" canrun-field="me.canrun" clock-field="me.tick" reasoncode-field={{me.reasoncode}} context-field="me.context" steplist-field="me.steplist" delegate-field="delegate"></div>`;
+      var tmpl = `<div ng-sxslplayer holo-field=${isholo} logging-field={{me.logIncremental}} disabled-field={{me.disabled}} physical-field={{me.physical}} resource-field={{me.sxsldata}} status-field="me.status" running-field="me.running" canrun-field="me.canrun" clock-field="me.tick" reasoncode-field={{me.reasoncode}} context-field="me.context" steplist-field="me.steplist" delegate-field="delegate"></div>`;
       return tmpl+ps1gl+vs1gl+ps2gl+vs2gl+ps3gl+vs3gl+ps1hl+vs1hl+ps2hl+vs2hl+ps3hl+vs3hl+ps4gl+vs4gl;
     }
   }
