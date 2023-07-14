@@ -336,8 +336,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                                                // finish things up
                                                scope.actions.end(conclusion);
                 
-                                               // let thingworx know 
-                                               scope.data.results = scope.logger.sanitise();
+                                               // TODO : let thingworx know? 
+//                                               scope.statusField = scope.logger.sanitise();
                                                console.log('results:',JSON.stringify(scope.logger.results,null,' '));    
                                              })
                        else if (e.cmd=='ack') { 
@@ -438,7 +438,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             //
             var kids = scope.presentErrorCodesAsHTML(scope.data.errorcodes,value);
             
-            if (kids.length > 1) {  //there's always 1 line be default 
+            if (kids.length > 0) {  //there's always 1 line be default 
                 scope.errorcodelistWindow.innerHTML = kids;
             }
             //
@@ -890,10 +890,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 scope.resume(true) 
             };
             delegate.ready = function() {
-              if (scope.canrunField == true) 
               $timeout(function() {
                   //TODO : rename this event     
-                  scope.$parent.$emit("updateWorkTask.serviceInvokeComplete");
+                  scope.$parent.$emit("statusUpdateComplete");
                 },10);
             }
           }
@@ -901,14 +900,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             
         scope.presentErrorCodesAsHTML = function(reasonCodes,parent) {
                 
-          var display="<option class='item'>Select...</option>";
+          var header  = "<option class='item'>Select...</option>";
+          var display = "";
           reasonCodes.forEach(function(item) {
             if (item.parentUID==parent) {
-                //display.push({ code:item.code, display:item.resources[0].text });
                 display = display + "<option class='item' value="+item.code+">"+item.resources[0].text+"</option>";
             }
           });
-          return display;
+          return display.length > 0 ? header + display : display;
         }
     
         scope.presentErrorCodes = function(codes,level) {
@@ -1837,7 +1836,7 @@ scope.sxsl2Actions = function(context) {
 //
 // TODO : should this be integral to the player, or separate widget?
 
-var sepsic = scope.$parent.$on('updateWorkTask.serviceInvokeComplete', function(evt) {
+var sepsic = scope.$parent.$on('statusUpdateComplete', function(evt) {
   console.log('incremental sent ok');
   scope.logger.sending = undefined;
   
@@ -1847,13 +1846,6 @@ var sepsic = scope.$parent.$on('updateWorkTask.serviceInvokeComplete', function(
         me.incremental(me);
       };
   }(scope.logger),500);
-});
-var sprsic = scope.$parent.$on('stopWorkTask.serviceInvokeComplete', function(evt) {
-  console.log("finished");
-  //TODO - is this where we should be sending the final terminate/inished event?
-  
-  //twx.app.fn.triggerWidgetService('finished', 'resetq');
-  //$scope.app.fn.navigate('scanproc'); 
 });
 
 scope.data.logger = function(procID) {
@@ -1929,15 +1921,14 @@ scope.data.logger = function(procID) {
 
       me.incrementing = true;
       
-      //TODO - this should probably be piping the value to an outbound 'field' which would trigger
-      //       any linked service e.g. thingworx
+      // send the info
       if (scope.data.loggingEnabled) {
         scope.statusField = me.sending;
         scope.$parent.$emit("statusUpdate");    
-      } else if (me.id == undefined) {
+      } else {
           // we dont get the kickback from twx is we are test mode, so we need to send it ourselves   
           $timeout(function() {
-            scope.$parent.$emit("updateWorkTask.serviceInvokeComplete");
+            scope.$parent.$emit("statusUpdateComplete");
         },10);
       }
       
