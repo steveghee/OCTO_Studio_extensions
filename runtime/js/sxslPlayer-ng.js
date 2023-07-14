@@ -39,8 +39,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                    physical: true,
                      anchor: "",
                       guide: "",
-        sxslPlayerMinimised: undefined,
-                 sxslPlayer: undefined,
                   firstStep: true,
                        pois: []
                    };
@@ -335,7 +333,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                                                // finish things up
                                                scope.actions.end(conclusion);
                 
-                                               //and let thingworx know 
+                                               // let thingworx know 
                                                scope.data.results = scope.logger.sanitise();
                                                console.log('results:',JSON.stringify(scope.logger.results,null,' '));    
                                              })
@@ -428,185 +426,189 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               minimise()
         }
         var selectedErrorCode = function() {
-          var value = scope.data.errorcodelist.value;
+          var value = scope.errorcodelistWindow.value;
           //console.log('you clicked',value);
           
           if (value != undefined) {
 
             // if we have children, we show them
             //
-            var kids = scope.presentHTML(scope.data.errorcodes,value);
-            if (kids.length > 0) 
-              scope.data.errorcodelist.innerHTML = kids;
+            var kids = scope.presentErrorCodesAsHTML(scope.data.errorcodes,value);
+            
+            if (kids.length > 1) {  //there's always 1 line be default 
+                scope.errorcodelistWindow.innerHTML = kids;
+            }
             //
             // otherwise submit this code
             else {
               scope.next(value);
               // Reset selected item for next steps
-              scope.data.errorcodelist.innerHTML = "";
+              scope.errorcodelistWindow.innerHTML = "";
             }
           }
         };
                 
         var minimise = function() {
-          const t1 = document.querySelector('div.instruction-container');
-          t1.className = 'instruction-container-hide';
-          const t2 = document.querySelector('div#instruction-max');
-          t2.className = 'thumbnail-show';
+          const t1 = document.querySelector('div.sxsl-instruction-container');
+          t1.className = 'sxsl-instruction-container-hide';
+          const t2 = document.querySelector('div#sxsl-instruction-max');
+          t2.className = 'sxsl-thumbnail-show';
           minimisePreview()
         }
         var minimisePreview = function() {
-          const t3 = document.querySelector('div#preview');
-          t3.className = 'PreviewPanelCollapsed';
+          const t3 = document.querySelector('div#preview-container');
+          t3.className = 'preview-container-collapsed';
           const t4 = document.querySelector('div#previewPanel');
-          t4.className = 'preview-panelCollapsed';
+          t4.className = 'sxsl-preview-panel-collapsed';
         }
         var hidePreview = function() {
-          const t1 = document.querySelector('div.instruction-container');
-          t1.className = 'instruction-container-hide';
-          const t2 = document.querySelector('div#instruction-max');
-          t2.className = 'thumbnail-show';
-          const t3 = document.querySelector('div#preview');
-          t3.className = 'preview-hide';
-          const t4 = document.querySelector('div#viewer');
-          t4.className = 'ViewerPanel';
+          const t1 = document.querySelector('div.sxsl-instruction-container');
+          t1.className = 'sxsl-instruction-container-hide';
+          const t2 = document.querySelector('div#sxsl-instruction-max');
+          t2.className = 'sxsl-thumbnail-show';
+          const t3 = document.querySelector('div#preview-container');
+          t3.className = 'sxsl-preview-hide';
+          const t4 = document.querySelector('div#viewer-container');
+          t4.className = 'viewer-container';
 
         }
         var showReview = function(src,isVideo) {
-          const t1 = document.querySelector('div.instruction-container');
-          t1.className = 'instruction-container-hide';
-          const t2 = document.querySelector('div#instruction-max');
-          t2.className = 'thumbnail-show';
-          const t3 = document.querySelector('div#preview');
-          t3.className = 'preview-hide';
-          const t4 = document.querySelector('div#viewer');
-          t4.className = 'ViewerPanel';
+          const t1 = document.querySelector('div.sxsl-instruction-container');
+          t1.className = 'sxsl-instruction-container-hide';
+          const t2 = document.querySelector('div#sxsl-instruction-max');
+          t2.className = 'sxsl-thumbnail-show';
+          const t3 = document.querySelector('div#preview-container');
+          t3.className = 'sxsl-preview-hide';
+          const t4 = document.querySelector('div#viewer-container');
+          t4.className = 'viewer-container';
           if (isVideo) {
             const t5 = document.querySelector('video#viewVideo');
             t5.firstChild.src = src;
             t5.className = 'viewer-image';
             
             const t6 = document.querySelector('img#viewImage');
-            t6.className = 'preview-hide';
+            t6.className = 'sxsl-preview-hide';
           } else {
             const t5 = document.querySelector('img#viewImage');
             t5.src = src;
             t5.className = 'viewer-image';
             
             const t6 = document.querySelector('video#viewVideo');
-            t6.className = 'preview-hide';
+            t6.className = 'sxsl-preview-hide';
           }
         }
         var hideReview = function() {
           maximise();
         }
         var maximise = function() {
-          const t1 = document.querySelector('div#instructions');
-          t1.className = 'instruction-container'; 
-          const t2 = document.querySelector('div#instruction-max');
-          t2.className = 'thumbnail-hide';            
-          const t3 = document.querySelector('div#viewer');
-          t3.className = 'preview-hide';
-          maximisePreview();
+          if (scope.runningField == true) {  
+            const t1 = document.querySelector('div#sxsl-instruction-container');
+            t1.className = 'sxsl-instruction-container'; 
+            const t2 = document.querySelector('div#sxsl-instruction-max');
+            t2.className = 'sxsl-thumbnail-hide';            
+            const t3 = document.querySelector('div#viewer-container');
+            t3.className = 'sxsl-preview-hide';
+            maximisePreview();
+          }
         }
         var maximisePreview = function() {
-          const t3 = document.querySelector('div#preview');
-          t3.className = 'PreviewPanel';
+          const t3 = document.querySelector('div#preview-container');
+          t3.className = 'preview-container';
           const t4 = document.querySelector('div#previewPanel');
-          t4.className = 'preview-panel';
+          t4.className = 'sxsl-preview-panel';
         }
         var expandContract = function() {
           const t1 = document.querySelector('img#thumbnail');
-          if (t1.className == 'thumbnail-hide') {
+          if (t1.className == 'sxsl-thumbnail-hide') {
             //expand
-            t1.className = 'thumbnail-show';
+            t1.className = 'sxsl-thumbnail-show';
             
             // but collapse the references
-            const t3 = document.querySelector('div#preview');
-            t3.className = 'PreviewPanelCollapsed';
+            const t3 = document.querySelector('div#preview-container');
+            t3.className = 'preview-container-collapsed';
             const t4 = document.querySelector('div#previewPanel');
-            t4.className = 'preview-panelCollapsed';
+            t4.className = 'sxsl-preview-panel-collapsed';
 
         } else {
               //contract
-            t1.className = 'thumbnail-hide'; 
+            t1.className = 'sxsl-thumbnail-hide'; 
             
-            const t3 = document.querySelector('div#preview');
-            t3.className = 'PreviewPanel';
+            const t3 = document.querySelector('div#preview-container');
+            t3.className = 'preview-container';
             const t4 = document.querySelector('div#previewPanel');
-            t4.className = 'preview-panel';
+            t4.className = 'sxsl-preview-panel';
           }
           
         }
         var showpassfail = function() {
           const t1 = document.querySelector('div#passfail');
-          t1.className = 'passfailverify-show';
+          t1.className = 'sxsl-passfailverify-show';
           const t2 = document.querySelector('div#verify') ;
-          t2.className = 'passfailverify-hide';
+          t2.className = 'sxsl-passfailverify-hide';
           const t3 = document.querySelector('div#actions');
-          t3.className = 'actions-show';
+          t3.className = 'sxsl-actions-show';
           const t4 = document.querySelector('div#capture');
-          t4.className = 'capture-hide';
+          t4.className = 'sxsl-capture-hide';
           const t5 = document.querySelector('div#errorcodes');
-          t5.className = 'passfailverify-hide';
+          t5.className = 'sxsl-passfailverify-hide';
           const t6 = document.querySelector('button#fail');
-          t6.className = 'acc-button acc-button-fail';
+          t6.className = 'sxsl-button sxsl-button-fail';
         }
         var showpasserrorcode = function() {
           const t1 = document.querySelector('div#passfail');
-          t1.className = 'passfailverify-show';
+          t1.className = 'sxsl-passfailverify-show';
           const t2 = document.querySelector('div#verify') ;
-          t2.className = 'passfailverify-hide';
+          t2.className = 'sxsl-passfailverify-hide';
           const t3 = document.querySelector('div#actions');
-          t3.className = 'actions-show';
+          t3.className = 'sxsl-actions-show';
           const t4 = document.querySelector('div#capture');
-          t4.className = 'capture-hide';
+          t4.className = 'sxsl-capture-hide';
           const t5 = document.querySelector('div#errorcodes');
-          t5.className = 'acc-select acc-button-fail';
+          t5.className = 'sxsl-select sxsl-button-fail';
           const t6 = document.querySelector('button#fail');
-          t6.className = 'passfailverify-hide';
+          t6.className = 'sxsl-passfailverify-hide';
         }
         var hidepassfail = function() {
           const t1 = document.querySelector('div#passfail');
-          t1.className = 'passfailverify-hide';
+          t1.className = 'sxsl-passfailverify-hide';
           const t2 = document.querySelector('div#verify');
-          t2.className = 'passfailverify-hide';
+          t2.className = 'sxsl-passfailverify-hide';
           const t3 = document.querySelector('div#actions');
-          t3.className = 'actions-hide';
+          t3.className = 'sxsl-actions-hide';
           const t4 = document.querySelector('div#capture');
-          t4.className = 'capture-hide';
+          t4.className = 'sxsl-capture-hide';
         }      
         var showverify = function() {
           const t1 = document.querySelector('div#passfail');
-          t1.className = 'passfailverify-hide';
+          t1.className = 'sxsl-passfailverify-hide';
           const t2 = document.querySelector('div#verify');
-          t2.className = 'passfailverify-show';
+          t2.className = 'sxsl-passfailverify-show';
           const t3 = document.querySelector('div#actions');
-          t3.className = 'actions-show';
+          t3.className = 'sxsl-actions-show';
           const t4 = document.querySelector('div#capture');
-          t4.className = 'capture-hide';
+          t4.className = 'sxsl-capture-hide';
         }
       /*
         var capture = function() {
   const t1 = document.querySelector('div#passfail');
-  t1.className = 'passfailverify-hide';
+  t1.className = 'sxsl-passfailverify-hide';
   const t2 = document.querySelector('div#verify');
-  t2.className = 'passfailverify-show';
+  t2.className = 'sxsl-passfailverify-show';
   const t3 = document.querySelector('div#actions');
-  t3.className = 'actions-hide';
+  t3.className = 'sxsl-actions-hide';
   const t4 = document.querySelector('div#capture');
-  t4.className = 'capture-show';
+  t4.className = 'sxsl-capture-show';
        }
 */
         var clear = function() {
           const t1 = document.querySelector('div#passfail');
-          t1.className = 'passfailverify-hide';
+          t1.className = 'sxsl-passfailverify-hide';
           const t2 = document.querySelector('div#verify');
-          t2.className = 'passfailverify-hide';
+          t2.className = 'sxsl-passfailverify-hide';
           const t3 = document.querySelector('div#actions');
-          t3.className = 'actions-hide';
+          t3.className = 'sxsl-actions-hide';
           const t4 = document.querySelector('div#capture');
-          t4.className = 'capture-hide';
+          t4.className = 'sxsl-capture-hide';
         }
       
         function addNamedShape(name,shape,show, pass,fail) { 
@@ -728,7 +730,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   if (typeof(scope.renderer.addTargetGuide) === "function") {
                     scope.renderer.addTargetGuide({tracker: contextual.target.tracker, target: contextual.target.target, src: contextual.target.guide});
                   } else {
-                    var targetGuideDiv = document.querySelector("div.targetGuide");
+                    var targetGuideDiv = document.querySelectorctor("div.targetGuide");
                     if (targetGuideDiv && contextual.target.guide != undefined) {
                         
                       scope.data.guide = contextual.target.guide;
@@ -886,9 +888,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           }
         });
             
-        scope.presentHTML = function(reasonCodes,parent) {
+        scope.presentErrorCodesAsHTML = function(reasonCodes,parent) {
                 
-          var display="";
+          var display="<option class='item'>Select...</option>";
           reasonCodes.forEach(function(item) {
             if (item.parentUID==parent) {
                 //display.push({ code:item.code, display:item.resources[0].text });
@@ -900,70 +902,67 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
     
         scope.presentErrorCodes = function(codes,level) {
           scope.data.errorcodes = codes;
-          scope.data.errorcodelist.innerHTML = scope.presentHTML(codes,level);
+          scope.errorcodelistWindow.innerHTML = scope.presentErrorCodesAsHTML(codes,level);
         }
     
-        function createHTML() {
+        function createInstructionPanelHTML() {
   const container = document.querySelector('.twx-2d-overlay > twx-container-content');
-  scope.data.sxslPlayerMinimised = document.createElement('div');
-  scope.data.sxslPlayerMinimised.innerHTML = "<div id='instruction-max' class='thumbnail-hide' style='position: absolute;left: 24px;bottom: 24px;'><button id='maximise' class='acc-button acc-button-round acc-icon-work-instruction acc-blue-bb'/></div>";
+  scope.sxslPlayerWindowMinimised = document.createElement('div');
+  scope.sxslPlayerWindowMinimised.innerHTML = "<div id='sxsl-instruction-max' class='sxsl-thumbnail-hide' style='position: absolute;left: 24px;bottom: 24px;'><button id='maximise' class='sxsl-button sxsl-button-round sxsl-icon-work-instruction sxsl-blue-bb'/></div>";
   
-  scope.data.sxslPlayer = document.createElement('div');
-  scope.data.sxslPlayer.innerHTML = "\
-  <div id='panel' class='instruction-panel'>\
+  scope.sxslPlayerWindow = document.createElement('div');
+  scope.sxslPlayerWindow.innerHTML = "\
+  <div id='panel' class='sxsl-instruction-panel'>\
     <div  style='margin-right:12px;margin-left:12px'>\
       <div id='cmdrow' style='padding-top: 12px'>\
-        <div id='stepinfo' class='step'>----</div>\
-        <div id='cmds' class='cmds'> \
-          <button id='expandcontract' class='acc-button acc-button-round acc-icon-expand'/> \
-          <button id='minimise' class='acc-button acc-button-round acc-icon-collapse-hide'/> \
-          <button id='advance' class='acc-button acc-button-round acc-blue-bb acc-icon-nav-right'/></div>\
+        <div id='stepinfo' class='sxsl-instruction-step'>----</div>\
+        <div id='cmds' class='sxsl-instruction-cmds'> \
+          <button id='expandcontract' class='sxsl-button sxsl-button-round sxsl-icon-expand'/> \
+          <button id='minimise' class='sxsl-button sxsl-button-round sxsl-icon-collapse-hide'/> \
+          <button id='advance' class='sxsl-button sxsl-button-round sxsl-blue-bb sxsl-icon-nav-right'/></div>\
       </div>\
-      <div style='margin-top:54px'><img id='thumbnail' class='thumbnail-show' src='app/resources/Uploaded/earthNight.jpg' height=320/></div>\
-      <div id='header' class='header'>header text</div>\
+      <div style='margin-top:54px'><img id='thumbnail' class='sxsl-thumbnail-show' src='app/resources/Uploaded/earthNight.jpg' height=320/></div>\
+      <div id='header' class='sxsl-instruction-header'>header text</div>\
       <div style='padding-bottom=12px'>\
-        <div id='action' class='actions'>action text</div>\
+        <div id='action' class='sxsl-instruction-actions'>action text</div>\
       </div>\
     </div>\
   </div>\
-  <div id='actions' class='actions-hide'>\
-    <div id='verify' class='passfailverify-show'>\
+  <div id='actions' class='sxsl-actions-hide'>\
+    <div id='verify' class='sxsl-passfailverify-show'>\
       <div class='checkbox' style='display:inline-flex;left: 650px;'>\
         <div style='margin-top:4px;margin-right:4px;'>Verify</div><input id='acknowledge' type='checkbox'/>\
       </div>\
     </div>\
-    <div id='passfail' class='passfailverify-hide'>\
-      <div id='errorcodes' class='acc-select acc-button-fail'>\
+    <div id='passfail' class='sxsl-passfailverify-hide'>\
+      <div id='errorcodes' class='sxsl-select sxsl-button-fail'>\
         <div style='margin:8px' >Fail</div>\
         <select id='errorcodelist'>\
-          <option class='acc-item' value='Man'>Man</option>\
-          <option class='acc-item' value='Machine'>Machine</option>\
-          <option class='acc-item' value='Method'>Method</option>\
-          <option class='acc-item' value='Material'>Material</option>\
+          <option class='sxsl-item' value='unkown'>TBD</option>\
         </select>\
       </div>\
-      <div id='failcode' style='left:24px;'><button id='fail' class='acc-button acc-button-fail' >Fail</button></div>\
-      <div style='right:24px;position:absolute;'><button id='pass' class='acc-button' >Pass</button></div>\
+      <div id='failcode' style='left:24px;'><button id='fail' class='sxsl-button sxsl-button-fail' >Fail</button></div>\
+      <div style='right:24px;position:absolute;'><button id='pass' class='sxsl-button' >Pass</button></div>\
     </div>\
   </div>\
-  <div id='capture' class='capture-hide'>\
-      <div id='enumerator' class='acc-select acc-button-fail'>\
+  <div id='capture' class='sxsl-capture-hide'>\
+      <div id='enumerator' class='sxsl-select sxsl-button-fail'>\
         <div style='margin:8px'>Choose</div>\
         <select>\
-          <option class='acc-item' value='red'>Red</option>\
-          <option class='acc-item' value='grn'>Green</option>\
-          <option class='acc-item' value='blue'>Blue</option>\
+          <option class='sxsl-item' value='red'>Red</option>\
+          <option class='sxsl-item' value='grn'>Green</option>\
+          <option class='sxsl-item' value='blue'>Blue</option>\
         </select>\
       </div>\
       <div style='left:24px;'><input type='text' id='textCature' style='textalign:ft' placeholder='use format 123-45678'></input></div>\
-      <div style='right:24px'><button id='activate' class='acc-button' >Activate</button></div>\
-      <div style='right:24px;position:absolute;'><button id='add' class='acc-button' >Add</button></div>\
+      <div style='right:24px'><button id='activate' class='sxsl-button' >Activate</button></div>\
+      <div style='right:24px;position:absolute;'><button id='add' class='sxsl-button' >Add</button></div>\
   </div>";
-  scope.data.sxslPlayer.id='instructions';
-  scope.data.sxslPlayer.className = 'instruction-container';
+  scope.sxslPlayerWindow.id='sxsl-instruction-container';
+  scope.sxslPlayerWindow.className = 'sxsl-instruction-container';
   
-  container.insertBefore(scope.data.sxslPlayer, container.firstChild);
-  container.insertBefore(scope.data.sxslPlayerMinimised, container.firstChild);
+  container.insertBefore(scope.sxslPlayerWindow, container.firstChild);
+  container.insertBefore(scope.sxslPlayerWindowMinimised, container.firstChild);
   
   scope.headLabel = document.querySelector('div#header');
   scope.instLabel = document.querySelector('div#action');
@@ -980,8 +979,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
     scope.stepLabel.innerHTML = text;
   }
   
-  scope.data.errorcodelist = document.querySelector('select#errorcodelist');
-  scope.data.errorcodelist.addEventListener('change', selectedErrorCode);
+  scope.errorcodelistWindow = document.querySelector('select#errorcodelist');
+  scope.errorcodelistWindow.addEventListener('change', selectedErrorCode);
   
   const btn3 = document.querySelector('button#advance');
   btn3.addEventListener("click", next);
@@ -1006,63 +1005,63 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
   };
   
 
-  function createMaxViewer() {
+  function createReferenceViewerHTML() {
     const container = document.querySelector('.twx-2d-overlay > twx-container-content');
-    scope.viewerWindow = document.createElement('div');
+    scope.referenceViewerWindow = document.createElement('div');
   
-    scope.viewerWindow.innerHTML = "\
-    <div id='viewerPanel' class='viewer-panel'>\
-      <div class='cmdView'>\
-        <div id='viewinfo' class='infoView'>view info</div>\
-        <button id='minimiseView' class='acc-button acc-button-round acc-icon-close closer'/> \
+    scope.referenceViewerWindow.innerHTML = "\
+    <div id='viewerPanel' class='sxsl-viewer-panel'>\
+      <div class='sxsl-viewer-cmdview'>\
+        <div id='viewinfo' class='sxsl-viewer-infoView'>view info</div>\
+        <button id='minimiseView' class='sxsl-button sxsl-button-round sxsl-icon-close sxsl-closer'/> \
       </div>\
-      <div id='viewerList' class='viewer'>\
-        <img id='viewImage' class='preview-hide'/>\
-        <video id='viewVideo' class='preview-hide' autoplay><source src='' type='video/mp4' ></video>\
+      <div id='viewerList' class='sxsl-viewer-view'>\
+        <img id='viewImage' class='sxsl-preview-hide'/>\
+        <video id='viewVideo' class='sxsl-preview-hide' autoplay><source src='' type='video/mp4' ></video>\
       </div>\
     </div>"
-    scope.viewerWindow.id='viewer';
-    scope.viewerWindow.className = 'preview-hide';
+    scope.referenceViewerWindow.id='viewer-container';
+    scope.referenceViewerWindow.className = 'sxsl-preview-hide';
     
-    container.insertBefore(scope.viewerWindow, container.firstChild);
+    container.insertBefore(scope.referenceViewerWindow, container.firstChild);
     
-    scope.viewerList = document.querySelector('div#viewerList');
+    //close button
     const btn2b = document.querySelector('button#minimiseView');
     btn2b.addEventListener("click", hideReview);
 
   };
   
-  function createReferences() {
+  function createReferencePreviewHTML() {
     const container = document.querySelector('.twx-2d-overlay > twx-container-content');
-    scope.referenceWindow = document.createElement('div');
+    scope.referencePreviewWindow = document.createElement('div');
   
-    scope.referenceWindow.innerHTML = "\
-    <div id='previewPanel' class='preview-panelCollapsed'>\
-      <div id='previewList' class='previews'>\
+    scope.referencePreviewWindow.innerHTML = "\
+    <div id='previewPanel' class='sxsl-preview-panel-collapsed'>\
+      <div id='previewList' class='sxsl-previews'>\
       </div>\
     </div>"
-    scope.referenceWindow.id='preview';
-    scope.referenceWindow.className = 'PreviewPanelCollapsed';
+    scope.referencePreviewWindow.id='preview-container';
+    scope.referencePreviewWindow.className = 'preview-container-collapsed';
     
-    container.insertBefore(scope.referenceWindow, container.firstChild);
+    container.insertBefore(scope.referencePreviewWindow, container.firstChild);
     
     scope.previewList = document.querySelector('div#previewList');
-//  const btn2b = document.querySelector('div#previewList');
-//  btn2b.addEventListener("click", hidePreview);
-
+    scope.setPreviewList = function(contents) {
+      scope.previewList.innerHTML = contents;
+    }
   };
-        scope.datasink = function(text) {
-                  console.log('swallowing this text :',text);
+        var datasink = function(text) {
+          console.log('swallowing this text :',text);
         }
-        scope.setHeadLabel = scope.datasink;
-        scope.setInstLabel = scope.datasink;
-        scope.setStepLabel = scope.datasink;
-
+        scope.setHeadLabel   = datasink;
+        scope.setInstLabel   = datasink;
+        scope.setStepLabel   = datasink;
+        scope.setPreviewList = datasink;
         scope.$root.$on("$ionicView.afterEnter", function (event) {
           if (!scope.data.isHolo) {        
-            createHTML();
-            createReferences();
-            createMaxViewer();
+            createInstructionPanelHTML();
+            createReferencePreviewHTML();
+            createReferenceViewerHTML();
           } else {
               //TODO : creaate holographic UI
               
@@ -1156,12 +1155,16 @@ scope.hidePOIs = function() {
     }
   }
 }
-scope.deactivatePOIs = function() {
-  for(const name in $scope.view.pois) {
+scope.deactivateAll = function() {
+  // remove all POIs  
+  for(const name in scope.data.pois) {
     this.renderer.setProperties (name,{hidden:true});
     scope.data.pois[name].hidden = true;
     scope.data.pois[name].active = false;
   }
+  //and remove any references
+  scope.setPreviewList("");
+  
 }
 scope.animatePOIs = function(start) {
   for(const name in scope.data.pois) {
@@ -1195,20 +1198,15 @@ scope.sxsl2Actions = function(context) {
   //initialise all action stuff
   this.start = (intro) => {
     scope.setInstLabel(intro ? intro : "No introduction text found");
-    //$scope.view.wdg['instruction-text-label'].visible = true;
   }
   
   //terminate action handling, hide any remaining annotations etc.
   this.end = (conclusion) => {
-    //$scope.view.wdg.tools.visible       = false;
-    //$scope.view.wdg.subjects.visible    = false;
-    //$scope.view.wdg.annotations.visible = false;
-    //$scope.view.wdg.actionClass.visible = false; 
+      
+    scope.deactivateAll();  
     
-    //$scope.view.wdg.desc.value = conclusion;
     scope.setInstLabel(conclusion != undefined ? conclusion : '');
                                          
-    //twx.app.fn.triggerWidgetService('refsDisplay', 'hidepopup');
   }
   
   const actionClassLookup = (act) => {
@@ -1233,12 +1231,12 @@ scope.sxsl2Actions = function(context) {
   this.showReferences = (refs) => {
       
     //generate inline html  
-    function processList(list) {
-        var inner = "";
-        list.forEach(function(ref) {
-                     inner = inner + ref;
-                 });
-            return inner;
+    function processListAsHTML(list) {
+      var inner = "";
+      list.forEach(function(ref) {
+        inner = inner + ref;
+      });
+      return inner;
     }
     
     // deliver any references (images etc.) - if there are none, hide the viewer
@@ -1268,14 +1266,14 @@ scope.sxsl2Actions = function(context) {
           
           case "video/mp4":
             buckets.video.push(ref);
-            mergedBucket.push('<video class="preview-show"><source src="'+ref.url+'"/></video>');
+            mergedBucket.push('<video class="sxsl-preview-show"><source src="'+ref.url+'"/></video>');
             break;
           
           case "image/jpeg":
           case "image/png":
           case "image/gif":
             buckets.image.push(ref);
-            mergedBucket.push('<img src="'+ref.url+'" class="preview-show"/>');
+            mergedBucket.push('<img src="'+ref.url+'" class="sxsl-preview-show"/>');
             break;
             
           //handle others e.g. docs etc.
@@ -1287,22 +1285,23 @@ scope.sxsl2Actions = function(context) {
       // ideally, we'd make this pluggable so that the action code doesnt know about the UI
       //
       if (mergedBucket.length > 0) {
-          maximisePreview();
-          scope.previewList.innerHTML = processList(mergedBucket);
           
-          const collection = document.getElementsByClassName("preview-show");
+          maximisePreview();
+          scope.setPreviewList(processListAsHTML(mergedBucket));
+          
+          const collection = document.getElementsByClassName("sxsl-preview-show");
+          
           for (var i = 0; i < collection.length; i++) {
             var c = collection[i];  
+            
             var tag = c.tagName != undefined ? c.tagName : "";    
             var src = tag=='VIDEO' ? c.firstChild.src : c.src;  
-            console.log('listener',i,'src',src,'tag',tag);  
+            
             c.addEventListener("click", (function(i,src,tag) { 
               return function() {                           
-              console.log('listener',i,'src',src,'tag',tag);  
-              showReview(src, tag=='VIDEO'); 
+                showReview(src, tag=='VIDEO'); 
               }
-              }
-            )(i,src,tag));
+            })(i,src,tag));
           }
 
       } else {
@@ -1824,9 +1823,10 @@ scope.sxsl2Actions = function(context) {
 
 // ////////////////////////////////////////////////////////////////////////////////////////////////
 // logger
+//
+// TODO : should this be integral to the player, or separate widget?
 
 var sepsic = scope.$parent.$on('updateWorkTask.serviceInvokeComplete', function(evt) {
-  //$scope.view.wdg.spinner.visible = false;
   console.log('incremental sent ok');
   scope.logger.sending = undefined;
   
@@ -1838,8 +1838,9 @@ var sepsic = scope.$parent.$on('updateWorkTask.serviceInvokeComplete', function(
   }(scope.logger),500);
 });
 var sprsic = scope.$parent.$on('stopWorkTask.serviceInvokeComplete', function(evt) {
-  //$scope.view.wdg.spinner.visible = false;
   console.log("finished");
+  //TODO - is this where we should be sending the final terminate/inished event?
+  
   //twx.app.fn.triggerWidgetService('finished', 'resetq');
   //$scope.app.fn.navigate('scanproc'); 
 });
@@ -1848,7 +1849,7 @@ scope.data.logger = function(procID) {
   this.id      = procID;
   this.results = [];
   this.pending = [];
-  this.sending   = undefined;
+  this.sending = undefined;
   this.async   = undefined;
   this.incrementing = false;
   
@@ -1916,6 +1917,8 @@ scope.data.logger = function(procID) {
       console.log('incremental sending',JSON.stringify(me.sending));
       me.incrementing = true;
       
+      //TODO - this should probably be piping the value to an outbound 'field' which would trigger
+      //       any linked service e.g. thingworx
       if (me.id != undefined)
        twx.app.fn.triggerDataService('PTC.InspectionAccelerator.Imp.Manager', 'updateWorkTask', { 'workstationID': $scope.app.params.workstationID,
                                                                                                      'workTaskID': $scope.app.params.Workorder.workinstructionID.toString(),
@@ -1923,6 +1926,7 @@ scope.data.logger = function(procID) {
                                                                                                       'straction': JSON.stringify(me.sending)
                                                                                                 } ); 
       else
+        // we dont get the kickback from twx is we are test mode, so we need to send it ourselves   
         $timeout(function() {
           scope.$parent.$emit("updateWorkTask.serviceInvokeComplete");
         },10);
