@@ -67,7 +67,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
              scope.runningField = true;
              
              var eps = proc.events.on('procStart',  function(evt,proc)   { 
-               scope.headLabel.innerHTML = proc.title;
+               scope.setHeadLabel(proc.title);
                scope.steplistField = proc.getStepList();
 
                scope.logger.push( { id: proc.id, 
@@ -79,8 +79,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                  
              var eps = proc.events.on('stepStart',  function(evt,step)   { 
                console.log('+++++++++++++++++++++++\nstarting step',step.id,step.title);
-               scope.headLabel.innerHTML = step.title;
-               scope.stepLabel.innerHTML = proc.sti + " OF " + proc.statementcount
+               scope.setHeadLabel(step.title);
+               scope.setStepLabel(proc.sti + " OF " + proc.statementcount);
 
                scope.startStepTimeClock(step,scope.ticker,scope);
 
@@ -103,7 +103,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
              var epe = proc.events.on('procEnd',  function(evt,proc)   { 
                console.log('ending proc',proc.id+'\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
                
-               scope.headLabel.innerHTML = proc.title;
+               scope.setHeadLabel(proc.title);
                scope.canrunField  = false;
                scope.runningField = false;
                
@@ -362,11 +362,24 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                              .then( () => {
                                scope.logger.submit("halt");
                              })
-                  }
+                   }
                
-            })
+                 })
 
-          };
+               };
+               if (scope.data.isHolo) {
+              
+                 //hololens platform not supported at this time  
+                 scope.canrunField = false;
+               
+                 scope.logger.push( { id: proc.id, 
+                                   event: 'halt',  
+                                    time: Date.now(), 
+                                     ack: { response:'hololens platform unsupported' }
+                               } );
+
+                 scope.$parent.$emit("terminated");    
+               }
 
              });
           });
@@ -800,6 +813,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           scope.data.src    = (scope.resourceField != undefined) ? scope.resourceField : '';
           scope.data.anchor = scope.data.src.slice(0,scope.data.src.lastIndexOf('/')+1);
           if (scope.helper) scope.helper.anchor = scope.data.anchor;
+          
           $http.get(scope.data.src)
           .success(function(data, status, headers, config) {
                    
@@ -955,7 +969,17 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
   scope.instLabel = document.querySelector('div#action');
   scope.thumbnail = document.querySelector('img#thumbnail');
   scope.stepLabel  = document.querySelector('div#stepinfo');
-
+  
+  scope.setHeadLabel = function(text) {
+    scope.headLabel.innerHTML = text;
+  }
+  scope.setInstLabel = function(text) {
+    scope.instLabel.innerHTML = text;
+  }
+  scope.setStepLabel = function(text) {
+    scope.stepLabel.innerHTML = text;
+  }
+  
   scope.data.errorcodelist = document.querySelector('select#errorcodelist');
   scope.data.errorcodelist.addEventListener('change', selectedErrorCode);
   
@@ -1027,13 +1051,24 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 //  btn2b.addEventListener("click", hidePreview);
 
   };
+        scope.datasink = function(text) {
+                  console.log('swallowing this text :',text);
+        }
+        scope.setHeadLabel = scope.datasink;
+        scope.setInstLabel = scope.datasink;
+        scope.setStepLabel = scope.datasink;
 
         scope.$root.$on("$ionicView.afterEnter", function (event) {
-          createHTML();
-          createReferences();
-          createMaxViewer();
-          
-          // startSxslPlayer();
+          if (!scope.data.isHolo) {        
+            createHTML();
+            createReferences();
+            createMaxViewer();
+          } else {
+              //TODO : creaate holographic UI
+              
+              //for now...
+
+          }
         });
         scope.$root.$on("$ionicView.beforeLeave", function (event) {
           // clean up
@@ -1159,7 +1194,7 @@ scope.sxsl2Actions = function(context) {
   this.context  = context;
   //initialise all action stuff
   this.start = (intro) => {
-    scope.instLabel.innerHTML = intro ? intro : "No introduction text found";
+    scope.setInstLabel(intro ? intro : "No introduction text found");
     //$scope.view.wdg['instruction-text-label'].visible = true;
   }
   
@@ -1171,7 +1206,7 @@ scope.sxsl2Actions = function(context) {
     //$scope.view.wdg.actionClass.visible = false; 
     
     //$scope.view.wdg.desc.value = conclusion;
-    scope.instLabel.innerHTML = (conclusion != undefined ? conclusion : '');
+    scope.setInstLabel(conclusion != undefined ? conclusion : '');
                                          
     //twx.app.fn.triggerWidgetService('refsDisplay', 'hidepopup');
   }
@@ -1312,12 +1347,12 @@ scope.sxsl2Actions = function(context) {
         
           // at this point, we can start the process of connecting to the tool
           //
-          scope.instLabel.innerHTML = "connecting to " + tools[0].name;
+          scope.setInstLabel("connecting to " + tools[0].name);
           twxToolConnect(tools[0].name)
           .then( () => {
             //$scope.view.wdg.spinner.visible = false;
-            scope.instLabel.innerHTML = "connected to " + tools[0].name + 
-                                    " ok!<p>Collecting " + tools[0].infoToCollect.count + " values";
+            scope.setInstLabel("connected to " + tools[0].name + 
+                               " ok!<p>Collecting " + tools[0].infoToCollect.count + " values");
         
             // once armed, we can get ready to activate
             //$scope.view.wdg["action-input-tool"].disabled = false;
@@ -1613,8 +1648,7 @@ scope.sxsl2Actions = function(context) {
     
     a.step.ongoing = pdesc + odesc ;
     
-    scope.instLabel.innerHTML  = pdesc+"<span style='color:black;font-size:100%'>" + odesc + "</span>";
-    console.log('action desc='+scope.instLabel.innerHTML);
+    scope.setInstLabel(pdesc+"<span style='color:black;font-size:100%'>" + odesc + "</span>");
 
     //$scope.view.wdg.actionClass.imgsrc = actionClassLookup(a.type); 
     //$scope.view.wdg.actionClass.visible = true; 
