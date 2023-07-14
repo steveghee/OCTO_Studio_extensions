@@ -17,6 +17,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         physicalField : '@',
         resourceField : '@',
       reasoncodeField : '@',
+            holoField : '@',
           canrunField : '=',
          runningField : '=',
            clockField : '=',
@@ -29,7 +30,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
         var lastUpdated = 'unknown';
         scope.data = { name: undefined, 
-                   disabled: false, 
+                   disabled: false,
+                     isHolo: false,
                         src: undefined, 
                     context: undefined,
                  reasonCode: {}, 
@@ -91,7 +93,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                  scope.data.firstStep = false;
                    
                  expandContract();
-                 scope.addNamedPOI('context',scope.data.context.model,undefined,undefined,scope.data.context.scale,false,false);//scope.data.context.tag=="occlusion");
+
+                 scope.addNamedPOI('context',scope.data.context.model,undefined,undefined,scope.data.context.scale,false,scope.data.context);
  
 
                }
@@ -261,7 +264,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                scope.proof = function(proof) {
                  proc.proof( {event:'proof'}, proof ) // this should fire procProofDelivered event
                      .then( () => {
-                       //twx.app.fn.triggerWidgetService('proofRequired', 'resetq');
+                       //TODO : twx.app.fn.triggerWidgetService('proofRequired', 'resetq');
                        scope.next('@');
                      })
                      .catch( e => {
@@ -273,8 +276,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                  proc.resume(auto) 
                      .then( (state) => {
           
-                       //twx.app.fn.triggerWidgetService('running', 'setq');
-
                        // Restart Timer
                        scope.startStepTimeClock(state.step,scope.ticker,scope);
                        scope.runningField = true;
@@ -372,14 +373,22 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         };
              
         var executesxslPlayer = function() {
+          var active = scope.canrunField && scope.runningField;
+          var sleepy = scope.canrunField && !scope.runningField;  
           if (!scope.data.disabled) {
             console.log('physical',scope.data.physical);
-            //scope.contextField = scope.data.context;
             scope.steplistField = scope.data.steplist;
+            
+            if (sleepy)
+              scope.resume(true);
+            
           } else {
             console.log('disabled');
             scope.contextField = '';
             scope.steplistField = undefined;
+            
+            if (active)
+              scope.pause({reason:'widget disabled',event:'pause'});
           }
         };
         
@@ -646,6 +655,16 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           var targetExists = document.querySelector("twx-dt-target");
           if (targetExists != null) {
               contextual.target.id = targetExists.id;
+              var tgtsrc = targetExists.attributes['src'].value;
+              var tgttype = tgtsrc.split(':')[0];
+              switch(tgttype) {
+                  case "spatial"       : contextual.target.mimeType = "application/vnd.ptc.tracker.spatialtracker"; break;
+                  case "vuforia-model" : contextual.target.mimeType = "application/vnd.ptc.tracker.modeltracker"; break;
+                  case "vuforia-image" : contextual.target.mimeType = "application/vnd.ptc.tracker.imagetracker"; break;
+                  case "vuforia-area"  : contextual.target.mimeType = "application/vnd.ptc.tracker.areatracker"; break;
+                  case "vuforia-vumark": contextual.target.mimeType = "application/vnd.ptc.tracker.thingmarktracker"; break;
+                  default              : contextual.target.mimeType = "application/vnd.ptc.tracker.unknown"; break;
+              }
           }
           else if (context.trackers != undefined) {
             context.trackers.forEach(function(tracker) {
@@ -821,9 +840,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                      
         });
             
-        scope.$watchGroup(['physicalField','disabledField'], function () {
+        scope.$watchGroup(['physicalField','disabledField','holoField'], function () {
           scope.data.physical = (scope.physicalField    != undefined && scope.physicalField === 'true') ? true :false ;
           scope.data.disabled = (scope.disabledField    != undefined && scope.disabledField === 'true') ? true :false ;
+          scope.data.isHolo   = (scope.holoField        != undefined && scope.holoField=='true') ? true :false ;
           executesxslPlayer();
         });
             
@@ -1064,7 +1084,8 @@ scope.addNamedPOI = function(name,shape,pos,rot,scale,hide,context) {
     else                  scope.renderer.setRotation   (name,0,0,0);
     scope.renderer.setScale      (name,scale,scale,scale);
     if (context != undefined) {
-      scope.renderer.setProperties (name,{hidden:hide,shader:"sxsl_desaturatedgl",occlude:context,phantom:!context,opacity:0.7,decal:false});
+      var isDigital = !(context.target.mimeType != "application/vnd.ptc.tracker.spatialtracker" || scope.data.physical);
+      scope.renderer.setProperties (name,{hidden:hide,shader:isDigital?"sxsl_desaturatedgl":"sxsl_screendoorgl",occlude:false,phantom:isDigital,opacity:isDigital?0.7:1,decal:false});
     } else {
       scope.renderer.setProperties (name,{hidden:hide,shader:"sxsl_proximityHilitegl",occlude:false,phantom:false,decal:false});
       
