@@ -160,18 +160,25 @@ This data can be in table form - perhaps the result of a thingworx service call 
 This section TO BE COMPLETED
 
 ## Step by Step Instructions (aka SXSL)
+
+(Important note : this is an early alpha version of this widget : testing has been limited so far to landscape ipad devices, so any other device/display format may look wrong - it will get fixed over time. Right now the focus is functionality)
+
 sxsl is a language (implemented as a json data format) for defining step-by-step instructions.  
 the sxsl widget provides a convenient player, including built-in UI, which will execute this sxsl language and will deliver AR-enabled instructions.
 
 The src property should be et to point to a valid sxsl defintion/file.  It is assumed that the associated 2d/3d resources, including any 
 associated tracking targets, are included in the same relative location as the the sxsl json.
 
+The sxsl2 specification can be found here (TODO: link to be provided)
+
+The widget will display the instruction control UI, including any 2d (image, video) references.  
+
+### properties
 The steplist property provides an infotable which lists all the available steps - you can display this in a list/repeater to view and select/jump to specific steps. Only valid next steps are presented.
 
 Stepclock provides an (optional) timecheck on the progress of each instruction step; sxsl allows for a 'target' time to be defined, and this value, along with the running clock (in milliseconds) is provided.  You can choose if and how you want to present this information.
 
-The widget will display the instruction control UI, including any 2d (image, video) references.  
-
+### Events and services
 Events are fired to allow users to integrate this widget into other processes.
 
 ## Misc
