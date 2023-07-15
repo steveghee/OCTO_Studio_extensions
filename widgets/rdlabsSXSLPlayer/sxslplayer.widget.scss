@@ -474,9 +474,10 @@ div::-webkit-scrollbar{
 }
 
 .sxsl-viewer-image {
-    height: 100%;
-    width: 100%;
-    padding: 12px;
+    width: 90%;
+    height: 460px;
+    display: block;
+    margin: auto;
 }
 .sxsl-viewer-panel {
   height: 100%;
