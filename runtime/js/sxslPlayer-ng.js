@@ -171,6 +171,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                  
              var espp = proc.events.on('stepProofPending',    function(evt,proof)   {
                console.log('step proof pending - please provide ',proof.length,'items');
+               $timeout(function() { collectProof(proof); },10);
              });
                  
              var espd = proc.events.on('stepProofDelivered',  function(evt,proof)   {
@@ -348,7 +349,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                        else if (e.cmd=='proof') { 
                          // we are waiting for user input - proof of condition required      
                          console.log(e.msg);
-                         //twx.app.fn.triggerWidgetService('proofRequired', 'setq');
                          return;
                        }
                        else if (e.cmd=='input') { 
@@ -428,6 +428,73 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             else 
               minimise()
         }
+        
+        // this is, for now, taking the photo directly.
+        //
+        // UI is provided to prompt the user to point the camera
+        // in the right direction. Information is provided (guide images, text) that should
+        // be displayed
+        //
+        var photoGrab = function() {
+            scope.photoGrab();
+        }
+        var collectProof = function(required) {
+            
+            var collectedProof = [];
+            scope.data.collecting = required;
+            let numberToCollect = required.length;
+            
+            //call camera to get proof
+            console.log('step proof pending - need to collect ',required.length,'items');
+            
+            var gatherProof = function() {
+                showProof();
+                var collect = (scope.data.collecting.length > 0) ? scope.data.collecting.pop() : undefined; // pop item off the arry
+                if (collect != undefined) {
+                    
+                    //how the ui
+                    var textHint = collect.instructions != undefined && 
+                                   collect.instructions.resources != undefined && 
+                                   collect.instructions.resources[0] != undefined ? collect.instructions.resources[0].text : "";
+                    var imgHint  = collect.guides != undefined && 
+                                   collect.guides[0] != undefined && 
+                                   collect.guides[0].resources != undefined && 
+                                   collect.guides[0].resources[0] != undefined ? scope.data.anchor + collect.guides[0].resources[0].url : "";
+                    scope.setProofHints(textHint, imgHint);
+            
+                }
+            }
+            
+            var photoSuccess = function (pngBase64String) {
+                var proof = 'data:image/png;base64,' + pngBase64String; 
+                collectedProof.push(proof);
+                
+                if (collectedProof.length == numberToCollect) {
+                  maximise();
+                  hideProof();  
+                  scope.proof(collectedProof);
+                }
+                else 
+                  gatherProof();
+            };
+              
+            var photoCancel = function () {
+                maximise();
+                scope.proof(undefined);//not sure what to do here
+            };
+            
+            scope.photoGrab = function() {
+              hideProof();
+              var params = {withAugmentation:true, imageWidth:640, imageHeight:480};   
+              //  params = { dataURL:bool, withAugmentation: bool, imgFormat: string, imgWidth: number, imgHeight:number} 
+              scope.renderer.takeScreenshot(params, photoSuccess, photoCancel);
+            }
+            
+            //minimse the main UI
+            minimise();
+            //show the helper UI
+            gatherProof();
+        }
         var selectedErrorCode = function() {
           var value = scope.errorcodelistWindow.value;
           //console.log('you clicked',value);
@@ -451,6 +518,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           }
         };
                 
+        var hideProof = function() {
+          scope.proofWindow.className = 'sxsl-proof-hide';
+        }
+        var showProof = function() {
+          scope.proofWindow.className = 'sxsl-proof-container';
+        }
+      
         var minimise = function() {
           const t1 = document.querySelector('div.sxsl-instruction-container');
           t1.className = 'sxsl-instruction-container-hide';
@@ -487,14 +561,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           if (isVideo) {
             const t5 = document.querySelector('video#viewVideo');
             t5.firstChild.src = src;
-            t5.className = 'viewer-image';
+            t5.className = 'sxsl-viewer-image';
             
             const t6 = document.querySelector('img#viewImage');
             t6.className = 'sxsl-preview-hide';
           } else {
             const t5 = document.querySelector('img#viewImage');
             t5.src = src;
-            t5.className = 'viewer-image';
+            t5.className = 'sxsl-viewer-image';
             
             const t6 = document.querySelector('video#viewVideo');
             t6.className = 'sxsl-preview-hide';
@@ -1041,6 +1115,36 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
   };
   
+  function createProofCaptureHTML() {
+    const container = document.querySelector('.twx-2d-overlay > twx-container-content');
+    scope.proofWindow = document.createElement('div');
+  
+    scope.proofWindow.innerHTML = "\
+    <div id='proofPanel' class='sxsl-proof-panel'>\
+      <div>\
+        <img id='proofHint' class='sxsl-proof-hint' src='app/resources/Uploaded/example101/beauties.jpg' width=128/>\
+        <button id='capture' class='sxsl-button sxsl-button-round sxsl-icon-to-do'/> \
+      </div>\
+      <div id='proofInstruction' class='sxsl-proof-text'>text here</div>\
+    </div>"
+    scope.proofWindow.id='proof-container';
+    scope.proofWindow.className = 'sxsl-proof-hide';
+    
+    container.insertBefore(scope.proofWindow, container.firstChild);
+    
+    //close button
+    const btn2b = document.querySelector('button#capture');
+    btn2b.addEventListener("click", photoGrab);
+    
+    scope.proofInstruction = document.querySelector('div#proofInstruction');
+    scope.proofHint        = document.querySelector('img#proofHint');
+    scope.setProofHints = function(text,img) {
+        scope.proofInstruction.innerHTML = text;
+        scope.proofHint.src = img;
+    }
+  };
+
+  
   function createReferencePreviewHTML() {
     const container = document.querySelector('.twx-2d-overlay > twx-container-content');
     scope.referencePreviewWindow = document.createElement('div');
@@ -1072,6 +1176,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             createInstructionPanelHTML();
             createReferencePreviewHTML();
             createReferenceViewerHTML();
+            createProofCaptureHTML();
+            
           } else {
               //TODO : creaate holographic UI
               
@@ -1250,6 +1356,7 @@ scope.sxsl2Actions = function(context) {
     }
     
     // deliver any references (images etc.) - if there are none, hide the viewer
+    // TODO : use the thumbnail (if defined) for the previewer
     if (refs != undefined) {
       
       // we can have images, videos, docs - sort into buckets

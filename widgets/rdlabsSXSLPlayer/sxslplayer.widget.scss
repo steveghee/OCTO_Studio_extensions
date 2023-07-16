@@ -521,3 +521,32 @@ width: 90%;
     right: 7px; 
     position: absolute;
 }
+.sxsl-proof-container {
+    width: 250px;
+    height: 190px;
+    bottom: 24px;
+    position: fixed;
+    left: 96px;
+    /* right: 25px; */
+    background-color: lightgray;
+    border-radius: 12px;
+}
+
+.sxsl-proof-panel {
+    display: grid;
+    padding: 12px;
+    justify-content: space-around;
+}
+.sxsl-proof-hint {
+}
+.sxsl-proof-text {
+}
+.sxsl-proof-show {
+  display:inline;
+  width:190px;
+  padding:4px;
+  border-radius:12px;
+}
+.sxsl-proof-hide {
+  display:none;
+}
