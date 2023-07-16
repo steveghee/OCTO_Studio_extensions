@@ -549,7 +549,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           t4.className = 'viewer-container';
 
         }
-        var showReview = function(src,isVideo) {
+        var showReview = function(src,desc,isVideo) {
           const t1 = document.querySelector('div.sxsl-instruction-container');
           t1.className = 'sxsl-instruction-container-hide';
           const t2 = document.querySelector('div#sxsl-instruction-max');
@@ -572,6 +572,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             
             const t6 = document.querySelector('video#viewVideo');
             t6.className = 'sxsl-preview-hide';
+          }
+          if (desc != undefined) {
+            const t7 = document.querySelector('div#viewinfo');
+            t7.innerHTML = desc;
           }
         }
         var hideReview = function() {
@@ -746,6 +750,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           contextual.target = {};
           var targetExists = document.querySelector("twx-dt-target");
           if (targetExists != null) {
+              contextual.target.tracker = 'tracker1';                            
               contextual.target.id = targetExists.id;
               var tgtsrc = targetExists.attributes['src'].value;
               var tgttype = tgtsrc.split(':')[0];
@@ -1379,18 +1384,19 @@ scope.sxsl2Actions = function(context) {
         }
         
         ref.url = me.anchor + ref.url;
+        if (ref.thumb != undefined) ref.thumb = me.anchor + ref.thumb;
         switch(ref.mime) {
           
           case "video/mp4":
             buckets.video.push(ref);
-            mergedBucket.push('<video class="sxsl-preview-show"><source src="'+ref.url+'"/></video>');
+            mergedBucket.push(`<video class="sxsl-preview-show" title="${ref.desc}"><source src="${ref.url}"/></video>`);
             break;
           
           case "image/jpeg":
           case "image/png":
           case "image/gif":
             buckets.image.push(ref);
-            mergedBucket.push('<img src="'+ref.url+'" class="sxsl-preview-show"/>');
+            mergedBucket.push(`<img src="${ref.thumb!=undefined?ref.thumb:ref.url}" longdesc="${ref.url}" title="${ref.desc}" class="sxsl-preview-show"/>`);
             break;
             
           //handle others e.g. docs etc.
@@ -1411,12 +1417,12 @@ scope.sxsl2Actions = function(context) {
           for (var i = 0; i < collection.length; i++) {
             var c = collection[i];  
             
-            var tag = c.tagName != undefined ? c.tagName : "";    
-            var src = tag=='VIDEO' ? c.firstChild.src : c.src;  
-            
+            var tag  = c.tagName != undefined ? c.tagName : "";    
+            var src  = tag=='VIDEO' ? c.firstChild.src : c.longDesc;  
+            var desc = c.title;
             c.addEventListener("click", (function(i,src,tag) { 
               return function() {                           
-                showReview(src, tag=='VIDEO'); 
+                showReview(src, desc, tag=='VIDEO'); 
               }
             })(i,src,tag));
           }

@@ -126,9 +126,11 @@ this.sxslAction = function(a,s,i,last,e) {
     if (a.references != undefined) {
       for (var refc=0;refc<refcount;refc++) {
         var ref=a.references[refc];
-        this.refs.push( { mime:ref.resources[0].mimeType,
-                           url:ref.resources[0].url,
-                         thumb:ref.thumbnail } );
+        //TODO : we really should check that the resource etc. exists  
+        this.refs.push( { mime: ref.resources[0].mimeType,
+                           url: ref.resources[0].url,
+                         thumb: ref.thumbnail,
+                          desc: ref.description != undefined ? ref.description.resources[0].text : "" } );
       }
     } 
   }
