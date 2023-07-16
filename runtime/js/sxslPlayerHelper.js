@@ -100,7 +100,15 @@ this.sxslAction = function(a,s,i,last,e) {
           let mctx = this.context[tool.contextId].models;
           if (this.context[tool.contextId].trackers != undefined) {
             let tctx = this.context[tool.contextId].trackers[0];
-            fctx   = { type: tctx.mimeType, 
+            fctx   = { type: tctx.mimeType,         "conclusion": {
+            "resources": [
+                {
+                    "mimeType": "text/plain",
+                    "text": "A procedure can end with an (optional) conclusion"
+                }
+            ]
+        },
+
                     dataset: tctx.content.dataset, 
                        name: tctx.content.targetName, 
                       guide: tctx.content.guideView, 

@@ -1699,8 +1699,8 @@ scope.sxsl2Actions = function(context) {
         var t      = partno.text;
         var valid1 = pattern != undefined ? t.match(pattern) != null : true;
         var qv     = parseInt(qty.text);
-		var valid2 = (min != undefined ?  min <= qv : true) && (max != undefined ? max >= qv : true);
-	    var valid  = valid1 && valid2;
+	var valid2 = (min != undefined ?  min <= qv : true) && (max != undefined ? max >= qv : true);
+	var valid  = valid1 && valid2;
         console.log('test',t,'qty',qv,'against',input.validation);
         
         //$scope.view.wdg["action-input-validated"].value = valid;
@@ -1730,15 +1730,15 @@ scope.sxsl2Actions = function(context) {
       }
     }
 
-    
     // chosen functions may turn one or more of these back on again 
+//TODO: handle inputs    
 //    $scope.view.wdg["action-input-select"].visible   = false;
 //    $scope.view.wdg["action-input-photo"].visible   = false;
 //    $scope.view.wdg["action-input-value"].visible   = false;
 //    $scope.view.wdg["action-input-tool"].visible   = false;
 //    $scope.view.wdg["action-input-tool"].disabled  = true;
-    //$scope.view.wdg.actionInput2.visible      = false;
-    //$scope.view.wdg.actionInputPhoto.visible  = false;
+//    $scope.view.wdg.actionInput2.visible      = false;
+//    $scope.view.wdg.actionInputPhoto.visible  = false;
 
     if (input == undefined) return undefined;
     switch (input.type) {
@@ -1770,38 +1770,38 @@ scope.sxsl2Actions = function(context) {
     
     a.step.ongoing = pdesc + odesc ;
     
+    //TODO : push the html generation piece down into the setter
     scope.setInstLabel(pdesc+"<span style='color:black;font-size:100%'>" + odesc + "</span>");
 
-    //$scope.view.wdg.actionClass.imgsrc = actionClassLookup(a.type); 
-    //$scope.view.wdg.actionClass.visible = true; 
-    
     // we should show the right UI for the input type
+//TODO: handle inputs
 /*    if (a.input != undefined) {
       $scope.view.wdg["action-input-value"].text = '';
       if (a.input.hint != undefined)
         $scope.view.wdg["action-input-value"].placeholder = a.input.hint.instructions.resources[0].text;
     }
 */             
+    
     //unpack the action subject(s) - also look for associated animations
     //which subject type (resource) can i view - 3d or 2d
     //$scope.view.wdg.alternative.visible = false;
     scope.hidePOIs();
 
-    var isSubjectAnimated    = false;
-    var isAnnotationAnimated = false;
-    var isToolAnimated       = false;
+    var isAnimated    = false;
+    
     if (a.subjects!=undefined) a.subjects.forEach(function(sub) {
                                                   
       var assetId = sub.id;                                            
       if (sub.asset  != undefined) sub.asset.resources.forEach(function(res) {
+                                                               
         if(res.mimeType=="application/vnd.ptc.pvz" || res.mimeType=="model/gltf-binary") {
+            
           var src     = scope.data.anchor + (res.composition == "partset" ? res.modelUrl : res.url);
-         
           scope.addNamedPOI(assetId,src,res.translation,genrotation(res.normal),1,false);
           
           // this is speculative - ideally the sxsl wil tell us there is a specific pvi linked to this step
           scope.data.pois[assetId].sequenceToLoad = (res.composition == "partset" ? res.sceneName : "Figure 1");
-          isSubjectAnimated = scope.data.pois[assetId].sequenceToLoad != undefined;
+          isAnimated = isAnimated || scope.data.pois[assetId].sequenceToLoad != undefined;
         }
         if(res.mimeType=="application/vnd.ptc.pvi") { 
           if (scope.data.pois[assetId] == undefined) scope.data.pois[res.id] = {};
@@ -1825,28 +1825,14 @@ scope.sxsl2Actions = function(context) {
         }
       })
     })
-    if (isSubjectAnimated) {
-      scope.animatePOIs(true); 
-    }
-    
+
     if (a.annotations != undefined) {
       var me = a.annotations[0];
       var src = scope.data.anchor + me.asset.resources[0].modelUrl;
       scope.addNamedPOI(me.id,src,undefined,undefined,1,false);
       scope.data.pois[me.id].sequenceToLoad = me.asset.resources[0].sceneName; 
-      isAnnotationAnimated = scope.data.pois[me.id].sequenceToLoad != undefined;
-    } else {
-      //$scope.view.wdg.annotations.visible  = false;
-      //$scope.view.wdg.annotations.src      = undefined;
-      //$scope.view.wdg.annotations.sequenceToLoad = undefined;
-      //$scope.view.wdg.annotations.sequenceList   = undefined;
-    }
-    //stop any, if already running
-    if (!isAnnotationAnimated) {
-      //twx.app.fn.triggerWidgetService("annotations", 'stop');
-      //$scope.view.wdg.annotations.sequence       = undefined;
-      //$scope.view.wdg.annotations.sequenceToLoad = undefined;
-    }
+      isAnimated = isAnimated || scope.data.pois[me.id].sequenceToLoad != undefined;
+    } 
 
     if (a.tools != undefined) {
       // does the tool have any animation defined?
@@ -1857,7 +1843,7 @@ scope.sxsl2Actions = function(context) {
         var src = scope.data.anchor + me.asset.resources[0].modelUrl;
         scope.addNamedPOI(me.id,src,undefined,undefined,1,false);
         scope.data.pois[me.id].sequenceToLoad = me.asset.resources[0].sceneName; 
-        isToolAnimated = scope.data.pois[me.id].sequenceToLoad != undefined;
+        isAnimated = isAnimated || scope.data.pois[me.id].sequenceToLoad != undefined;
       }
                 
       // we also want to collect #tools * any details values
@@ -1865,17 +1851,13 @@ scope.sxsl2Actions = function(context) {
                                   details: a.input
                                  };
                 
-    } else {
-      //$scope.view.wdg.tools.visible  = false;
-      //$scope.view.wdg.tools.src      = undefined;
-      //$scope.view.wdg.tools.sequenceToLoad = undefined;
-      //$scope.view.wdg.tools.sequenceList   = undefined;
     }
-    if (!isToolAnimated) {
-      //twx.app.fn.triggerWidgetService("tools", 'stop');
-      //$scope.view.wdg.tools.sequence       = undefined;
-      //$scope.view.wdg.tools.sequenceToLoad = undefined;
+    
+    // start up the animation(s)
+    if (isAnimated) {
+      scope.animatePOIs(true); 
     }
+    
 
     // deliver any references (images etc.) - if there are none, hide the viewer
     this.showReferences(a.refs);
