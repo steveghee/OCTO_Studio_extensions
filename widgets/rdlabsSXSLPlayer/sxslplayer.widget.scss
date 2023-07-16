@@ -534,7 +534,10 @@ width: 90%;
 
 .sxsl-proof-panel {
     display: grid;
+    height: 100%;
     padding: 12px;
+    border-radius: 12px;
+    background-color: white;
     justify-content: space-around;
 }
 .sxsl-proof-hint {

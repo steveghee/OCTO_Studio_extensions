@@ -1064,7 +1064,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
     scope.headLabel.innerHTML = text;
   }
   scope.setInstLabel = function(text) {
-    scope.instLabel.innerHTML = text;
+      scope.instLabel.innerHTML = text;
+      scope.instLabel.scrollTop = scope.instLabel.scrollHeight;
+      scope.instLabel.scrollIntoView(false);
   }
   scope.setStepLabel = function(text) {
     scope.stepLabel.innerHTML = text;
@@ -1128,9 +1130,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
   
     scope.proofWindow.innerHTML = "\
     <div id='proofPanel' class='sxsl-proof-panel'>\
-      <div>\
+      <div style='display:flex;vertical-align: middle; align-items: center;'>\
         <img id='proofHint' class='sxsl-proof-hint' src='app/resources/Uploaded/example101/beauties.jpg' width=128/>\
-        <button id='capture' class='sxsl-button sxsl-button-round sxsl-icon-to-do'/> \
+        <button id='capture' class='sxsl-button sxsl-button-round sxsl-icon-to-do' style='position:relative;left: 12px;'/> \
       </div>\
       <div id='proofInstruction' class='sxsl-proof-text'>text here</div>\
     </div>"
@@ -1328,7 +1330,7 @@ scope.sxsl2Actions = function(context) {
       
     scope.deactivateAll();  
     
-    scope.setInstLabel(conclusion != undefined ? conclusion : '');
+    scope.setInstLabel(conclusion != undefined ? conclusion : 'Procedure completed');
                                          
   }
   
