@@ -94,8 +94,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                  scope.data.firstStep = false;
                    
                  expandContract();
-
-                 scope.addNamedPOI('context',scope.data.context.model,undefined,undefined,scope.data.context.scale,false,scope.data.context);
+                 
+                 //add the contextual model, if defined
+                 if (scope.data.context.model != undefined)
+                   scope.addNamedPOI('context',scope.data.context.model,undefined,undefined,scope.data.context.scale,false,scope.data.context);
  
 
                }

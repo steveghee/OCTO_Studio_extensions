@@ -490,8 +490,8 @@ div::-webkit-scrollbar{
    width: 100%;
    right: 0px;
 
-   border-radius: 4px;
-   background-color: rgba(165, 165, 165, .8);
+   border-radius: 12px;
+   background-color: white;
    box-shadow: 0px 0px 0px 1px rgba(0, 0, 0, .8), 0px 6px 16px rgba(0, 0, 0, .33) !important;
    backdrop-filter: blur(15px) !important;
    -webkit-backdrop-filter: blur(15px) !important;
