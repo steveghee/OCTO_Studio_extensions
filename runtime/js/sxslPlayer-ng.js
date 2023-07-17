@@ -53,6 +53,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         
         var startSxslPlayer = function() {
             
+          // can we start yet?  
+          if (scope.data.sxsl == undefined) 
+            return;
+            
           var eventHandler = { 
               on: function(evt,fn)  { return scope.$parent.$on(evt,fn) }, 
             emit: function(evt,arg) { return scope.$parent.$emit(evt,arg) } 
@@ -1180,6 +1184,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         scope.setInstLabel   = datasink;
         scope.setStepLabel   = datasink;
         scope.setPreviewList = datasink;
+        
         scope.$root.$on("$ionicView.afterEnter", function (event) {
           if (!scope.data.isHolo) {        
             createInstructionPanelHTML();
@@ -1187,6 +1192,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             createReferenceViewerHTML();
             createProofCaptureHTML();
             
+            startSxslPlayer();    
           } else {
               //TODO : creaate holographic UI
               
@@ -1403,7 +1409,7 @@ scope.sxsl2Actions = function(context) {
   this.context  = context;
   //initialise all action stuff
   this.start = (intro) => {
-    scope.setInstLabel(intro ? intro : "No introduction text found");
+    scope.setInstLabel(intro ? intro : "Press the play (>) button to start...");
   }
   
   //terminate action handling, hide any remaining annotations etc.
