@@ -1222,13 +1222,50 @@ function genrotation(normal) {
 
 // add them as we need them - a better version might use a re-usable pool of shapes but let's keep 
 // it simple for now
+scope.$parent.$on('stepcompleted',function(event,target,unused,data) {
+  //console.log('stepcomplete for',target,data);
+  var me = scope.data.pois[target];
+  
+  if (me.animated) {
+      
+    var currentStep = me.seqplayer.getCurrentStep();
+    
+    //console.log('on step',currentStep);
+    if (currentStep > me.seqplayer.getTotalSteps()) {
+      //console.log('resetting...');  
+      me.seqplayer.reset(function() {
+        $timeout(me.seqplayer.playSequence, 100);
+      });
+    } else 
+    $timeout(me.seqplayer.playSequence, 100);
+  }
+});
+    
 scope.addNamedPOI = function(name,shape,pos,rot,scale,hide,context) { 
     
   //does this item exist already - are we reusing it
   if (scope.data.pois[name] != undefined) {
       
+    console.log('reusing',name);  
+    var me = scope.data.pois[name];
+    
     this.renderer.setProperties (name,{hidden:false});
-    scope.data.pois[name].hidden = false;
+    me.hidden = false;
+    me.deactivated = false;
+    if (me.animated) {
+      
+      var currentStep = me.seqplayer.getCurrentStep();
+    
+      //console.log('on step',currentStep);
+      if (currentStep > me.seqplayer.getTotalSteps()) {
+        //console.log('resetting...');  
+        me.seqplayer.reset(function() {
+          $timeout(me.seqplayer.playSequence, 100);
+        });
+      } else 
+        $timeout(me.seqplayer.playSequence, 100);
+    }
+  
     return;
   }
 
@@ -1248,8 +1285,29 @@ scope.addNamedPOI = function(name,shape,pos,rot,scale,hide,context) {
     } else {
       scope.renderer.setProperties (name,{hidden:hide,shader:"sxsl_proximityHilitegl",occlude:false,phantom:false,decal:false});
       
+      var seq2load = scope.data.pois[name].sequenceToLoad;
+      if (seq2load != undefined) {
+          $timeout(function() {
+                   scope.data.pois[name].seqplayer = VF_ANG.NativeSequencerHelper(name,VF_ANG.nativeEventHandler,scope.renderer);
+                   scope.data.pois[name].seqplayer.loadSequence(seq2load,1,function() {
+                                          console.log('sequence loaded',seq2load);
+                                          scope.data.pois[name].sequenceToLoad = undefined;
+                                          scope.data.pois[name].animated = true;
+                                          
+                                          scope.data.pois[name].seqplayer.playSequence();
+                                          
+                             },function(failed) { 
+                                 console.log('failed to load',failed);
+                                          scope.data.pois[name].sequenceToLoad = undefined;
+                                          scope.data.pois[name].animated = false;
+                                 });
+                       },10);
+      }
+      
       // we can use this later...
-      scope.data.pois[name] = { pos:pos, rot:rot, scale:scale, hidden:hide, active:true, animated:false, sequenceToLoad:undefined }
+      scope.data.pois[name] = { pos:pos, rot:rot, scale:scale, hidden:hide, active:true, animated:false, sequenceToLoad:seq2load }
+      
+
     }
   
     var pscope = scope.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent;
@@ -1273,10 +1331,27 @@ scope.showPOIs = function() {
 scope.hidePOIs = function() {
   for(const name in scope.data.pois) {
     var me = scope.data.pois[name];
-    if (me.active) {  
+    if (me.deactivated != undefined && me.deactivated == true) {  
       this.renderer.setProperties (name,{hidden:true});
-      //TODO :we should also disable any animations here  
+      
+      if (me.animated == true) {
+          me.animated = false;
+          scope.renderer.loadPVI({modelID:name,url:""},function(){
+                                 console.log('sequence unloaded ok');
+                                 });
+      }
+      me.active = false;    
       me.hidden = true;
+    }
+  }
+}
+scope.deactivatePOIs = function() {
+  for(const name in scope.data.pois) {
+    var me = scope.data.pois[name];
+    if (me.active == true) {  
+      this.renderer.setProperties (name,{hidden:true});
+      me.hidden      = true;
+      me.deactivated = true;
     }
   }
 }
@@ -1286,6 +1361,12 @@ scope.deactivateAll = function() {
     this.renderer.setProperties (name,{hidden:true});
     scope.data.pois[name].hidden = true;
     scope.data.pois[name].active = false;
+    if (scope.data.pois[name].animated) {
+      scope.renderer.loadPVI({modelID:name,url:""},function(){
+        console.log('sequence unloaded ok');
+        scope.data.pois[name].animated = false;
+      });
+    }
   }
   //and remove any references
   scope.setPreviewList("");
@@ -1329,6 +1410,7 @@ scope.sxsl2Actions = function(context) {
   this.end = (conclusion) => {
       
     scope.deactivateAll();  
+    minimisePreview();
     
     scope.setInstLabel(conclusion != undefined ? conclusion : 'Procedure completed');
                                          
@@ -1789,7 +1871,7 @@ scope.sxsl2Actions = function(context) {
     //unpack the action subject(s) - also look for associated animations
     //which subject type (resource) can i view - 3d or 2d
     //$scope.view.wdg.alternative.visible = false;
-    scope.hidePOIs();
+    scope.deactivatePOIs();
 
     var isAnimated    = false;
     
@@ -1858,6 +1940,7 @@ scope.sxsl2Actions = function(context) {
     }
     
     // start up the animation(s)
+    scope.hidePOIs();
     if (isAnimated) {
       scope.animatePOIs(true); 
     }
