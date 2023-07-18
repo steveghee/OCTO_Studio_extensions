@@ -1287,7 +1287,7 @@ scope.addNamedPOI = function(name,shape,pos,rot,scale,hide,context) {
     scope.renderer.setScale      (name,scale,scale,scale);
     if (context != undefined) {
       var isDigital = !(context.target.mimeType != "application/vnd.ptc.tracker.spatialtracker" || scope.data.physical);
-      scope.renderer.setProperties (name,{hidden:hide,shader:isDigital?"sxsl_desaturatedgl":"sxsl_screendoorgl",occlude:false,phantom:isDigital,opacity:isDigital?0.7:1,decal:false});
+      scope.renderer.setProperties (name,{hidden:hide,shader:isDigital?"sxsl_desaturatedgl":"sxsl_screendoorgl",occlude:!isDigital,phantom:isDigital,opacity:isDigital?0.7:1,decal:false});
     } else {
       scope.renderer.setProperties (name,{hidden:hide,shader:"sxsl_proximityHilitegl",occlude:false,phantom:false,decal:false});
       
