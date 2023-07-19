@@ -184,7 +184,6 @@
 .sxsl-select {
   @extend .sxsl-button;
   padding: 0 0 0 30px;
-  max-width: 160px;
   display: flex;
   
   > .input-label {
@@ -388,9 +387,31 @@
 }
 .sxsl-capture-hide {
   margin:0px;
-  display:none;
+  display:none !important;
 }
-
+.sxsl-capture-text {
+  textalign:ft;
+  position: relative;
+  textalign: ft;
+  left: 12px; 
+  border-radius: 8px;
+}
+.sxsl-capture-button {
+  left: 24px;
+  position: relative;
+}
+.sxsl-capture-error {
+  color:red !important;
+}
+.sxsl-capture-warn {
+  color:orange !important;
+}
+.sxsl-capture-photo {
+  width:40px;
+  height:40px;
+}
+.sxsl-capture-activate {
+}
 .panel.right {
   display: flex;
   flex-direction: column;

@@ -23,7 +23,7 @@ this.sxslAction = function(a,s,i,last,e) {
   this.ack          = s.ack;
   this.type         = a.type;
   this.details      = a.details;
-  this.input        = a.input;
+  this.details      = a.details;
   
   
   this.subjects = undefined;
@@ -308,25 +308,25 @@ this.sxsl2Player = function(config,helper,procValidator,stepValidator,context) {
   //
   this.pushInput = (input) => {
     
-    if (this.action != undefined && this.action.input != undefined) {
+    if (this.action != undefined && this.action.details != undefined) {
       
       // we should first of all check that the input is value
-      if (this.action.input.mimeType != input.type) {
+      if (this.action.details.type != input.type) {
         return false;
       }
       
-      if (this.action.input.pending == undefined)
-        this.action.input.pending = {};
+      if (this.action.details.pending == undefined)
+        this.action.details.pending = {};
       
       // we may need to capture multiple samples
       if (this.validateActionInputs(input)) {
-        
-        if (this.action.input.pending[this.action.input.ID] == undefined)
-          this.action.input.pending[this.action.input.ID]=[];
+        var myID = this.action.details.ID;
+        if (this.action.details.pending[myID] == undefined)
+          this.action.details.pending[myID]=[];
       	
-        var tries = this.action.input.validation != undefined && this.action.input.validation.retries != undefined ? this.action.input.validation.retries : 0;
-        if (this.action.input.pending[this.action.input.ID].length <= tries) {
-          this.action.input.pending[this.action.input.ID].push(input);
+        var mintries = this.action.details.minCaptures != undefined ? this.action.details.minCaptures : 0;
+        if (this.action.details.pending[myID].length <= mintries) {
+          this.action.details.pending[myID].push(input);
           return true;
         }
       }
@@ -472,11 +472,11 @@ this.sxsl2Player = function(config,helper,procValidator,stepValidator,context) {
   
   this.validateActionInputs = (input) => {
     
-    if (me.action == undefined || me.action.input == undefined) {
+    if (me.action == undefined || me.action.details == undefined) {
       return false;
     }
     
-    if (me.action.input.required == undefined || me.action.input.required == true) {
+    if (me.action.details.required == undefined || me.action.details.required == true) {
       // input is required, so lets check it matches 
     }
     
@@ -497,9 +497,9 @@ this.sxsl2Player = function(config,helper,procValidator,stepValidator,context) {
     if (me.action != undefined) {
       
       // have we actually completed the previous action?  if there was a pending input, did we get it?
-      if (jumpRef == undefined && me.action.input != undefined) {
+      if (jumpRef == undefined && me.action.details != undefined) {
         
-        if (me.action.input.required == true && (me.action.input.pending == undefined || !this.validateActionInputs(me.action.input.pending))) {
+        if (me.action.details.required == true && (me.action.details.pending == undefined || !this.validateActionInputs(me.action.details.pending))) {
           //
           // reject (await input)
           reject( { cmd:'input',msg:'action requires input'} );      
@@ -508,8 +508,8 @@ this.sxsl2Player = function(config,helper,procValidator,stepValidator,context) {
         
         //
         // prepare responses for action processor
-        me.action.input.response = me.action.input.pending;
-        me.action.input.pending=undefined;
+        me.action.details.response = me.action.details.pending;
+        me.action.details.pending=undefined;
         
         me.events.emit('actionInputDelivered', { event:"input", step:this.step, action:this.action });
         
@@ -675,10 +675,10 @@ this.sxsl2Player = function(config,helper,procValidator,stepValidator,context) {
       me.events.emit('actionStart', me.action);
 
       // fire warning shot
-      if (me.action.input != undefined) {
+      if (me.action.details != undefined) {
 
         // inform caller of step completion requirements
-        me.events.emit('actionInputPending', me.action.input);
+        me.events.emit('actionInputPending', me.action.details);
       }
       
       // and execute it - we actually defer this to an action processor ; we're just the scheduler...

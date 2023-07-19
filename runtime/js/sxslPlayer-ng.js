@@ -190,14 +190,17 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
              });
                  
              var eaip = proc.events.on('actionInputPending',    function(evt,input)   {
-               console.log('action input pending');
+               console.log('action input pending',input.type);
+               scope.advanceWindow.className = 'sxsl-button sxsl-button-round sxsl-icon-nav-right';
              });
+                 
              var eaid = proc.events.on('actionInputDelivered',  function(evt,input)   {
                console.log('action input delivered');
+               hideCapture();
                scope.logger.push( { id: input.step.id, 
                                  event: input.event,  
                                   time: Date.now(), 
-                              response: input.action.input.response 
+                              response: input.action.details.response 
                         } );
              });
                  
@@ -228,6 +231,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
              var as = proc.events.on('actionStart',function(evt,action) { 
                console.log('action Start');
+               hideCapture();
              });
                  
              var ae = proc.events.on('actionEnd',  function(evt,action) { 
@@ -262,14 +266,24 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                scope.actions.start(intro);
                
                scope.input = function() {
-                 var validated = scope.inputValidator();
-                 if (validated != undefined) {
-                   return proc.pushInput(validated); 
-                 }
-                 return false;
+                   
+                 //run the validator we were given (by the action)  
+                 scope.inputValidator()
+                      .then( (validated) => {
+                       
+                        //we have valid content, so we can enable the next button    
+                        scope.advanceWindow.className = 'sxsl-button sxsl-button-round sxsl-blue-bb sxsl-icon-nav-right';
+                        return proc.pushInput(validated); 
+                      })
+                      .catch( e => {
+                        //invalid input / content
+                        console.log('invalid input content',e);     
+                        return false;
+                      })
                };
       
                scope.proof = function(proof) {
+                   
                  proc.proof( {event:'proof'}, proof ) // this should fire procProofDelivered event
                      .then( () => {
                        //TODO : twx.app.fn.triggerWidgetService('proofRequired', 'resetq');
@@ -360,7 +374,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                        else if (e.cmd=='input') { 
                          // we are waiting for user input      
                          console.log(e.msg);
-                         //twx.app.fn.triggerWidgetService('inputRequired', 'setq');
                          return;
                        } else {
                          console.log(e.msg); 
@@ -435,14 +448,25 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               minimise()
         }
         
+        //detail capture (inputs)
+        var capturePhoto = function() {
+          console.log('grabbing input photo');
+          scope.input();
+        }
+        var selectedCaptureEnum = function() {
+          var value = scope.captureEnumWindow.value;
+          console.log('user selected',value);
+          scope.input();
+        }
+      
         // this is, for now, taking the photo directly.
         //
         // UI is provided to prompt the user to point the camera
         // in the right direction. Information is provided (guide images, text) that should
         // be displayed
         //
-        var photoGrab = function() {
-            scope.photoGrab();
+        var captureProofPhoto = function() {
+            scope.captureProofPhoto();
         }
         var collectProof = function(required) {
             
@@ -489,7 +513,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 scope.proof(undefined);//not sure what to do here
             };
             
-            scope.photoGrab = function() {
+            scope.captureProofPhoto = function() {
               hideProof();
               var params = {withAugmentation:true, imageWidth:640, imageHeight:480};   
               //  params = { dataURL:bool, withAugmentation: bool, imgFormat: string, imgWidth: number, imgHeight:number} 
@@ -625,7 +649,18 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             const t4 = document.querySelector('div#previewPanel');
             t4.className = 'sxsl-preview-panel';
           }
-          
+        }
+        var hideCapture = function() {
+          const t5 = document.querySelector('button#activateCapture');
+          t5.className = 'sxsl-actions-hide';
+          const t6 = document.querySelector('div#enumeratedCapture');
+          t6.className = 'sxsl-capture-hide';
+          const t7 = document.querySelector('input#captureText');
+          t7.className = 'sxsl-capture-hide';
+          const btn2e = document.querySelector('button#addCapture');
+          btn2e.className ='sxsl-capture-hide';
+          var target = document.querySelector('img#photoCapture');
+          target.className = "sxsl-capture-hide";
         }
         var showpassfail = function() {
           const t1 = document.querySelector('div#passfail');
@@ -989,7 +1024,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           var display = "";
           reasonCodes.forEach(function(item) {
             if (item.parentUID==parent) {
-                display = display + "<option class='item' value="+item.code+">"+item.resources[0].text+"</option>";
+                display = display + "<option class='sxsl-item' value="+item.code+">"+item.resources[0].text+"</option>";
             }
           });
           return display.length > 0 ? header + display : display;
@@ -1041,17 +1076,16 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
     </div>\
   </div>\
   <div id='capture' class='sxsl-capture-hide'>\
-      <div id='enumerator' class='sxsl-select sxsl-button-fail'>\
-        <div style='margin:8px'>Choose</div>\
-        <select>\
-          <option class='sxsl-item' value='red'>Red</option>\
-          <option class='sxsl-item' value='grn'>Green</option>\
-          <option class='sxsl-item' value='blue'>Blue</option>\
+      <div id='enumeratedCapture' class='sxsl-select sxsl-button-fail sxsl-capture-hide'>\
+        <div id='enumChooser' style='margin:8px'>Choose</div>\
+        <select id='captureEnums'>\
+          <option class='sxsl-item' value='unkown'>TBD</option>\
         </select>\
       </div>\
-      <div style='left:24px;'><input type='text' id='textCature' style='textalign:ft' placeholder='use format 123-45678'></input></div>\
-      <div style='right:24px'><button id='activate' class='sxsl-button' >Activate</button></div>\
-      <div style='right:24px;position:absolute;'><button id='add' class='sxsl-button' >Add</button></div>\
+      <div style='left:24px;display:flex;'><input type='text' id='captureText' class='sxsl-capture-hide sxsl-capture-text' style='    padding: 20px;' placeholder='...'></input><button id='addCapture' class='sxsl-button sxsl-capture-button' >Submit</button></div>\
+      <div style='left:24px;'><img id='photoCapture' class='sxsl-capture-photo sxsl-capture-hide'></img></div>\
+      <div style='right:24px'><button id='activateCapture' class='sxsl-button sxsl-capture-activate sxsl-capture-hide' >Activate</button></div>\
+      <!-- <div style='right:24px;position:absolute;'><button id='addCapture' class='sxsl-button' >Add</button></div> -->\
   </div>";
   scope.sxslPlayerWindow.id='sxsl-instruction-container';
   scope.sxslPlayerWindow.className = 'sxsl-instruction-container';
@@ -1079,8 +1113,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
   scope.errorcodelistWindow = document.querySelector('select#errorcodelist');
   scope.errorcodelistWindow.addEventListener('change', selectedErrorCode);
   
-  const btn3 = document.querySelector('button#advance');
-  btn3.addEventListener("click", next);
+  scope.advanceWindow = document.querySelector('button#advance');
+  scope.advanceWindow.addEventListener("click", next);
   const btn2a = document.querySelector('button#minimise');
   btn2a.addEventListener("click", minimise);
   const btn2b = document.querySelector('button#maximise');
@@ -1098,7 +1132,25 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
   const btnack = document.querySelector('input#acknowledge');
   btnack.addEventListener("change", function() {
                            scope.next('y');
-  });
+                       });
+  //capture photo button
+  const btn2d = document.querySelector('button#activateCapture');
+  btn2d.addEventListener("click", capturePhoto);
+  //capture photo button
+  const btn2e = document.querySelector('button#addCapture');
+  btn2e.addEventListener("click", function() {
+                           scope.input();
+                       });
+  
+  scope.captureTextWindow = document.querySelector('input#captureText');
+
+  scope.captureEnumWindow = document.querySelector('select#captureEnums');
+  scope.captureEnumWindow.addEventListener('change', selectedCaptureEnum);
+  const btn2f = document.querySelector('input#captureText');
+  btn2f.addEventListener("change", function() {
+                           scope.input();
+                       });
+    
   };
   
 
@@ -1136,7 +1188,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
     <div id='proofPanel' class='sxsl-proof-panel'>\
       <div style='display:flex;vertical-align: middle; align-items: center;'>\
         <img id='proofHint' class='sxsl-proof-hint' src='app/resources/Uploaded/example101/beauties.jpg' width=128/>\
-        <button id='capture' class='sxsl-button sxsl-button-round sxsl-icon-to-do' style='position:relative;left: 12px;'/> \
+        <button id='proofCapture' class='sxsl-button sxsl-button-round sxsl-icon-to-do' style='position:relative;left: 12px;'/> \
       </div>\
       <div id='proofInstruction' class='sxsl-proof-text'>text here</div>\
     </div>"
@@ -1145,9 +1197,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
     
     container.insertBefore(scope.proofWindow, container.firstChild);
     
-    //close button
-    const btn2b = document.querySelector('button#capture');
-    btn2b.addEventListener("click", photoGrab);
+    //capture button
+    const btn2b = document.querySelector('button#proofCapture');
+    btn2b.addEventListener("click", captureProofPhoto);
     
     scope.proofInstruction = document.querySelector('div#proofInstruction');
     scope.proofHint        = document.querySelector('img#proofHint');
@@ -1533,23 +1585,53 @@ scope.sxsl2Actions = function(context) {
   // this are probably UI eval validators, so they should realy be returning css/state-based UI settings
   //
   this.findInputValidator = (input, tools) => {
-    
-    var findInputTool = (input,target) => {
+      
+    var cameraTool = function(callback) {
+      var cb = callback;  
+      var params = {withAugmentation:true, imageWidth:640, imageHeight:480};   
+      //  params = { dataURL:bool, withAugmentation: bool, imgFormat: string, imgWidth: number, imgHeight:number} 
+      return function() {
+        return new Promise( (next,reject) => {
+          scope.renderer.takeScreenshot(params, function(pngBase64String) {
+            var proof = 'data:image/png;base64,' + pngBase64String; 
+            var res = cb(proof);
+            if (res != undefined)
+              next(res);
+            else 
+              reject('no camera image')
+          });
+        });
+      }
+    }
+    var barcodeTool = function(src,callback) {
+      var cb = callback;  
+      var display = src;
+      if (scope.renderer.scanForNextBarCode) {
+        scope.renderer.scanForNextBarCode(function(scannedValue) {
+          display.value = scannedValue;
+        });
+      } else {
+        //inject dummy value for now  
+        src.value="Enter barcode here";
+      }
+      return callback;
+    }
+    var findInputTool = (input,target, callback) => {
       
       // enable the button
       //$scope.view.wdg["action-input-tool"].visible = true;
       if (tools != undefined)
         tools[0].disarm = undefined;
-      
+      if (input.tool == undefined) 
+        return callback;
+        
       switch (input.tool) {
         case "barcode": 
-          //$scope.view.wdg["action-input-tool"].text = "scan"; 
-          //$scope.view.wdg["action-input-tool"].disabled  = false;
-          break;
+          return barcodeTool(target,callback);
+          
         case "camera": 
-          //$scope.view.wdg["action-input-tool"].text = "take photo"; 
-          //$scope.view.wdg["action-input-tool"].disabled  = false;
-          break;
+          return cameraTool(target);
+          
         default:
           
         /*
@@ -1615,7 +1697,7 @@ scope.sxsl2Actions = function(context) {
       }
       
       // define the handler for the button
-      $scope.inputToolActivate = function(evt) {
+      scope.inputToolActivate = function(evt) {
         switch (input.tool) {
             
           // check for known cases - barcode, camera for example
@@ -1687,157 +1769,163 @@ scope.sxsl2Actions = function(context) {
             break;
         }
       }
+      return callback;
     }
     var passThru    = function(i) { 
       var input   = i;
-      var src     = $scope.view.wdg["action-input-value"];
-      src.visible=true;
+      var src     = scope.captureTextWindow
+      if (i.hint != undefined && i.hint.instructions != undefined) {
+        src.placeholder = i.hint.instructions.resources[0].text;
+      }
+      src.className = 'sxsl-capture-text';
+      src.value     = '';
+      const t4 = document.querySelector('div#capture');
+      t4.className = 'sxsl-capture-show';         
+      const btn2e = document.querySelector('button#addCapture');
+      btn2e.className ='sxsl-button sxsl-capture-button';
+      
       return function() {
-        //$scope.view.wdg["action-input-validated"].value = true;
-        return { response:src.text, type:input.mimeType, time:Date.now()} ;
+        return new Promise( (next,reject) => {  
+          next( { response:src.value, type:input.type, time:Date.now()} );
+        });
       }
     }
     var textPattern = function(i) { 
       var input   = i;
-      var pattern = input.validation.regex;
-      //var src     = $scope.view.wdg["action-input-value"];
-      if (input.tool != undefined) {
-        findInputTool(input,src);
+      var pattern = input.regex;
+      var src     = scope.captureTextWindow;
+      if (i.hint != undefined && i.hint.instructions != undefined) {
+        src.placeholder = i.hint.instructions.resources[0].text;
       }
-      //src.visible=true;
-      return function() {
-        var t = src.text;
-        console.log('test',t,'against',pattern);
-        var valid = t.match(pattern) != null;
-        //$scope.view.wdg["action-input-validated"].value = valid;
-        return valid ? { response:t, type:input.mimeType, time:Date.now() } : undefined;
-      }
+      src.value='';
+      src.className = 'sxsl-capture-text';
+      const t4 = document.querySelector('div#capture');
+      t4.className = 'sxsl-capture-show';         
+      const btn2e = document.querySelector('button#addCapture');
+      btn2e.className ='sxsl-button sxsl-capture-button';
+      
+      return findInputTool(input,src, function() {
+        return new Promise( (next,reject) => {  
+          var t = src.value;
+          console.log('test',t,'against',pattern);
+          var valid = t.match(pattern) != null;
+          src.className = 'sxsl-capture-text' + (valid == false ? ' sxsl-capture-error': '');
+          if (valid) 
+            next( { response:t, type:input.type, time:Date.now() })
+          else 
+            reject(); 
+        });
+      });
     }
     var rangeInput = function(i) { 
       var input   = i;
-      var min     = input.validation.minerror, max    = input.validation.maxerror;
-      var minwarn = input.validation.minwarn, maxwarn = input.validation.maxwarn;
-      var nominal = input.validation.nominal; // expected value
-      var src;//     = $scope.view.wdg["action-input-value"];
-      //src.visible = true;
-      //if (nominal != undefined) src.text = nominal; //preset the value
+      var min     = input.minerror, max    = input.maxerror;
+      var minwarn = input.minwarn, maxwarn = input.maxwarn;
+      var nominal = input.nominal; // expected value
+      var src     = scope.captureTextWindow;
+      src.className = 'sxsl-capture-text';
+      const t4 = document.querySelector('div#capture');
+      t4.className = 'sxsl-capture-show';         
+      const btn2e = document.querySelector('button#addCapture');
+      btn2e.className ='sxsl-button sxsl-capture-button';
+      if (input.hint != undefined && input.hint.instructions != undefined) {
+        src.placeholder = input.hint.instructions.resources[0].text;
+      }
+      src.value = nominal != undefined ? nominal : ''; //preset the value
 
       if (input.tool != undefined) {
         findInputTool(input,src);
       }
-
       
       return function() {
-        var t = src.text;
-        console.log('test',t,'against min',min,'max',max);
-        var fv = parseFloat(t);
+        return new Promise( (next,reject) => {  
+          var t = src.value;
+          console.log('test',t,'against min',min,'max',max);
+          var fv = parseFloat(t);
 		
-        var valid = (min != undefined ?  min <= fv : true) && (max != undefined ? max >= fv : true);
-        //$scope.view.wdg["action-input-validated"].value = valid;
+          var valid = (min != undefined ?  min <= fv : true) && (max != undefined ? max >= fv : true);
         
-		//how can we show tristate e.g. pass/fail/warn?
-        var warn = (minwarn != undefined ?  minwarn > fv : false) || (maxwarn != undefined ? maxwarn < fv : false);
-        if (valid && warn) console.log('warning : value',fv,'falls outside',minwarn,maxwarn);
+          //how can we show tristate e.g. pass/fail/warn?
+          var warn = (minwarn != undefined ?  minwarn > fv : false) || (maxwarn != undefined ? maxwarn < fv : false);
+          if (valid && warn) console.log('warning : value',fv,'falls outside',minwarn,maxwarn);
+          src.className = 'sxsl-capture-text' + (valid == false ? ' sxsl-capture-error' : (warn == true ? ' sxsl-capture-warn': ''));
         
-        // finally, look for nominal and if defined, report the deviation from this value
-        var deviation = (nominal != undefined) ? Math.abs(nominal - fv) : undefined;
+          // finally, look for nominal and if defined, report the deviation from this value
+          var deviation = (nominal != undefined) ? Math.abs(nominal - fv) : undefined;
         
-        return valid ? { response:t, tolerance:deviation, type:input.mimeType, time:Date.now() } : undefined;
+          if (valid) 
+            next( { response:t, tolerance:deviation, type:input.type, time:Date.now() });
+          else
+            reject();
+        });
       }
     }
+  
+    var presentEnumsAsHTML = function(enums) {
+      var header  = "<option class='item'>Select...</option>";
+      var display = "";
+      enums.forEach(function(item) {
+        display = display + "<option class='sxsl-item' value="+item.value+">"+item.display.resources[0].text+"</option>";
+      });
+      return display.length > 0 ? header + display : display;
+    }
+
     var selectoneInput = function(i) { 
       var input   = i;
-      var list    = input.validation.select;
-      //var src     = $scope.view.wdg["action-input-select"];
-      //$scope.view.wdg["action-input-value"].visible = false;
-      //src.visible=true;
-      //src.label="choose";
-      //src.list = list;
-      
+      var src     = scope.captureEnumWindow;
+ 
+      var list    = input.enumerations;
       if (list == undefined) return passThru(i);
-      else return function() {
-        var t = src.list.current.display;
-        console.log('test',t,'against list',list);
-        var valid = false;
-        var resp  = t;
-        if (list != undefined) list.forEach(function(itm,idx) {
-          if (t === itm.display) {
-            valid = true;
-            if (itm.value != undefined) 
-              resp = itm.value;
-          }
-        })
-        //$scope.view.wdg["action-input-validated"].value = valid;
-        return valid ? { response:resp, type:input.mimeType, time:Date.now() } : undefined;
-      }
-    }
-    var bomqtyinput = function(i) { 
-      var input   = i;
-      var pattern = input.validation != undefined ? input.validation.regex    : undefined;
-      var min     = input.validation != undefined ? input.validation.minerror : undefined;
-      var max     = input.validation != undefined ? input.validation.maxerror : undefined;
-      var partno  = $scope.view.wdg.actionInputText;
-      partno.visible=true;
-      var qty;//     = $scope.view.wdg.actionInput2; // could be a numeric selection list if the range is limited
-      //qty.visible = true;
+      src.innerHTML = presentEnumsAsHTML(list);
+      //show the UI
+      const t4 = document.querySelector('div#capture');
+      t4.className = 'sxsl-capture-show';         
+      const t5 = document.querySelector('div#enumeratedCapture');
+      t5.className = 'sxsl-select sxsl-button-fail';
 
-      if (input.tool != undefined) {
-        findInputTool(input,partno);
-      }
-      
-      //qty.placeholder = 'qty';
-      
       return function() {
-        var t      = partno.text;
-        var valid1 = pattern != undefined ? t.match(pattern) != null : true;
-        var qv     = parseInt(qty.text);
-	var valid2 = (min != undefined ?  min <= qv : true) && (max != undefined ? max >= qv : true);
-	var valid  = valid1 && valid2;
-        console.log('test',t,'qty',qv,'against',input.validation);
-        
-        //$scope.view.wdg["action-input-validated"].value = valid;
-        return valid ? { response:{ partno:t, qty:qv }, type:input.mimeType, time:Date.now() } : undefined;
+        return new Promise( (next,reject) => {
+          var t = src.value;
+          console.log('submitting',t);
+          var resp  = t;
+          next( { response:resp, type:input.type, time:Date.now() });
+        });
       }
     }
+  
     var photocapture = function(i) { 
       var input   = i;
-      //var src     = $scope.view.wdg.inputCamera;
-      //var target  =  $scope.view.wdg["action-input-photo"];
-      //target.visible = true;
+      
+      const t4 = document.querySelector('div#capture');
+      t4.className = 'sxsl-capture-show';         
+      const t5 = document.querySelector('button#activateCapture');
+      t5.className = 'sxsl-button sxsl-capture';
+      if (i.hint != undefined)
+      t5.innerHTML = i.hint.resources[0].text;
       
       if (input.tool == undefined) 
         input.tool = "camera";
-      //findInputTool(input,target);
-            
-      return function() {
-        //var photo = src.imageUrl;
-        //var valid = photo.length > 0;
-        
-        // here we can use the validation section to manage/tweak the size of the photo
-        // todo!!
-        //
-       
-        //$scope.view.wdg["action-input-validated"].value = valid;
-        return valid ? { response:photo, type:input.mimeType, time:Date.now() } : undefined;
-      }
+      
+      return findInputTool(input,function(res) {
+                           
+        // this is the recipient (img) for previewing...
+        var target = document.querySelector('img#photoCapture');
+        target.className = "sxsl-capture-photo";
+        target.src = res;
+      
+        var photo = res;
+        var valid = photo.length > 0;
+        return valid ? { response:photo, type:input.type, time:Date.now() } : undefined;
+      })
     }
 
     // chosen functions may turn one or more of these back on again 
-//TODO: handle inputs    
-//    $scope.view.wdg["action-input-select"].visible   = false;
-//    $scope.view.wdg["action-input-photo"].visible   = false;
-//    $scope.view.wdg["action-input-value"].visible   = false;
-//    $scope.view.wdg["action-input-tool"].visible   = false;
-//    $scope.view.wdg["action-input-tool"].disabled  = true;
-//    $scope.view.wdg.actionInput2.visible      = false;
-//    $scope.view.wdg.actionInputPhoto.visible  = false;
-
+    hideCapture();
     if (input == undefined) return undefined;
     switch (input.type) {
-      case 'scalar'    : return input.validation == undefined ? passThru(input) : input.validation.select != undefined ? selectoneInput(input) : textPattern(input);
-      case 'range'   : return input.validation == undefined ? passThru(input) : rangeInput(input);
-      case 'quantity': return bomqtyinput(input);
-      case 'photo'   : return photocapture(input);
+      case 'CaptureString': return input.enumerations != undefined ? selectoneInput(input) : input.regex != undefined ? textPattern(input) : passThru(input) ;
+      case 'CaptureNumber': return rangeInput(input);
+      case 'CaptureImage' : return photocapture(input);
       default: 
         return undefined;
     }
@@ -1965,7 +2053,7 @@ scope.sxsl2Actions = function(context) {
       // not sure if we need to do anything specific here, as the inputs should reference the tool so we can handle it there
     }
     
-    return this.findInputValidator(a.input, a.tools);
+    return this.findInputValidator(a.details, a.tools);
   }
   
   //find the named action handler
