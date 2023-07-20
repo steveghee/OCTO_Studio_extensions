@@ -336,8 +336,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   proc.pause(reason) 
                       .then( (state) => {
                  
-                        //twx.app.fn.triggerWidgetService('running', 'resetq');
-
                         // stop the timer
                         scope.stopStepTimeClock(state.step);
                         scope.runningField = false;
@@ -726,18 +724,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           const t4 = document.querySelector('div#capture');
           t4.className = 'sxsl-capture-hide';
         }
-      /*
-        var capture = function() {
-  const t1 = document.querySelector('div#passfail');
-  t1.className = 'sxsl-passfailverify-hide';
-  const t2 = document.querySelector('div#verify');
-  t2.className = 'sxsl-passfailverify-show';
-  const t3 = document.querySelector('div#actions');
-  t3.className = 'sxsl-actions-hide';
-  const t4 = document.querySelector('div#capture');
-  t4.className = 'sxsl-capture-show';
-       }
-*/
         var clear = function() {
           const t1 = document.querySelector('div#passfail');
           t1.className = 'sxsl-passfailverify-hide';
@@ -1754,10 +1740,9 @@ scope.sxsl2Actions = function(context) {
       }
       src.className = 'sxsl-capture-text';
       src.value     = '';
-      const t4 = document.querySelector('div#capture');
-      t4.className = 'sxsl-capture-show';         
-      const btn2e = document.querySelector('button#addCapture');
-      btn2e.className ='sxsl-button sxsl-capture-button';
+      
+      document.querySelector('div#capture').className = 'sxsl-capture-show';         
+      document.querySelector('button#addCapture').className ='sxsl-button sxsl-capture-button';
       
       return function() {
         return new Promise( (next,reject) => {  
@@ -1774,10 +1759,9 @@ scope.sxsl2Actions = function(context) {
       }
       src.value='';
       src.className = 'sxsl-capture-text';
-      const t4 = document.querySelector('div#capture');
-      t4.className = 'sxsl-capture-show';         
-      const btn2e = document.querySelector('button#addCapture');
-      btn2e.className ='sxsl-button sxsl-capture-button';
+      
+      document.querySelector('div#capture').className = 'sxsl-capture-show';         
+      document.querySelector('button#addCapture').className ='sxsl-button sxsl-capture-button';
       
       return findInputTool(input,src, function() {
         return new Promise( (next,reject) => {  
@@ -1799,18 +1783,19 @@ scope.sxsl2Actions = function(context) {
       var min     = input.minerror, max    = input.maxerror;
       var minwarn = input.minwarn, maxwarn = input.maxwarn;
       var nominal = input.nominal; // expected value
+      
       var src     = scope.captureTextWindow;
       src.className = 'sxsl-capture-text';
-      const t4 = document.querySelector('div#capture');
-      t4.className = 'sxsl-capture-show';         
-      const btn2e = document.querySelector('button#addCapture');
-      btn2e.className ='sxsl-button sxsl-capture-button';
-      btn2e.innerHTML ='Submit'; //default title
       if (input.hint != undefined && input.hint.instructions != undefined) {
         src.placeholder = input.hint.instructions.resources[0].text;
       }
       src.value = nominal != undefined ? nominal : ''; //preset the value
-
+      
+      document.querySelector('div#capture').className = 'sxsl-capture-show';         
+      const btnAC = document.querySelector('button#addCapture');
+      btnAC.className ='sxsl-button sxsl-capture-button';
+      btnAC.innerHTML ='Submit'; //default title
+      
       return findInputTool(input,src,function() {
         return new Promise( (next,reject) => {  
           var t = src.value;
@@ -1855,11 +1840,10 @@ scope.sxsl2Actions = function(context) {
       var list    = input.enumerations;
       if (list == undefined) return passThru(i);
       src.innerHTML = presentEnumsAsHTML(list);
+      
       //show the UI
-      const t4 = document.querySelector('div#capture');
-      t4.className = 'sxsl-capture-show';         
-      const t5 = document.querySelector('div#enumeratedCapture');
-      t5.className = 'sxsl-select sxsl-button-fail';
+      document.querySelector('div#capture').className = 'sxsl-capture-show';         
+      document.querySelector('div#enumeratedCapture').className = 'sxsl-select sxsl-button-fail';
 
       return function() {
         return new Promise( (next,reject) => {
@@ -1874,12 +1858,11 @@ scope.sxsl2Actions = function(context) {
     var photocapture = function(i) { 
       var input   = i;
       
-      const t4 = document.querySelector('div#capture');
-      t4.className = 'sxsl-capture-show';         
-      const t5 = document.querySelector('button#activateCapture');
-      t5.className = 'sxsl-button sxsl-capture';
+      document.querySelector('div#capture').className = 'sxsl-capture-show';         
+      const btnAC = document.querySelector('button#activateCapture');
+      btnAC.className = 'sxsl-button sxsl-capture';
       if (i.hint != undefined)
-      t5.innerHTML = i.hint.resources[0].text;
+        btnAC.innerHTML = i.hint.resources[0].text;
       
       if (input.tool == undefined) 
         input.tool = "camera";
@@ -1931,15 +1914,6 @@ scope.sxsl2Actions = function(context) {
     //TODO : push the html generation piece down into the setter
     scope.setInstLabel(pdesc+"<span style='color:black;font-size:100%'>" + odesc + "</span>");
 
-    // we should show the right UI for the input type
-//TODO: handle inputs
-/*    if (a.input != undefined) {
-      $scope.view.wdg["action-input-value"].text = '';
-      if (a.input.hint != undefined)
-        $scope.view.wdg["action-input-value"].placeholder = a.input.hint.instructions.resources[0].text;
-    }
-*/             
-    
     //unpack the action subject(s) - also look for associated animations
     //which subject type (resource) can i view - 3d or 2d
     //$scope.view.wdg.alternative.visible = false;
