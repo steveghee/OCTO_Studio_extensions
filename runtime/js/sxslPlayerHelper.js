@@ -203,7 +203,7 @@ this.sxslStep = function(s,p) {
   this.intro       = s.introduction    != undefined ? s.introduction.resources[0].text : undefined;
   this.outro       = s.conclusion      != undefined ? s.conclusion.resources[0].text : undefined;
   
-  // we can have procedure, step and action=level contexts, so we capture and pass these down
+  // we can have processordure, step and action=level contexts, so we capture and pass these down
   this.context     = s.contexts        != undefined && s.contexts.length > 0 ? s.contexts[0] : c;
   this.ack         = s.acknowledgement != undefined ? s.acknowledgement : undefined;
   
@@ -384,7 +384,8 @@ this.sxsl2Player = function(config,helper,procValidator,stepValidator,context) {
   this.pause = (reason) => new Promise((next,reject) => {
     
     var pauseInfo = { event:reason.event, reason:reason.reason, step:this.step };
-    this.events.emit('procPause', pauseInfo);
+    if (this.step != undefined)
+      this.events.emit('procPause', pauseInfo);
 
     next(pauseInfo);
   });

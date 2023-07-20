@@ -394,6 +394,7 @@
   position: relative;
   textalign: ft;
   left: 12px; 
+  top:5px;
   border-radius: 8px;
 }
 .sxsl-capture-button {
@@ -411,6 +412,12 @@
   height:40px;
 }
 .sxsl-capture-activate {
+}
+.sxsl-capture-feedback {
+  color: white;
+  left: 43px;
+  top:5px;
+  position: relative;
 }
 .panel.right {
   display: flex;

@@ -235,7 +235,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
              });
                  
              var ae = proc.events.on('actionEnd',  function(evt,action) { 
-               console.log('completing action',action.type); 
+                                     
+               console.log('completing action',action.type);
+               // disarm any tools that were in use
+               if (action.tools != undefined && action.tools[0].disarm != undefined) {
+                 action.tools[0].disarm();
+               }
+
              });
              
              var abp = proc.events.on('actionBypass',function(evt,action) { 
@@ -265,17 +271,26 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                }
                scope.actions.start(intro);
                
+               scope.pushInput = function(value) {
+                   return proc.pushInput(value);
+               }
+               
                scope.input = function() {
                    
                  //run the validator we were given (by the action)  
                  scope.inputValidator()
                       .then( (validated) => {
                        
+                        scope.setFeedbackLabel('Confirmed. Press (>) to proceed');
+                            
                         //we have valid content, so we can enable the next button    
                         scope.advanceWindow.className = 'sxsl-button sxsl-button-round sxsl-blue-bb sxsl-icon-nav-right';
-                        return proc.pushInput(validated); 
+                        return scope.pushInput(validated); 
                       })
                       .catch( e => {
+                             
+                        scope.setFeedbackLabel(e);
+                        
                         //invalid input / content
                         console.log('invalid input content',e);     
                         return false;
@@ -661,6 +676,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           btn2e.className ='sxsl-capture-hide';
           var target = document.querySelector('img#photoCapture');
           target.className = "sxsl-capture-hide";
+          scope.setFeedbackLabel("");
         }
         var showpassfail = function() {
           const t1 = document.querySelector('div#passfail');
@@ -1085,7 +1101,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
       <div style='left:24px;display:flex;'><input type='text' id='captureText' class='sxsl-capture-hide sxsl-capture-text' style='    padding: 20px;' placeholder='...'></input><button id='addCapture' class='sxsl-button sxsl-capture-button' >Submit</button></div>\
       <div style='left:24px;'><img id='photoCapture' class='sxsl-capture-photo sxsl-capture-hide'></img></div>\
       <div style='right:24px'><button id='activateCapture' class='sxsl-button sxsl-capture-activate sxsl-capture-hide' >Activate</button></div>\
-      <!-- <div style='right:24px;position:absolute;'><button id='addCapture' class='sxsl-button' >Add</button></div> -->\
+      <div id='captureFeedback' class='sxsl-capture-feedback'>info here</div>\
   </div>";
   scope.sxslPlayerWindow.id='sxsl-instruction-container';
   scope.sxslPlayerWindow.className = 'sxsl-instruction-container';
@@ -1097,6 +1113,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
   scope.instLabel = document.querySelector('div#action');
   scope.thumbnail = document.querySelector('img#thumbnail');
   scope.stepLabel  = document.querySelector('div#stepinfo');
+  scope.feedbackLabel = document.querySelector('div#captureFeedback');
   
   scope.setHeadLabel = function(text) {
     scope.headLabel.innerHTML = text;
@@ -1108,6 +1125,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
   }
   scope.setStepLabel = function(text) {
     scope.stepLabel.innerHTML = text;
+  }
+  scope.setFeedbackLabel = function(text) {
+    scope.feedbackLabel.innerHTML = text;
   }
   
   scope.errorcodelistWindow = document.querySelector('select#errorcodelist');
@@ -1244,6 +1264,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             createReferenceViewerHTML();
             createProofCaptureHTML();
             
+            var twxConnectorCtrl = $injector.get('ThingworxConnector');
+            twxConnectorCtrl.subscribe("toolThing", "Things", "activated", "", scope.onToolActivated);
+
             startSxslPlayer();    
           } else {
               //TODO : creaate holographic UI
@@ -1634,142 +1657,94 @@ scope.sxsl2Actions = function(context) {
           
         default:
           
-        /*
-          if (tools != undefined && tools[0] != undefined && tools[0].title != undefined && tools[0].title.resources != undefined)
-            $scope.view.wdg["action-input-tool"].text = tools[0].title.resources[0].text;
-          else 
-            $scope.view.wdg["action-input-tool"].text = "Activate";
-        */
-        
           // at this point, we can start the process of connecting to the tool
           //
-          scope.setInstLabel("connecting to " + tools[0].name);
+          scope.setFeedbackLabel("connecting to " + tools[0].name);
           twxToolConnect(tools[0].name)
           .then( () => {
-            //$scope.view.wdg.spinner.visible = false;
-            scope.setInstLabel("connected to " + tools[0].name + 
-                               " ok!<p>Collecting " + tools[0].infoToCollect.count + " values");
+                
+            scope.setFeedbackLabel("Connected to " + tools[0].name + 
+                                   " ok!<p>Collecting " + tools[0].infoToCollect.count + " values");
         
-            // once armed, we can get ready to activate
-            //$scope.view.wdg["action-input-tool"].disabled = false;
-        
-            twxToolSet(tools[0].name, tools[0].infoToCollect.details.validation)
+            twxToolSet(tools[0].name, tools[0].infoToCollect)
             .then( () => {
               console.log('tool ready')
               twxToolArm(tools[0].name, true)
-         	  .then( (armed) => {
-
-                //$scope.view.wdg["action-input-tool"].disabled  = false;
-                
+              .then( (armed) => {
+                    
+                //setup the tool name/title on the cmmand button    
+                const btn2e = document.querySelector('button#addCapture');
+                btn2e.innerHTML ='Activate';
+                        
                 tools[0].disarm = function() {
                   
                   twxToolArm(tools[0].name, false)
-         	      .then( () => {
-                  
-                    //$scope.view.wdg["action-input-tool"].disabled  = true;
+         	  .then( () => {
+                    console.log('tool disarmed',tools[0].name);
                   })
                   // what happens if it fails
                   .catch( e => { 
-	     	    	console.log('tool disarm failed')
-                    //$scope.view.wdg["action-input-tool"].disabled  = true;
+	            console.log('tool disarm failed')
                   })
                   
                 }
                 
               }) 
               .catch( e => { 
-		    	console.log('tool arm failed')
-                //$scope.view.wdg["action-input-tool"].disabled  = true;
+                console.log('tool arm failed')
+                scope.setFeedbackLabel("Failed to arm " + tools[0].name);
+                scope.inputValidator = callback;
               })
             })
             .catch( e => { 
-		      console.log('tool set failed')
-              //$scope.view.wdg["action-input-tool"].disabled  = true;
+	      console.log('tool set failed')
+              scope.setFeedbackLabel("Failed to initialise " + tools[0].name);
+              scope.inputValidator = callback;
             })
 
           })
           .catch( e => { 
-			console.log('tool connect failed')
-            //$scope.view.wdg["action-input-tool"].disabled  = true;
+            console.log('tool connect failed')
+            scope.setFeedbackLabel("Failed to connect to " + tools[0].name);
+            scope.inputValidator = callback;
           })
           
           break;
       }
       
-      // define the handler for the button
-      scope.inputToolActivate = function(evt) {
-        switch (input.tool) {
-            
-          // check for known cases - barcode, camera for example
-          //
-          case "barcode":
-			//launch barcode scanner
-            twx.app.fn.triggerWidgetService("barcodeScanner", 'startScan');
-            
-            // and listen for resultslisten            
-            /*
-              $scope.$watch("app.view['viewproc'].wdg.barcodeScanner.scannedValue",function(val) {
-
-              // based on params to the tool itself, we may want to do transformation of the data here
-              // eg a barcode reader might be able to san, check the code e.g. GS1, and extract specific fields
-              target.text = val;
+      scope.inputToolActivate = function(resp) {
+          console.log(resp);
+          target.value = resp.eventData[0].actual;
+          callback()
+          .then( validated => {
+            scope.advanceWindow.className = 'sxsl-button sxsl-button-round sxsl-blue-bb sxsl-icon-nav-right';
+            scope.pushInput(validated)
           })
-                  */
-            break;
-          case "camera":
-            twx.app.fn.triggerWidgetService("inputCamera", 'takePicture');
-            
-            // and listen for resultslisten            
-            /*
-              $scope.$watch("app.view['viewproc'].wdg.inputCamera.imageUrl",function(val) {
-
-              // based on params to the tool itself, we may want to do transformation of the data here
-              // eg a barcode reader might be able to san, check the code e.g. GS1, and extract specific fields
-              target.imgsrc = val;
+          .catch( err => {
+            console.log(err);
           })
-                  */
-            break;
-            
-          default:
-            // check to see if a new tool is registered - this will either be a thingworx or kepware connected tool
-            //
-            
-            // note that if we entered here through an event, it means we received this from the tool directly ie it
-            // was activated before we asked for it.
-            if (evt != undefined) {
-              
-              // get the data from the tool event
-              target.text = evt.eventData[0].actual;
-              
-            } else {
-              //
-              // lookup the tool by name
-              //
-              if (tools != undefined) {
-                tools.forEach(function(tool) {
-                  if (tool.name == input.tool) {
-             
-                    console.log('activating tool',tool.name);
-                  
-                    twxToolActivate(tool.name)
-      	            .then( (response) => {
-                      console.log('tool',tool.name,'returned',response);
-                      target.text = response.actual;
-                    })
-                    .catch( e => { 
-		        	  console.log('tool activation failed')
-                      //$scope.view.wdg["action-input-tool"].disabled  = true;
-                    })
-
-                  }
-                })
-              }
-            }
-            
-            break;
-        }
+      };
+      
+      // and return the primary data handler
+      return function() {
+        return new Promise( (next, reject) => {  
+          twxToolActivate(tools[0].name)
+          .then( (resp) => {
+            target.value = resp.actual;    
+            console.log('tool delivered',resp);
+            callback()
+            .then( res => {
+              next(res);
+            })
+            .catch( err => {
+              reject(err)
+            });
+          })
+          .catch( e => {
+            reject('tool failed')
+          });
+        });
       }
-      return callback;
     }
     var passThru    = function(i) { 
       var input   = i;
@@ -1812,8 +1787,10 @@ scope.sxsl2Actions = function(context) {
           src.className = 'sxsl-capture-text' + (valid == false ? ' sxsl-capture-error': '');
           if (valid) 
             next( { response:t, type:input.type, time:Date.now() })
-          else 
-            reject(); 
+          else {
+            var message = 'Invalid response.<p>' + (i.hint != undefined && i.hint.instructions != undefined ? i.hint.instructions.resources[0].text : '');  
+            reject( message ); 
+          }
         });
       });
     }
@@ -1828,16 +1805,13 @@ scope.sxsl2Actions = function(context) {
       t4.className = 'sxsl-capture-show';         
       const btn2e = document.querySelector('button#addCapture');
       btn2e.className ='sxsl-button sxsl-capture-button';
+      btn2e.innerHTML ='Submit'; //default title
       if (input.hint != undefined && input.hint.instructions != undefined) {
         src.placeholder = input.hint.instructions.resources[0].text;
       }
       src.value = nominal != undefined ? nominal : ''; //preset the value
 
-      if (input.tool != undefined) {
-        findInputTool(input,src);
-      }
-      
-      return function() {
+      return findInputTool(input,src,function() {
         return new Promise( (next,reject) => {  
           var t = src.value;
           console.log('test',t,'against min',min,'max',max);
@@ -1847,7 +1821,9 @@ scope.sxsl2Actions = function(context) {
         
           //how can we show tristate e.g. pass/fail/warn?
           var warn = (minwarn != undefined ?  minwarn > fv : false) || (maxwarn != undefined ? maxwarn < fv : false);
-          if (valid && warn) console.log('warning : value',fv,'falls outside',minwarn,maxwarn);
+          if (valid && warn) 
+            scope.setFeedbackLabel('Warning<p>Value ',fv,' falls outside of range [',minwarn,maxwarn,']');
+          
           src.className = 'sxsl-capture-text' + (valid == false ? ' sxsl-capture-error' : (warn == true ? ' sxsl-capture-warn': ''));
         
           // finally, look for nominal and if defined, report the deviation from this value
@@ -1855,10 +1831,12 @@ scope.sxsl2Actions = function(context) {
         
           if (valid) 
             next( { response:t, tolerance:deviation, type:input.type, time:Date.now() });
-          else
-            reject();
+          else {
+            var message = 'Invalid response<p>Value '+fv+' falls outside of range ['+min+','+max+']';  
+            reject( message ); 
+          }
         });
-      }
+      });
     }
   
     var presentEnumsAsHTML = function(enums) {
@@ -2028,7 +2006,7 @@ scope.sxsl2Actions = function(context) {
                 
       // we also want to collect #tools * any details values
       a.tools[0].infoToCollect = {  count: a.subjects != undefined ? a.subjects.length : 1, 
-                                  details: a.input
+                                  details: a.details
                                  };
                 
     }
@@ -2353,6 +2331,167 @@ scope.startStepTimeClock = function(step,callback,scope) {
   
 }
 
+/* ************************************************************************************** */
+  
+////////////////////////////////////////////////////////////////////////////////////////
+// smart tools
+scope.$parent.$on('toolConnect.serviceInvokeComplete', function(evt) {
+  if (scope.toolConnectResponse != undefined) {
+    var valid = scope.$parent.app.mdl['toolThing'].svc['toolConnect'].data[0].result;
+    scope.toolConnectResponse(valid);
+  }
+});
+scope.$parent.$on('toolConnect.serviceFailure', function(evt) {
+  if (scope.toolConnectResponse != undefined) {
+    scope.toolConnectResponse(false);
+  }
+});
+
+var twxToolConnect = (tool) => new Promise((next,reject) => {
+  
+  // register callback
+  
+  // note this is ugly - im sure there's a better way to do this and somone far better at javascript programming would know how to do it,
+  // but here i'm using essentially an application global var to store a dynamic callback function that wil call me back when the
+  // asycn thigworx service responds.  I havnt a clue nor the time to figure out how to do this properly so this will do for now :)
+  scope.toolConnectResponse = function(valid) {
+    
+    if (valid) 
+      next();
+    else 
+      reject( { 
+               reason:'because '
+            } );
+    
+    // unregister
+    scope.toolConnectResponse = undefined;
+  }
+  
+  // ask if things are ok
+  twx.app.fn.triggerDataService('toolThing', 'toolConnect', {'name':tool} );
+});
+
+//
+// now tool set (this can set/configure the tool e.g. value settings etc.)
+// settings values are passed as raw json object - the Thing on the other side is assumed to be
+// a building block implementation so it can do whatever specialist stuff it needs to with the json
+//
+scope.$parent.$on('toolSet.serviceInvokeComplete', function(evt) {
+  if (scope.toolSetResponse != undefined) {
+    var valid = scope.$parent.app.mdl['toolThing'].svc['toolSet'].data[0].result;
+    scope.toolSetResponse(valid);
+  }
+});
+scope.$parent.$on('toolSet.serviceFailure', function(evt) {
+  if (scope.toolSetResponse != undefined) {
+    scope.toolSetResponse(false);
+  }
+});
+var twxToolSet = (tool, settings) => new Promise((next,reject) => {
+  
+  // register callback
+  scope.toolSetResponse = function(valid) {
+    
+    if (valid) 
+      next();
+    else 
+      reject( { 
+               reason:'because '
+            } );
+    
+    // unregister
+    scope.toolSetResponse = undefined;
+  }
+  
+  // ask if things are ok
+  if (settings == undefined)
+    reject();
+  
+  twx.app.fn.triggerDataService('toolThing', 'toolSet', {'name':tool, 'settings':JSON.stringify(settings)} );
+});
+
+//
+// now (dis)arm the tool (turn it on/off, prepare it...)
+//
+scope.$parent.$on('toolArm.serviceInvokeComplete', function(evt) {
+  if (scope.toolArmResponse != undefined) {
+    var armedok = scope.$parent.app.mdl['toolThing'].svc['toolArm'].data[0].result;
+    scope.toolArmResponse(armedok);
+  }
+});
+scope.$parent.$on('toolSet.serviceFailure', function(evt) {
+  if (scope.toolArmResponse != undefined) {
+    scope.toolArmResponse(false);
+  }
+});
+//arm or disarm
+var twxToolArm = (tool,arm) => new Promise((next,reject) => {
+  
+  // register callback
+  scope.toolArmResponse = function(armedok) {
+    
+    if (armedok) 
+      next();
+    else 
+      reject( { 
+               reason:'failed to '+arm?'arm':'disarm'
+            } );
+    
+    // unregister
+    scope.toolArmResponse = undefined;
+  }
+  
+  // ask if things are ok
+  twx.app.fn.triggerDataService('toolThing', 'toolArm', {'name':tool, 'arm':arm} );
+});
+
+//
+// finally, activate it
+//
+scope.$parent.$on('toolActivate.serviceInvokeComplete', function(evt) {
+  if (scope.toolActivateResponse != undefined) {
+    var response = scope.$parent.app.mdl['toolThing'].svc['toolActivate'].data;
+    scope.toolActivateResponse(response);
+  }
+});
+scope.$parent.$on('toolActivate.serviceFailure', function(evt) {
+  if (scope.toolActivateResponse != undefined) {
+    scope.toolActivateResponse(false);
+  }
+});
+// the events above are responses to service calls i.e. us asking thingworx to activate the tool
+// this event below is a secondary event handler that is registered to a direct push event that thingworx
+// can send us - if the user activates the tool without us having to ask them. 
+scope.onToolActivated = function (evt) {
+  console.log(evt);
+  scope.inputToolActivate(evt);
+}
+
+//activate
+var twxToolActivate = (tool) => new Promise((next,reject) => {
+  
+  // register callback
+  scope.toolActivateResponse = function(response) {
+    
+    if (response.success) 
+      next(response);
+    else 
+      reject( { 
+        reason:'because '
+      } );
+    
+    // unregister
+    scope.toolActivateResponse = undefined;
+  }
+  
+  // ask if things are ok
+  twx.app.fn.triggerDataService('toolThing', 'toolActivate', {'name':tool} );
+});
+
+// end of smart tool integration
+/////////////////////////////////////////////////////////////////////////////////
+
+/* ****************************************************************************** */
 
       }
     };
