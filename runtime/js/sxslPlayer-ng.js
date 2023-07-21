@@ -410,7 +410,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 
                          proc.halt(e.msg) // this should fire procHalt event
                              .then( () => {
-                               scope.logger.submit("halt");
+                               //scope.logger.submit("halt");
                              })
                    }
                
