@@ -164,7 +164,7 @@ This section TO BE COMPLETED
 (Important note : this is an early alpha version of this widget : testing has been limited so far to landscape ipad devices, so any other device/display format may look wrong - it will get fixed over time. Right now the focus is functionality)
 
 sxsl is a language (implemented as a json data format) for defining step-by-step instructions.  
-Sxsl content can be output from Creo Illustrate, or created in tools such as Expert Capture. The format is designed to be very simple, allowing sxsl content to be
+Stepxsl content can be output from Creo Illustrate, or created in tools such as Expert Capture. The format is designed to be very simple, allowing sxsl content to be
 generated using simple tools such as Python or node.js, taking content (assets, resources etc.) from any instruction source.
 
 The sxsl widget provides a convenient player, including built-in UI, which will execute this sxsl language and will deliver AR-enabled instructions.
