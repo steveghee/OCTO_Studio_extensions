@@ -239,7 +239,9 @@ this.sxsl2Player = function(config,helper,procValidator,stepValidator,context) {
   } 
     
   this.procValidator = procValidator || function(proc) {
-    return { tools:{}, consumables: {} };
+    return new Promise((next,reject) => {
+      next({ tools:{}, consumables: {} });
+    })
   }
   
   var me = this;
@@ -254,12 +256,15 @@ this.sxsl2Player = function(config,helper,procValidator,stepValidator,context) {
     // here we would likely do some sanity checks, clean up internal data
     // e.g. if we were to keep a record of al the step/action progress, heres
     // where we'd set stuff up
-    this.prereq = this.procValidator(this.proc);
-
-    this.events.emit('procStart',this);
-    next(this.intro);
-    
-    //if there were some issue, we would 'reject' here
+    this.procValidator(this.proc,true)
+        .then( (pre) => {
+          this.prereq = pre;
+          this.events.emit('procStart',this);
+          next(this.intro);
+      })
+      .catch( e => {
+        reject(e);
+      });
   });
     
   //
@@ -273,8 +278,14 @@ this.sxsl2Player = function(config,helper,procValidator,stepValidator,context) {
     
     // user is signalling we are done, so clean up anything we need to
     //
-    this.events.emit('procEnd',this);
-    next(this.outro);
+    this.procValidator(this.proc,false)
+        .then( (pre) => {
+          this.events.emit('procEnd',this);
+          next(this.outro);
+      })
+      .catch( e => {
+        reject(e);
+      });
   });
 
   //

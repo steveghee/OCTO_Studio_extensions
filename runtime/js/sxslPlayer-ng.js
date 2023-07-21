@@ -163,11 +163,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                console.log('halting proc\n============================');
                
                //stop the clock    
-               scope.stopStepTimeClock(reason.step);
+               if (reason.step) scope.stopStepTimeClock(reason.step);
                scope.canrunField = false;
                scope.runningField = false;
 
-               scope.logger.push( { id: reason.step.id, 
+               scope.logger.push( { id: reason.step != undefined ? reason.step.id : "", 
                                  event: reason.event,  
                                   time: Date.now(), 
                                    ack: { response:reason.reason }
@@ -380,8 +380,16 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                                                scope.actions.end(conclusion);
                 
                                                // TODO : let thingworx know? 
-//                                               scope.statusField = scope.logger.sanitise();
+//                                                scope.statusField = scope.logger.sanitise();
                                                console.log('results:',JSON.stringify(scope.logger.results,null,' '));    
+                                             })
+                                             .catch( e => {
+                                                        
+                                               // abort
+                                               var abortmsg = "Procedure failed<p>" + e.reason;     
+                                               scope.actions.end(abortmsg);
+                                               
+                                               proc.events.emit('procHalt', {event:e.event, reason:abortmsg});
                                              })
                        else if (e.cmd=='ack') { 
                          // we are waiting for user input      
@@ -423,6 +431,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                  scope.$parent.$emit("terminated");    
                }
 
+             })
+             .catch( e => {
+               console.log('proc error'+e);
              });
           });
         };
@@ -1735,7 +1746,8 @@ scope.sxsl2Actions = function(context) {
             });
           })
           .catch( e => {
-            reject('tool failed')
+            reject('Tool activation failed<p>' + e.reason);
+            scope.inputValidator = callback;
           });
         });
       }
@@ -2357,14 +2369,21 @@ scope.$parent.$on('initialiseTools.serviceInvokeComplete', function(evt) {
     });
 
     scope.twxToolConnect = (tool) => new Promise((next,reject) => {
-  
+                                                 
+      if(!scope.data.isToolThingAvailable) 
+        reject();
+                                                 
+      scope.data.sxslToolConnectTimeout = undefined;
       // register callback
   
       // note this is ugly - im sure there's a better way to do this and somone far better at javascript programming would know how to do it,
       // but here i'm using essentially an application global var to store a dynamic callback function that wil call me back when the
       // asycn thigworx service responds.  I havnt a clue nor the time to figure out how to do this properly so this will do for now :)
       scope.toolConnectResponse = function(valid) {
-    
+          
+        $timeout.cancel(scope.data.sxslToolConnectTimeout);
+        scope.data.sxslToolConnectTimeout = undefined;
+         
         if (valid) 
           next();
         else 
@@ -2376,11 +2395,12 @@ scope.$parent.$on('initialiseTools.serviceInvokeComplete', function(evt) {
         scope.toolConnectResponse = undefined;
       }
   
-      // is the interface available for us to call?
-      if (!scope.data.isToolThingAvailable) {
-          reject('tool interface not available');
-      }
-  
+      // a timeout in case we dont have the twx bindings
+      scope.data.sxslToolConnectTimeout = $timeout(function() {
+        scope.data.isToolThingAvailable = false;
+        reject({reason:'Invalid or missing interface: Use manual entry'});
+      },2000);
+          
       // ask if things are ok
       scope.setFeedbackLabel("Connecting to " + tool);
       twx.app.fn.triggerDataService('toolThing', 'toolConnect', {'name':tool} );
@@ -2403,10 +2423,15 @@ scope.$parent.$on('initialiseTools.serviceInvokeComplete', function(evt) {
       }
     });
     scope.twxToolSet = (tool, settings) => new Promise((next,reject) => {
-  
+                                                       
+      scope.data.sxslToolSetTimeout = undefined;
+      
       // register callback
       scope.toolSetResponse = function(valid) {
-    
+          
+        $timeout.cancel(scope.data.sxslToolSetTimeout);
+        scope.data.sxslToolSetTimeout = undefined;
+        
         if (valid) 
           next();
         else 
@@ -2422,6 +2447,11 @@ scope.$parent.$on('initialiseTools.serviceInvokeComplete', function(evt) {
       if (settings == undefined)
         reject();
   
+      // a timeout in case we dont have the twx bindings
+      scope.data.sxslToolSetTimeout = $timeout(function() {
+        scope.data.isToolThingAvailable = false;
+        reject({reason:'Invalid or missing interface: Use manual entry'});
+      },2000);
       twx.app.fn.triggerDataService('toolThing', 'toolSet', {'name':tool, 'settings':JSON.stringify(settings)} );
     });
 
@@ -2441,10 +2471,15 @@ scope.$parent.$on('initialiseTools.serviceInvokeComplete', function(evt) {
     });
     //arm or disarm
     scope.twxToolArm = (tool,arm) => new Promise((next,reject) => {
-  
+                                                 
+      scope.data.sxslToolArmTimeout = undefined;
+                                                 
       // register callback
       scope.toolArmResponse = function(armedok) {
-    
+          
+        $timeout.cancel(scope.data.sxslToolArmTimeout);
+        scope.data.sxslToolArmTimeout = undefined;
+          
         if (armedok) 
           next();
         else 
@@ -2456,6 +2491,11 @@ scope.$parent.$on('initialiseTools.serviceInvokeComplete', function(evt) {
         scope.toolArmResponse = undefined;
       }
   
+      scope.data.sxslToolArmTimeout = $timeout(function() {
+        scope.data.isToolThingAvailable = false;
+        reject({reason:'Invalid or missing interface: Use manual entry'});
+      },2000);
+          
       // ask if things are ok
       twx.app.fn.triggerDataService('toolThing', 'toolArm', {'name':tool, 'arm':arm} );
     });
@@ -2484,10 +2524,15 @@ scope.$parent.$on('initialiseTools.serviceInvokeComplete', function(evt) {
 
     //activate
     scope.twxToolActivate = (tool) => new Promise((next,reject) => {
-  
+                                                  
+      scope.data.sxslToolActivateTimeout = undefined;
+                                                  
       // register callback
       scope.toolActivateResponse = function(response) {
-    
+          
+        $timeout.cancel(scope.data.sxslToolActivateTimeout);
+        scope.data.sxslToolActivateTimeout = undefined;
+          
         if (response.success) 
           next(response);
         else 
@@ -2499,6 +2544,11 @@ scope.$parent.$on('initialiseTools.serviceInvokeComplete', function(evt) {
         scope.toolActivateResponse = undefined;
       }
   
+      scope.data.sxslToolActivateTimeout = $timeout(function() {
+        scope.data.isToolThingAvailable = false;
+        reject({reason:'Invalid or missing interface: Use manual entry'});
+      },2000);
+          
       // ask if things are ok
       twx.app.fn.triggerDataService('toolThing', 'toolActivate', {'name':tool} );
     });
@@ -2514,34 +2564,47 @@ scope.$parent.$on('initialiseTools.serviceInvokeComplete', function(evt) {
 /* ****************************************************************************** */
 //
 // check the procedure, look at any prerequisites (tools, parts, consumables etc)
-scope.procValidator = function(proc) {
+scope.procValidator = function(proc,entry) {
     
-  var prereqs = { tools:{}, consumables: {} };
-  
-  // iterate through all the actions in all the steps, and pull out any tool, parts, consumables that are referenced
-  proc.steps.forEach(function(s) {
-    s.actions.forEach(function(a) {
-      if (a.tools != undefined) {
-                          
-        //TODO : should we initialise the tools interface here?                  
+  // if its a valid step and there is a configured external (twx) validator, lets call it  
+  if (proc != undefined && scope.data.isProcessThingAvailable && scope.twxProcValidator)
+    return scope.twxProcValidator(proc,entry);
+  else {
         
-        //it is possible to reuse tools, so we want to index these by the ID
-        a.tools.forEach(function(tool) {
-          prereqs.tools[tool.id] = tool;
-        });
-      }
-      if (a.materialConsumed != undefined) {
-        // can be defined inline, or referenced as context assets
-        a.materialConsumed.forEach(function(consumable) {
-          prereqs.consumables[consumable.asset.id] = {amount:consumable.amountConsumed,units:consumable.unitsOfConsumption.resources[0].text,material:consumable.asset};
-        });
-      }
-    });
+    // a dummy call which always returns true
+    if (entry) return new Promise((next,reject) => {
+    
+      var prereqs = { tools:{}, consumables: {} };
   
-  });
-  //
-  return prereqs;
-}
+      // iterate through all the actions in all the steps, and pull out any tool, parts, consumables that are referenced
+      proc.steps.forEach(function(s) {
+        s.actions.forEach(function(a) {
+          if (a.tools != undefined) {
+                          
+            //TODO : should we initialise the tools interface here?                  
+        
+            //it is possible to reuse tools, so we want to index these by the ID
+            a.tools.forEach(function(tool) {
+              prereqs.tools[tool.id] = tool;
+            });
+          }
+          if (a.materialConsumed != undefined) {
+            // can be defined inline, or referenced as context assets
+            a.materialConsumed.forEach(function(consumable) {
+              prereqs.consumables[consumable.asset.id] = {amount:consumable.amountConsumed,units:consumable.unitsOfConsumption.resources[0].text,material:consumable.asset};
+            });
+          }
+        });
+      })  
+      
+      //
+      next(prereqs);
+    });
+    else return new Promise( (next,reject) => {
+      next();
+    });
+  }
+};
 
 scope.stepValidator = function(step, test) {
     
@@ -2578,27 +2641,84 @@ scope.$parent.$on('initialiseProcess.serviceInvokeComplete', function(evt) {
       }
     });
     scope.twxStepValidator = (step,test) => new Promise((next,reject) => {
-  
+                                                        
+      scope.data.sxslStepValidatorTimeout = undefined;                           
+      
       // register callback
       scope.sxslStepValidated = function(valid) {
-    
+          
+        $timeout.cancel(scope.data.sxslStepValidatorTimeout);
+        scope.data.sxslStepValidatorTimeout = undefined;
+        
         if (valid) 
           next();
         else 
-          reject( { event:'remoteValidationRejected', 
-                   reason:'because '+step.id
+          reject( { event:'remoteStepValidationRejected', 
+                   reason:'Because of some issue with '+step.id
                 } );
     
         // unregister
         scope.sxslStepValidated = undefined;
       }
   
+      // a timeout in case we dont have the twx bindings
+      scope.data.sxslStepValidatorTimeout = $timeout(function() {
+        scope.twxStepValidator = false;
+        next();
+      },2000);
+          
       // ask if things are ok
       twx.app.fn.triggerDataService('processThing', 'validateStep', {'stepID': step != undefined ? step.id : undefined, 
-                                                                       'test': JSON.stringify(test)} );
+                                    'test': JSON.stringify(test)} );
    
     });
-  }
+
+    scope.$parent.$on('validateProc.serviceInvokeComplete', function(evt) {
+      if (scope.sxslProcValidated != undefined) {
+      var valid = scope.$parent.app.mdl['processThing'].svc['validateProc'].data[0].result;
+        scope.sxslProcValidated(valid);
+      }
+    });
+    scope.$parent.$on('validateProc.serviceFailure', function(evt) {
+      if (scope.sxslProcValidated != undefined) {
+        scope.sxslProcValidated(false);
+      }
+    });
+    scope.twxProcValidator = (proc,entry) => new Promise((next,reject) => {
+  
+      scope.data.sxslProcValidatorTimeout = undefined;                           
+                                                         
+      // register callback
+      scope.sxslProcValidated = function(valid) {
+          
+        $timeout.cancel(scope.data.sxslProcValidatorTimeout);
+        scope.data.sxslStepValidatorTimeout = undefined;
+        
+    
+        if (valid) 
+          next();
+        else 
+          reject( { event:'remoteProcValidationRejected', 
+                   reason:'Because of something to do with '+proc.id
+                } );
+    
+        // unregister
+        scope.sxslProcValidated = undefined;
+      }
+  
+      // a timeout in case we dont have the twx bindings
+      scope.data.sxslProcValidatorTimeout = $timeout(function() {
+        scope.twxProcValidator = false;
+        next();
+      },2000);
+          
+      // ask if things are ok
+      twx.app.fn.triggerDataService('processThing', 'validateProc', {'procID': proc != undefined ? proc.id : undefined, 
+                                                                     } );
+   
+    });
+
+}
 });
 
       }
