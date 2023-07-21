@@ -213,32 +213,6 @@ this.sxslStep = function(s,p) {
 }
 
 //
-// check the procedure, look at any prerequisites (tools, parts, consumables etc)
-this.validate = function(proc) {
-  var prereqs = { tools:{}, consumables: {} };
-  // iterate through all the actions in all the steps, and pull out any tool, parts, consumables that are referenced
-  proc.steps.forEach(function(s) {
-    s.actions.forEach(function(a) {
-      if (a.tools != undefined) {
-        //it is possible to reuse tools, so we want to index these by the ID
-        a.tools.forEach(function(tool) {
-          prereqs.tools[tool.id] = tool;
-        });
-      }
-      if (a.materialConsumed != undefined) {
-        // can be defined inline, or referenced as context assets
-        a.materialConsumed.forEach(function(consumable) {
-          prereqs.consumables[consumable.asset.id] = {amount:consumable.amountConsumed,units:consumable.unitsOfConsumption.resources[0].text,material:consumable.asset};
-        });
-      }
-    });
-  
-  });
-  //
-  return prereqs;
-}
-
-//
 // the procedure player - functions to read/parse the sxsl, and to navigate through it step by step
 //
 this.sxsl2Player = function(config,helper,procValidator,stepValidator,context) {
