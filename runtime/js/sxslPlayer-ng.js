@@ -1270,9 +1270,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             createReferenceViewerHTML();
             createProofCaptureHTML();
             
-            var twxConnectorCtrl = $injector.get('ThingworxConnector');
-            twxConnectorCtrl.subscribe("toolThing", "Things", "activated", "", scope.onToolActivated);
-
             startSxslPlayer();    
           } else {
               //TODO : creaate holographic UI
@@ -2399,7 +2396,7 @@ scope.$parent.$on('initialiseTools.serviceInvokeComplete', function(evt) {
       scope.data.sxslToolConnectTimeout = $timeout(function() {
         scope.data.isToolThingAvailable = false;
         reject({reason:'Invalid or missing interface: Use manual entry'});
-      },2000);
+      },3000);
           
       // ask if things are ok
       scope.setFeedbackLabel("Connecting to " + tool);
@@ -2451,7 +2448,7 @@ scope.$parent.$on('initialiseTools.serviceInvokeComplete', function(evt) {
       scope.data.sxslToolSetTimeout = $timeout(function() {
         scope.data.isToolThingAvailable = false;
         reject({reason:'Invalid or missing interface: Use manual entry'});
-      },2000);
+      },3000);
       twx.app.fn.triggerDataService('toolThing', 'toolSet', {'name':tool, 'settings':JSON.stringify(settings)} );
     });
 
@@ -2494,7 +2491,7 @@ scope.$parent.$on('initialiseTools.serviceInvokeComplete', function(evt) {
       scope.data.sxslToolArmTimeout = $timeout(function() {
         scope.data.isToolThingAvailable = false;
         reject({reason:'Invalid or missing interface: Use manual entry'});
-      },2000);
+      },3000);
           
       // ask if things are ok
       twx.app.fn.triggerDataService('toolThing', 'toolArm', {'name':tool, 'arm':arm} );
@@ -2521,6 +2518,9 @@ scope.$parent.$on('initialiseTools.serviceInvokeComplete', function(evt) {
       console.log(evt);
       scope.inputToolActivate(evt);
     }
+    
+    var twxConnectorCtrl = $injector.get('ThingworxConnector');
+    twxConnectorCtrl.subscribe("toolThing", "Things", "activated", "", scope.onToolActivated);
 
     //activate
     scope.twxToolActivate = (tool) => new Promise((next,reject) => {
@@ -2547,7 +2547,7 @@ scope.$parent.$on('initialiseTools.serviceInvokeComplete', function(evt) {
       scope.data.sxslToolActivateTimeout = $timeout(function() {
         scope.data.isToolThingAvailable = false;
         reject({reason:'Invalid or missing interface: Use manual entry'});
-      },2000);
+      },3000);
           
       // ask if things are ok
       twx.app.fn.triggerDataService('toolThing', 'toolActivate', {'name':tool} );
@@ -2665,7 +2665,7 @@ scope.$parent.$on('initialiseProcess.serviceInvokeComplete', function(evt) {
       scope.data.sxslStepValidatorTimeout = $timeout(function() {
         scope.twxStepValidator = false;
         next();
-      },2000);
+      },3000);
           
       // ask if things are ok
       twx.app.fn.triggerDataService('processThing', 'validateStep', {'stepID': step != undefined ? step.id : undefined, 
@@ -2710,7 +2710,7 @@ scope.$parent.$on('initialiseProcess.serviceInvokeComplete', function(evt) {
       scope.data.sxslProcValidatorTimeout = $timeout(function() {
         scope.twxProcValidator = false;
         next();
-      },2000);
+      },3000);
           
       // ask if things are ok
       twx.app.fn.triggerDataService('processThing', 'validateProc', {'procID': proc != undefined ? proc.id : undefined, 
