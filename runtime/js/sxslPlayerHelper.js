@@ -585,7 +585,7 @@ this.sxsl2Player = function(config,helper,procValidator,stepValidator,context) {
       }
     
       // if configured, we need to do a remote check to see if we are ok to move to the next step
-      me.stepValidator(me.step,false)
+      me.stepValidator(me.step, me.step != undefined ? me.step.ack : undefined)
         .then( (newJumpRef) => {
 
           // now move to next step

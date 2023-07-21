@@ -43,6 +43,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                      anchor: "",
                       guide: "",
                   firstStep: true,
+    isProcessThingAvailable: false,
+       isToolThingAvailable: false,
                        pois: []
                    };
              
@@ -61,9 +63,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               on: function(evt,fn)  { return scope.$parent.$on(evt,fn) }, 
             emit: function(evt,arg) { return scope.$parent.$emit(evt,arg) } 
           };
-
+          
           scope.logger = new scope.data.logger();
-          scope.player = new scope.helper.sxsl2Player(eventHandler,scope.helper,scope.helper.validate)
+          scope.player = new scope.helper.sxsl2Player(eventHandler,scope.helper,scope.procValidator,scope.stepValidator)
           .fromData(scope.data.sxsl)
           .then( (proc) => { 
                 
@@ -163,12 +165,16 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                //stop the clock    
                scope.stopStepTimeClock(reason.step);
                scope.canrunField = false;
-               
+               scope.runningField = false;
+
                scope.logger.push( { id: reason.step.id, 
                                  event: reason.event,  
                                   time: Date.now(), 
                                    ack: { response:reason.reason }
                                } );
+                   
+               //shut down the UI    
+               scope.deactivateAll();  
                minimise();
                    
                //and signal termination    
@@ -325,7 +331,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                            
                        // note we dont terminate immediately, but put up progress/done button
                        scope.data.results = scope.logger.sanitise();
+                       
+                       scope.data.disabled = true;
                        scope.runningField = false;
+                       scope.canrunField = false;
                      })
                      .catch( e => {
                        console.log(e);
@@ -1645,17 +1654,16 @@ scope.sxsl2Actions = function(context) {
           
           // at this point, we can start the process of connecting to the tool
           //
-          scope.setFeedbackLabel("connecting to " + tools[0].name);
-          twxToolConnect(tools[0].name)
+          scope.twxToolConnect(tools[0].name)
           .then( () => {
                 
             scope.setFeedbackLabel("Connected to " + tools[0].name + 
                                    " ok!<p>Collecting " + tools[0].infoToCollect.count + " values");
         
-            twxToolSet(tools[0].name, tools[0].infoToCollect)
+            scope.twxToolSet(tools[0].name, tools[0].infoToCollect)
             .then( () => {
               console.log('tool ready')
-              twxToolArm(tools[0].name, true)
+              scope.twxToolArm(tools[0].name, true)
               .then( (armed) => {
                     
                 //setup the tool name/title on the cmmand button    
@@ -1664,13 +1672,13 @@ scope.sxsl2Actions = function(context) {
                         
                 tools[0].disarm = function() {
                   
-                  twxToolArm(tools[0].name, false)
+                  scope.twxToolArm(tools[0].name, false)
          	  .then( () => {
                     console.log('tool disarmed',tools[0].name);
                   })
                   // what happens if it fails
                   .catch( e => { 
-	            console.log('tool disarm failed')
+	            console.log('Tool disarm failed<p>' + e.reason)
                   })
                   
                 }
@@ -1678,20 +1686,20 @@ scope.sxsl2Actions = function(context) {
               }) 
               .catch( e => { 
                 console.log('tool arm failed')
-                scope.setFeedbackLabel("Failed to arm " + tools[0].name);
+                scope.setFeedbackLabel('Failed to arm ' + tools[0].name + '<p>' + e.reason);
                 scope.inputValidator = callback;
               })
             })
             .catch( e => { 
 	      console.log('tool set failed')
-              scope.setFeedbackLabel("Failed to initialise " + tools[0].name);
+              scope.setFeedbackLabel('Failed to initialise ' + tools[0].name + '<p>' + e.reason);
               scope.inputValidator = callback;
             })
 
           })
           .catch( e => { 
             console.log('tool connect failed')
-            scope.setFeedbackLabel("Failed to connect to " + tools[0].name);
+            scope.setFeedbackLabel('Failed to connect to ' + tools[0].name + '<p>' + e.reason);
             scope.inputValidator = callback;
           })
           
@@ -1714,7 +1722,7 @@ scope.sxsl2Actions = function(context) {
       // and return the primary data handler
       return function() {
         return new Promise( (next, reject) => {  
-          twxToolActivate(tools[0].name)
+          scope.twxToolActivate(tools[0].name)
           .then( (resp) => {
             target.value = resp.actual;    
             console.log('tool delivered',resp);
@@ -2309,163 +2317,289 @@ scope.startStepTimeClock = function(step,callback,scope) {
   
 ////////////////////////////////////////////////////////////////////////////////////////
 // smart tools
-scope.$parent.$on('toolConnect.serviceInvokeComplete', function(evt) {
-  if (scope.toolConnectResponse != undefined) {
-    var valid = scope.$parent.app.mdl['toolThing'].svc['toolConnect'].data[0].result;
-    scope.toolConnectResponse(valid);
-  }
+//
+// how this works; 
+// 1. the tools are enabled by the presence of supporting thingworx data model (toolThing)
+//    which must be present in the experience/view
+// 2. initialiseTools service must be called (can set it to auto-invoke on startup) and here we
+//    listen for the serviceInvokeComplete event to confirm the data model and services are available.
+
+
+//this is the default - it might be overridden if we get the invokecomplete event below
+//
+scope.twxToolConnect = (tool) => new Promise((next,reject) => {
+  reject( { 
+          reason:'Interface not configured yet'
+  } );
 });
-scope.$parent.$on('toolConnect.serviceFailure', function(evt) {
-  if (scope.toolConnectResponse != undefined) {
-    scope.toolConnectResponse(false);
+
+// list for the serviceinvokecomplete event. Ideally we should get back a list of valid services
+// but for now lsts get back the boolean 
+//
+scope.$parent.$on('initialiseTools.serviceInvokeComplete', function(evt) {
+                  
+  scope.data.isToolThingAvailable = scope.$parent.app.mdl['toolThing'].svc['initialiseTools'].data[0].result;
+                  
+  //if we get success, this is where we shoud register the other services.                
+  if (scope.data.isToolThingAvailable) {
+      
+    scope.$parent.$on('toolConnect.serviceInvokeComplete', function(evt) {
+      if (scope.toolConnectResponse != undefined) {
+        var valid = scope.$parent.app.mdl['toolThing'].svc['toolConnect'].data[0].result;
+        scope.toolConnectResponse(valid);
+      }
+    });
+        
+    scope.$parent.$on('toolConnect.serviceFailure', function(evt) {
+      if (scope.toolConnectResponse != undefined) {
+        scope.toolConnectResponse(false);
+      }
+    });
+
+    scope.twxToolConnect = (tool) => new Promise((next,reject) => {
+  
+      // register callback
+  
+      // note this is ugly - im sure there's a better way to do this and somone far better at javascript programming would know how to do it,
+      // but here i'm using essentially an application global var to store a dynamic callback function that wil call me back when the
+      // asycn thigworx service responds.  I havnt a clue nor the time to figure out how to do this properly so this will do for now :)
+      scope.toolConnectResponse = function(valid) {
+    
+        if (valid) 
+          next();
+        else 
+          reject( { 
+                   reason:'because '
+                } );
+    
+        // unregister
+        scope.toolConnectResponse = undefined;
+      }
+  
+      // is the interface available for us to call?
+      if (!scope.data.isToolThingAvailable) {
+          reject('tool interface not available');
+      }
+  
+      // ask if things are ok
+      scope.setFeedbackLabel("Connecting to " + tool);
+      twx.app.fn.triggerDataService('toolThing', 'toolConnect', {'name':tool} );
+    });
+
+    //
+    // now tool set (this can set/configure the tool e.g. value settings etc.)
+    // settings values are passed as raw json object - the Thing on the other side is assumed to be
+    // a building block implementation so it can do whatever specialist stuff it needs to with the json
+    //
+    scope.$parent.$on('toolSet.serviceInvokeComplete', function(evt) {
+      if (scope.toolSetResponse != undefined) {
+        var valid = scope.$parent.app.mdl['toolThing'].svc['toolSet'].data[0].result;
+        scope.toolSetResponse(valid);
+      }
+    });
+    scope.$parent.$on('toolSet.serviceFailure', function(evt) {
+      if (scope.toolSetResponse != undefined) {
+        scope.toolSetResponse(false);
+      }
+    });
+    scope.twxToolSet = (tool, settings) => new Promise((next,reject) => {
+  
+      // register callback
+      scope.toolSetResponse = function(valid) {
+    
+        if (valid) 
+          next();
+        else 
+          reject( { 
+                   reason:'because '
+                } );
+    
+        // unregister
+        scope.toolSetResponse = undefined;
+      }
+  
+      // ask if things are ok
+      if (settings == undefined)
+        reject();
+  
+      twx.app.fn.triggerDataService('toolThing', 'toolSet', {'name':tool, 'settings':JSON.stringify(settings)} );
+    });
+
+    //
+    // now (dis)arm the tool (turn it on/off, prepare it...)
+    //
+    scope.$parent.$on('toolArm.serviceInvokeComplete', function(evt) {
+      if (scope.toolArmResponse != undefined) {
+        var armedok = scope.$parent.app.mdl['toolThing'].svc['toolArm'].data[0].result;
+        scope.toolArmResponse(armedok);
+      }
+    });
+    scope.$parent.$on('toolSet.serviceFailure', function(evt) {
+      if (scope.toolArmResponse != undefined) {
+        scope.toolArmResponse(false);
+      }
+    });
+    //arm or disarm
+    scope.twxToolArm = (tool,arm) => new Promise((next,reject) => {
+  
+      // register callback
+      scope.toolArmResponse = function(armedok) {
+    
+        if (armedok) 
+          next();
+        else 
+          reject( { 
+                   reason:'failed to '+arm?'arm':'disarm'
+                } );
+    
+        // unregister
+        scope.toolArmResponse = undefined;
+      }
+  
+      // ask if things are ok
+      twx.app.fn.triggerDataService('toolThing', 'toolArm', {'name':tool, 'arm':arm} );
+    });
+
+    //
+    // finally, activate it
+    //
+    scope.$parent.$on('toolActivate.serviceInvokeComplete', function(evt) {
+      if (scope.toolActivateResponse != undefined) {
+        var response = scope.$parent.app.mdl['toolThing'].svc['toolActivate'].data;
+        scope.toolActivateResponse(response);
+      }
+    });
+    scope.$parent.$on('toolActivate.serviceFailure', function(evt) {
+      if (scope.toolActivateResponse != undefined) {
+        scope.toolActivateResponse(false);
+      }
+    });
+    // the events above are responses to service calls i.e. us asking thingworx to activate the tool
+    // this event below is a secondary event handler that is registered to a direct push event that thingworx
+    // can send us - if the user activates the tool without us having to ask them. 
+    scope.onToolActivated = function (evt) {
+      console.log(evt);
+      scope.inputToolActivate(evt);
+    }
+
+    //activate
+    scope.twxToolActivate = (tool) => new Promise((next,reject) => {
+  
+      // register callback
+      scope.toolActivateResponse = function(response) {
+    
+        if (response.success) 
+          next(response);
+        else 
+          reject( { 
+            reason:'because '
+          } );
+    
+        // unregister
+        scope.toolActivateResponse = undefined;
+      }
+  
+      // ask if things are ok
+      twx.app.fn.triggerDataService('toolThing', 'toolActivate', {'name':tool} );
+    });
   }
 });
 
-var twxToolConnect = (tool) => new Promise((next,reject) => {
-  
-  // register callback
-  
-  // note this is ugly - im sure there's a better way to do this and somone far better at javascript programming would know how to do it,
-  // but here i'm using essentially an application global var to store a dynamic callback function that wil call me back when the
-  // asycn thigworx service responds.  I havnt a clue nor the time to figure out how to do this properly so this will do for now :)
-  scope.toolConnectResponse = function(valid) {
-    
-    if (valid) 
-      next();
-    else 
-      reject( { 
-               reason:'because '
-            } );
-    
-    // unregister
-    scope.toolConnectResponse = undefined;
-  }
-  
-  // ask if things are ok
-  twx.app.fn.triggerDataService('toolThing', 'toolConnect', {'name':tool} );
-});
 
-//
-// now tool set (this can set/configure the tool e.g. value settings etc.)
-// settings values are passed as raw json object - the Thing on the other side is assumed to be
-// a building block implementation so it can do whatever specialist stuff it needs to with the json
-//
-scope.$parent.$on('toolSet.serviceInvokeComplete', function(evt) {
-  if (scope.toolSetResponse != undefined) {
-    var valid = scope.$parent.app.mdl['toolThing'].svc['toolSet'].data[0].result;
-    scope.toolSetResponse(valid);
-  }
-});
-scope.$parent.$on('toolSet.serviceFailure', function(evt) {
-  if (scope.toolSetResponse != undefined) {
-    scope.toolSetResponse(false);
-  }
-});
-var twxToolSet = (tool, settings) => new Promise((next,reject) => {
-  
-  // register callback
-  scope.toolSetResponse = function(valid) {
-    
-    if (valid) 
-      next();
-    else 
-      reject( { 
-               reason:'because '
-            } );
-    
-    // unregister
-    scope.toolSetResponse = undefined;
-  }
-  
-  // ask if things are ok
-  if (settings == undefined)
-    reject();
-  
-  twx.app.fn.triggerDataService('toolThing', 'toolSet', {'name':tool, 'settings':JSON.stringify(settings)} );
-});
 
-//
-// now (dis)arm the tool (turn it on/off, prepare it...)
-//
-scope.$parent.$on('toolArm.serviceInvokeComplete', function(evt) {
-  if (scope.toolArmResponse != undefined) {
-    var armedok = scope.$parent.app.mdl['toolThing'].svc['toolArm'].data[0].result;
-    scope.toolArmResponse(armedok);
-  }
-});
-scope.$parent.$on('toolSet.serviceFailure', function(evt) {
-  if (scope.toolArmResponse != undefined) {
-    scope.toolArmResponse(false);
-  }
-});
-//arm or disarm
-var twxToolArm = (tool,arm) => new Promise((next,reject) => {
-  
-  // register callback
-  scope.toolArmResponse = function(armedok) {
-    
-    if (armedok) 
-      next();
-    else 
-      reject( { 
-               reason:'failed to '+arm?'arm':'disarm'
-            } );
-    
-    // unregister
-    scope.toolArmResponse = undefined;
-  }
-  
-  // ask if things are ok
-  twx.app.fn.triggerDataService('toolThing', 'toolArm', {'name':tool, 'arm':arm} );
-});
-
-//
-// finally, activate it
-//
-scope.$parent.$on('toolActivate.serviceInvokeComplete', function(evt) {
-  if (scope.toolActivateResponse != undefined) {
-    var response = scope.$parent.app.mdl['toolThing'].svc['toolActivate'].data;
-    scope.toolActivateResponse(response);
-  }
-});
-scope.$parent.$on('toolActivate.serviceFailure', function(evt) {
-  if (scope.toolActivateResponse != undefined) {
-    scope.toolActivateResponse(false);
-  }
-});
-// the events above are responses to service calls i.e. us asking thingworx to activate the tool
-// this event below is a secondary event handler that is registered to a direct push event that thingworx
-// can send us - if the user activates the tool without us having to ask them. 
-scope.onToolActivated = function (evt) {
-  console.log(evt);
-  scope.inputToolActivate(evt);
-}
-
-//activate
-var twxToolActivate = (tool) => new Promise((next,reject) => {
-  
-  // register callback
-  scope.toolActivateResponse = function(response) {
-    
-    if (response.success) 
-      next(response);
-    else 
-      reject( { 
-        reason:'because '
-      } );
-    
-    // unregister
-    scope.toolActivateResponse = undefined;
-  }
-  
-  // ask if things are ok
-  twx.app.fn.triggerDataService('toolThing', 'toolActivate', {'name':tool} );
-});
 
 // end of smart tool integration
 /////////////////////////////////////////////////////////////////////////////////
 
 /* ****************************************************************************** */
+//
+// check the procedure, look at any prerequisites (tools, parts, consumables etc)
+scope.procValidator = function(proc) {
+    
+  var prereqs = { tools:{}, consumables: {} };
+  
+  // iterate through all the actions in all the steps, and pull out any tool, parts, consumables that are referenced
+  proc.steps.forEach(function(s) {
+    s.actions.forEach(function(a) {
+      if (a.tools != undefined) {
+                          
+        //TODO : should we initialise the tools interface here?                  
+        
+        //it is possible to reuse tools, so we want to index these by the ID
+        a.tools.forEach(function(tool) {
+          prereqs.tools[tool.id] = tool;
+        });
+      }
+      if (a.materialConsumed != undefined) {
+        // can be defined inline, or referenced as context assets
+        a.materialConsumed.forEach(function(consumable) {
+          prereqs.consumables[consumable.asset.id] = {amount:consumable.amountConsumed,units:consumable.unitsOfConsumption.resources[0].text,material:consumable.asset};
+        });
+      }
+    });
+  
+  });
+  //
+  return prereqs;
+}
+
+scope.stepValidator = function(step, test) {
+    
+  // if its a valid step and there is a configured external (twx) validator, lets call it  
+  if (step != undefined && scope.data.isProcessThingAvailable && scope.twxStepValidator)
+    return scope.twxStepValidator(step,test);
+  else {
+    // a dummy call which always returns true
+    return new Promise((next,reject) => {
+      next(); // signal it is ok to move on
+    });
+  }
+}
+      
+//
+// is remote validation configured?
+//
+scope.$parent.$on('initialiseProcess.serviceInvokeComplete', function(evt) {
+                  
+  scope.data.isProcessThingAvailable = scope.$parent.app.mdl['processThing'].svc['initialiseProcess'].data[0].result;
+  
+  if (scope.data.isProcessThingAvailable) {
+    // lets now register the other services
+      
+    scope.$parent.$on('validateStep.serviceInvokeComplete', function(evt) {
+      if (scope.sxslStepValidated != undefined) {
+      var valid = scope.$parent.app.mdl['processThing'].svc['validateStep'].data[0].result;
+        scope.sxslStepValidated(valid);
+      }
+    });
+    scope.$parent.$on('validateStep.serviceFailure', function(evt) {
+      if (scope.sxslStepValidated != undefined) {
+        scope.sxslStepValidated(false);
+      }
+    });
+    scope.twxStepValidator = (step,test) => new Promise((next,reject) => {
+  
+      // register callback
+      scope.sxslStepValidated = function(valid) {
+    
+        if (valid) 
+          next();
+        else 
+          reject( { event:'remoteValidationRejected', 
+                   reason:'because '+step.id
+                } );
+    
+        // unregister
+        scope.sxslStepValidated = undefined;
+      }
+  
+      // ask if things are ok
+      twx.app.fn.triggerDataService('processThing', 'validateStep', {'stepID': step != undefined ? step.id : undefined, 
+                                                                       'test': JSON.stringify(test)} );
+   
+    });
+  }
+});
 
       }
     };
