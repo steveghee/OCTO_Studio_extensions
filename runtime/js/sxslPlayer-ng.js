@@ -410,7 +410,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 
                          proc.halt(e.msg) // this should fire procHalt event
                              .then( () => {
-                               //scope.logger.submit("halt");
+                               //
+                               // is there anything else we need to do here?    
+                               // e.g. scope.logger.submit()("halt");
+                               
                              })
                    }
                
@@ -568,9 +571,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             //
             var kids = scope.presentErrorCodesAsHTML(scope.data.errorcodes,value);
             
-            if (kids.length > 0) {  //there's always 1 line be default 
+            if (kids.length > 0) {
                 scope.errorcodelistWindow.innerHTML = kids;
             }
+            
             //
             // otherwise submit this code
             else {
@@ -1039,13 +1043,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             }
           }
         });
-            
+
         scope.presentErrorCodesAsHTML = function(reasonCodes,parent) {
-                
+
           var header  = "<option class='item'>Select...</option>";
           var display = "";
           reasonCodes.forEach(function(item) {
-            if (item.parentUID==parent) {
+            if (item.parent == parent) {
                 display = display + "<option class='sxsl-item' value="+item.code+">"+item.resources[0].text+"</option>";
             }
           });
@@ -1645,7 +1649,6 @@ scope.sxsl2Actions = function(context) {
     var findInputTool = (input,target, callback) => {
       
       // enable the button
-      //$scope.view.wdg["action-input-tool"].visible = true;
       if (tools != undefined)
         tools[0].disarm = undefined;
       if (input.tool == undefined) 
@@ -1933,7 +1936,10 @@ scope.sxsl2Actions = function(context) {
 
     //unpack the action subject(s) - also look for associated animations
     //which subject type (resource) can i view - 3d or 2d
+    
+    //TODO: how do we deal with alternative representations e.g 2d vs 3d
     //$scope.view.wdg.alternative.visible = false;
+    
     scope.deactivatePOIs();
 
     var isAnimated    = false;
@@ -1969,6 +1975,7 @@ scope.sxsl2Actions = function(context) {
           scope.addNamedPOI(res.id,'extensions/images/diamond.pvz',res.translation,genrotation(res.normal),0.1,false);
         }
         else if(res.mimeType=="application/vnd.ptc.partref") { 
+          //TODO : how do we deal with gltf node referencing; thingview doesnt support it  
           //$scope.view.wdg.subjects.src = $scope.app.params.context.hero;
           //$scope.view.wdg.subjects.visible = true;
         }
@@ -2247,7 +2254,6 @@ scope.data.logger = function(procID) {
     // 3. a central Manager wihch route the results 
     
     //Triggers a Service on a Manager Thing that expects the procID and the result and internally hands it over to the correct procedure. is overwritable so that it works with CWC SOWI and others
-    //$scope.view.wdg.spinner.visible = true;
     console.log('stopping : sending',JSON.stringify(this.submission));
     
     if (this.id != undefined)
@@ -2302,7 +2308,6 @@ scope.startStepTimeClock = function(step,callback,scope) {
   
   if (step.ref.clock == undefined) {
     step.ref.clock = { elapsedTime: 0, start: Date.now() };
-    //$scope.app.stepIntervalTimerElement.removeClass("overdue");
     
     //re-iniitalise display
     callback(0,undefined);
