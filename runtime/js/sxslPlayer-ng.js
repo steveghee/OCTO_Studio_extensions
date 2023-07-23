@@ -1031,10 +1031,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           function (value) {
             if (value != undefined && scope.steplistField != undefined) {
               var parsed = JSON.parse(value);
-              if (parsed != undefined && parsed.length == 1 && parsed[0].status != 'done') {
+              // check if we CAN run
+              if (scope.canrunField && scope.runningField &&
+                  //and if we can, then do we have a valid jump point?
+                  parsed != undefined && parsed.length == 1 && parsed[0].status != 'done') {
                 console.log('being directed to move to', value);
                 scope.next('j', parsed[0].idx);
               } else {
+                //TODO; we should probably emit some event here saying we're not able to do what was asked
                 console.log('ignoring', value);
               }
             }
@@ -1080,51 +1084,51 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
           scope.sxslPlayerWindow = document.createElement('div');
           scope.sxslPlayerWindow.innerHTML = "\
-  <div id='panel' class='sxsl-instruction-panel'>\
-    <div  style='margin-right:12px;margin-left:12px'>\
-      <div id='cmdrow' style='padding-top: 12px'>\
-        <div id='stepinfo' class='sxsl-instruction-step'>----</div>\
-        <div id='cmds' class='sxsl-instruction-cmds'> \
-          <button id='expandcontract' class='sxsl-button sxsl-button-round sxsl-icon-expand'/> \
-          <button id='minimise' class='sxsl-button sxsl-button-round sxsl-icon-collapse-hide'/> \
-          <button id='advance' class='sxsl-button sxsl-button-round sxsl-blue-bb sxsl-icon-nav-right'/></div>\
-      </div>\
-      <div style='margin-top:54px'><img id='thumbnail' class='sxsl-thumbnail-show' src='app/resources/Uploaded/earthNight.jpg' height=320/></div>\
-      <div id='header' class='sxsl-instruction-header'>header text</div>\
-      <div style='padding-bottom=12px'>\
-        <div id='action' class='sxsl-instruction-actions'>action text</div>\
-      </div>\
-    </div>\
-  </div>\
-  <div id='actions' class='sxsl-actions-hide'>\
-    <div id='verify' class='sxsl-passfailverify-show'>\
-      <div class='checkbox' style='display:inline-flex;left: 650px;'>\
-        <div style='margin-top:4px;margin-right:4px;'>Verify</div><input id='acknowledge' type='checkbox'/>\
-      </div>\
-    </div>\
-    <div id='passfail' class='sxsl-passfailverify-hide'>\
-      <div id='errorcodes' class='sxsl-select sxsl-button-fail'>\
-        <div style='margin:8px' >Fail</div>\
-        <select id='errorcodelist'>\
-          <option class='sxsl-item' value='unkown'>TBD</option>\
-        </select>\
-      </div>\
-      <div id='failcode' style='left:24px;'><button id='fail' class='sxsl-button sxsl-button-fail' >Fail</button></div>\
-      <div style='right:24px;position:absolute;'><button id='pass' class='sxsl-button' >Pass</button></div>\
-    </div>\
-  </div>\
-  <div id='capture' class='sxsl-capture-hide'>\
-      <div id='enumeratedCapture' class='sxsl-select sxsl-button-fail sxsl-capture-hide'>\
-        <div id='enumChooser' style='margin:8px'>Choose</div>\
-        <select id='captureEnums'>\
-          <option class='sxsl-item' value='unkown'>TBD</option>\
-        </select>\
-      </div>\
-      <div style='left:24px;display:flex;'><input type='text' id='captureText' class='sxsl-capture-hide sxsl-capture-text' style='    padding: 20px;' placeholder='...'></input><button id='addCapture' class='sxsl-button sxsl-capture-button' >Submit</button></div>\
-      <div style='left:24px;'><img id='photoCapture' class='sxsl-capture-photo sxsl-capture-hide'></img></div>\
-      <div style='right:24px'><button id='activateCapture' class='sxsl-button sxsl-capture-activate sxsl-capture-hide' >Activate</button></div>\
-      <div id='captureFeedback' class='sxsl-capture-feedback'>info here</div>\
-  </div>";
+            <div id='panel' class='sxsl-instruction-panel'>\
+              <div  style='margin-right:12px;margin-left:12px'>\
+                <div id='cmdrow' style='padding-top: 12px'>\
+                  <div id='stepinfo' class='sxsl-instruction-step'>----</div>\
+                  <div id='cmds' class='sxsl-instruction-cmds'> \
+                    <button id='expandcontract' class='sxsl-button sxsl-button-round sxsl-icon-expand'/> \
+                    <button id='minimise' class='sxsl-button sxsl-button-round sxsl-icon-collapse-hide'/> \
+                    <button id='advance' class='sxsl-button sxsl-button-round sxsl-blue-bb sxsl-icon-nav-right'/></div>\
+                </div>\
+                <div style='margin-top:54px'><img id='thumbnail' class='sxsl-thumbnail-show' src='app/resources/Uploaded/earthNight.jpg' height=320/></div>\
+                <div id='header' class='sxsl-instruction-header'>header text</div>\
+                <div style='padding-bottom=12px'>\
+                  <div id='action' class='sxsl-instruction-actions'>action text</div>\
+                </div>\
+              </div>\
+            </div>\
+            <div id='actions' class='sxsl-actions-hide'>\
+              <div id='verify' class='sxsl-passfailverify-show'>\
+                <div class='checkbox' style='display:inline-flex;left: 650px;'>\
+                  <div style='margin-top:4px;margin-right:4px;'>Verify</div><input id='acknowledge' type='checkbox'/>\
+                </div>\
+              </div>\
+              <div id='passfail' class='sxsl-passfailverify-hide'>\
+                <div id='errorcodes' class='sxsl-select sxsl-button-fail'>\
+                  <div style='margin:8px' >Fail</div>\
+                  <select id='errorcodelist'>\
+                    <option class='sxsl-item' value='unkown'>TBD</option>\
+                  </select>\
+                </div>\
+                <div id='failcode' style='left:24px;'><button id='fail' class='sxsl-button sxsl-button-fail' >Fail</button></div>\
+                <div style='right:24px;position:absolute;'><button id='pass' class='sxsl-button' >Pass</button></div>\
+              </div>\
+            </div>\
+            <div id='capture' class='sxsl-capture-hide'>\
+              <div id='enumeratedCapture' class='sxsl-select sxsl-button-fail sxsl-capture-hide'>\
+                <div id='enumChooser' style='margin:8px'>Choose</div>\
+                <select id='captureEnums'>\
+                  <option class='sxsl-item' value='unkown'>TBD</option>\
+                </select>\
+              </div>\
+              <div style='left:24px;display:flex;'><input type='text' id='captureText' class='sxsl-capture-hide sxsl-capture-text' style='    padding: 20px;' placeholder='...'></input><button id='addCapture' class='sxsl-button sxsl-capture-button' >Submit</button></div>\
+              <div style='left:24px;'><img id='photoCapture' class='sxsl-capture-photo sxsl-capture-hide'></img></div>\
+              <div style='right:24px'><button id='activateCapture' class='sxsl-button sxsl-capture-activate sxsl-capture-hide' >Activate</button></div>\
+              <div id='captureFeedback' class='sxsl-capture-feedback'>info here</div>\
+            </div>";
           scope.sxslPlayerWindow.id = 'sxsl-instruction-container';
           scope.sxslPlayerWindow.className = 'sxsl-instruction-container';
 
@@ -1156,31 +1160,31 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           scope.errorcodelistWindow.addEventListener('change', selectedErrorCode);
 
           scope.advanceWindow = document.querySelector('button#advance');
-          scope.advanceWindow.addEventListener("click", next);
+          scope.advanceWindow.addEventListener('click', next);
           const btn2a = document.querySelector('button#minimise');
-          btn2a.addEventListener("click", minimise);
+          btn2a.addEventListener('click', minimise);
           const btn2b = document.querySelector('button#maximise');
-          btn2b.addEventListener("click", maximise);
+          btn2b.addEventListener('click', maximise);
           const btn2c = document.querySelector('button#expandcontract');
-          btn2c.addEventListener("click", expandContract);
+          btn2c.addEventListener('click', expandContract);
           const btnPass = document.querySelector('button#pass');
-          btnPass.addEventListener("click", function () {
+          btnPass.addEventListener('click', function () {
             scope.next('p');
           });
           const btnFail = document.querySelector('button#fail');
-          btnFail.addEventListener("click", function () {
+          btnFail.addEventListener('click', function () {
             scope.next('f');
           });
           const btnack = document.querySelector('input#acknowledge');
-          btnack.addEventListener("change", function () {
+          btnack.addEventListener('change', function () {
             scope.next('y');
           });
           //capture photo button
           const btn2d = document.querySelector('button#activateCapture');
-          btn2d.addEventListener("click", capturePhoto);
+          btn2d.addEventListener('click', capturePhoto);
           //capture photo button
           const btn2e = document.querySelector('button#addCapture');
-          btn2e.addEventListener("click", function () {
+          btn2e.addEventListener('click', function () {
             scope.input();
           });
 
@@ -1201,16 +1205,16 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           scope.referenceViewerWindow = document.createElement('div');
 
           scope.referenceViewerWindow.innerHTML = "\
-    <div id='viewerPanel' class='sxsl-viewer-panel'>\
-      <div class='sxsl-viewer-cmdview'>\
-        <div id='viewinfo' class='sxsl-viewer-infoView'>view info</div>\
-        <button id='minimiseView' class='sxsl-button sxsl-button-round sxsl-icon-close sxsl-closer'/> \
-      </div>\
-      <div id='viewerList' class='sxsl-viewer-view'>\
-        <img id='viewImage' class='sxsl-preview-hide'/>\
-        <video id='viewVideo' class='sxsl-preview-hide' autoplay><source src='' type='video/mp4' ></video>\
-      </div>\
-    </div>"
+            <div id='viewerPanel' class='sxsl-viewer-panel'>\
+              <div class='sxsl-viewer-cmdview'>\
+                <div id='viewinfo' class='sxsl-viewer-infoView'>view info</div>\
+                <button id='minimiseView' class='sxsl-button sxsl-button-round sxsl-icon-close sxsl-closer'/> \
+              </div>\
+              <div id='viewerList' class='sxsl-viewer-view'>\
+                <img id='viewImage' class='sxsl-preview-hide'/>\
+                <video id='viewVideo' class='sxsl-preview-hide' autoplay><source src='' type='video/mp4' ></video>\
+              </div>\
+            </div>"
           scope.referenceViewerWindow.id = 'viewer-container';
           scope.referenceViewerWindow.className = 'sxsl-preview-hide';
 
@@ -1227,13 +1231,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           scope.proofWindow = document.createElement('div');
 
           scope.proofWindow.innerHTML = "\
-    <div id='proofPanel' class='sxsl-proof-panel'>\
-      <div style='display:flex;vertical-align: middle; align-items: center;'>\
-        <img id='proofHint' class='sxsl-proof-hint' src='app/resources/Uploaded/example101/beauties.jpg' width=128/>\
-        <button id='proofCapture' class='sxsl-button sxsl-button-round sxsl-icon-to-do' style='position:relative;left: 12px;'/> \
-      </div>\
-      <div id='proofInstruction' class='sxsl-proof-text'>text here</div>\
-    </div>"
+            <div id='proofPanel' class='sxsl-proof-panel'>\
+              <div style='display:flex;vertical-align: middle; align-items: center;'>\
+                <img id='proofHint' class='sxsl-proof-hint' src='app/resources/Uploaded/example101/beauties.jpg' width=128/>\
+                <button id='proofCapture' class='sxsl-button sxsl-button-round sxsl-icon-to-do' style='position:relative;left: 12px;'/> \
+              </div>\
+              <div id='proofInstruction' class='sxsl-proof-text'>text here</div>\
+            </div>"
           scope.proofWindow.id = 'proof-container';
           scope.proofWindow.className = 'sxsl-proof-hide';
 
@@ -1257,10 +1261,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           scope.referencePreviewWindow = document.createElement('div');
 
           scope.referencePreviewWindow.innerHTML = "\
-    <div id='previewPanel' class='sxsl-preview-panel-collapsed'>\
-      <div id='previewList' class='sxsl-previews'>\
-      </div>\
-    </div>"
+            <div id='previewPanel' class='sxsl-preview-panel-collapsed'>\
+              <div id='previewList' class='sxsl-previews'>\
+              </div>\
+            </div>"
           scope.referencePreviewWindow.id = 'preview-container';
           scope.referencePreviewWindow.className = 'preview-container-collapsed';
 
