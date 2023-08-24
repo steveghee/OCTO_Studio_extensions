@@ -169,8 +169,8 @@ generated using simple tools such as Python or node.js, taking content (assets, 
 
 The sxsl widget provides a convenient player, including built-in UI, which will execute this sxsl language and will deliver AR-enabled instructions.
 
-The src property should be set to point to a valid sxsl defintion/file (json format).  It is assumed that the associated 2d/3d resources, including any 
-associated tracking targets, are included in the same relative location as the the sxsl json.  This file could be local (in the experience) or could be situated on a remote data service e.g. the Experience Service, Thingworx or elsewhere.  Src is a URL that points to this resource.
+The src property should be set to point to a valid sxsl defintion/file (json format).  If bound to a URL, the widget will fetch the content.  It is assumed that the associated 2d/3d resources, including any 
+associated tracking targets, are included in the same relative location as the the sxsl json.  This file could be local (in the experience) or could be situated on a remote data service e.g. the Experience Service, Thingworx or elsewhere.  Src is a URL that points to this resource. You can also bind this property to an inline serialised (JSON serialised string) representation of the sxsl structure - if detected the widget will interpret the sxsl directly (it does not need to load a file). An optional (hidden) 'Content Location' field is provided for cases wher eyou might have sxsl content which includes relative file references; the content location property can be a string which describes the base file path/url to the data, in the form "server:path/to/data/".  Note the / on the end is important. 
 
 The sxsl2 specification can be found here (TODO: link to be provided)
 

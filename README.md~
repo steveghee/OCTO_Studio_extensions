@@ -164,13 +164,13 @@ This section TO BE COMPLETED
 (Important note : this is an early alpha version of this widget : testing has been limited so far to landscape ipad devices, so any other device/display format may look wrong - it will get fixed over time. Right now the focus is functionality)
 
 sxsl is a language (implemented as a json data format) for defining step-by-step instructions.  
-Stepxsl content can be output from Creo Illustrate, or created in tools such as Expert Capture. The format is designed to be very simple, allowing sxsl content to be
+Sxsl content can be output from Creo Illustrate, or created in tools such as Expert Capture. The format is designed to be very simple, allowing sxsl content to be
 generated using simple tools such as Python or node.js, taking content (assets, resources etc.) from any instruction source.
 
 The sxsl widget provides a convenient player, including built-in UI, which will execute this sxsl language and will deliver AR-enabled instructions.
 
-The src property should be set to point to a valid sxsl defintion/file (json format).  It is assumed that the associated 2d/3d resources, including any 
-associated tracking targets, are included in the same relative location as the the sxsl json.  This file could be local (in the experience) or could be situated on a remote data service e.g. the Experience Service, Thingworx or elsewhere.  Src is a URL that points to this resource.
+The src property should be set to point to a valid sxsl defintion/file (json format).  If bound to a URL, the widget will fetch the content.  It is assumed that the associated 2d/3d resources, including any 
+associated tracking targets, are included in the same relative location as the the sxsl json.  This file could be local (in the experience) or could be situated on a remote data service e.g. the Experience Service, Thingworx or elsewhere.  Src is a URL that points to this resource. You can also bind this property to an inline serialised (JSON serialised string) representation of the sxsl structure - if detected the widget will interpret the sxsl directly (it does not need to load a file). 
 
 The sxsl2 specification can be found here (TODO: link to be provided)
 
