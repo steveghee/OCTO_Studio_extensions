@@ -31,6 +31,14 @@ function twxSxslplayer() {
         showInput: true
       },
       {
+        name: 'tracking',
+        label: 'Is Tracking',
+        datatype: 'boolean',
+        isBindingSource: true,
+        isBindingTarget: false,
+        showInput: false
+      },
+      {
         name: 'canrun',
         label: 'Ready',
         datatype: 'boolean',
@@ -66,14 +74,14 @@ function twxSxslplayer() {
         showInput: true
       },
       {
-            name: 'context',
-           label: 'Context',
-        datatype: 'resource_url',
+            name: 'anchor',
+           label: 'Content Location',
+        datatype: 'String',
          default: '',
-    resource_url: true,
-        isBindingSource: true,
-        isBindingTarget: false,
-        showInput: false
+        isBindingSource: false,
+        isBindingTarget: true,
+        showInput: false,
+       isVisible: false
       },
       {
             name: 'steplist',
@@ -171,7 +179,7 @@ function twxSxslplayer() {
     runtimeTemplate: function (props, twxWidgetEl, fullOriginalDoc, $, projectSettings) {
       var forholo = (projectSettings.projectType === 'eyewear');
       var isholo  = forholo ;   
-      var ps1gl ='<script name="sxsl_screendoorgl" type="x-shader/x-fragment">precision mediump float; vec2 rotate2D(vec2 _st, float _angle) { _st -= 0.5;_st =  mat2(cos(_angle),-sin(_angle), sin(_angle),cos(_angle)) * _st; _st += 0.5; return _st;} vec2 tile(vec2 _st, float _zoom){ _st *= _zoom; return fract(_st);}float box(vec2 _st, vec2 _size, float _smoothEdges){ _size = vec2(0.5)-_size*0.5; vec2 aa = vec2(_smoothEdges*0.5); vec2 uv = smoothstep(_size,_size+aa,_st); uv *= smoothstep(_size,_size+aa,vec2(1.0)-_st); return uv.x*uv.y;} void main(void){ vec2 st = gl_FragCoord.xy / 32. ;vec3 color = vec3(0.0); st = tile(st,4.); st = rotate2D(st,0.785398163); float b = box(st,vec2(0.7),0.01); if (b < 0.01) discard; gl_FragColor = vec4(b,b,b,1.0); }</script>';
+      var ps1gl ='<script name="sxslPlayerWidgetsl_screendoorgl" type="x-shader/x-fragment">precision mediump float; vec2 rotate2D(vec2 _st, float _angle) { _st -= 0.5;_st =  mat2(cos(_angle),-sin(_angle), sin(_angle),cos(_angle)) * _st; _st += 0.5; return _st;} vec2 tile(vec2 _st, float _zoom){ _st *= _zoom; return fract(_st);}float box(vec2 _st, vec2 _size, float _smoothEdges){ _size = vec2(0.5)-_size*0.5; vec2 aa = vec2(_smoothEdges*0.5); vec2 uv = smoothstep(_size,_size+aa,_st); uv *= smoothstep(_size,_size+aa,vec2(1.0)-_st); return uv.x*uv.y;} void main(void){ vec2 st = gl_FragCoord.xy / 32. ;vec3 color = vec3(0.0); st = tile(st,4.); st = rotate2D(st,0.785398163); float b = box(st,vec2(0.7),0.01); if (b < 0.01) discard; gl_FragColor = vec4(b,b,b,1.0); }</script>';
       var vs1gl ='<script name="sxsl_screendoorgl" type="x-shader/x-vertex">attribute vec4 vertexPosition;uniform mat4 modelViewProjectionMatrix;void main() {gl_Position = modelViewProjectionMatrix * vertexPosition;}</script>';
       var ps1hl ='<script name="sxsl_screendoorhl" type="x-shader/x-fragment">  cbuffer ShaderConstantBuffer : register(b0) {  float4 highlightColor; bool useTexture; bool useLight; float transparency; int pad; }; cbuffer RenderConstantBuffer : register(b1) { float tick; float3 ding; }; struct PixelShaderInput { half4 pos : SV_POSITION; }; min16float4 main(PixelShaderInput input) : SV_TARGET {  min16float4 color = min16float4(0.0,0.0,0.0,0.0); min16float4 finalShadedColor = color; return finalShadedColor; } </script>';
       var vs1hl ='<script name="sxsl_screendoorhl" type="x-shader/x-vertex"> cbuffer ModelConstantBuffer : register(b0) { float4x4 model; float4x4 inverse; }; cbuffer MaterialConstantBuffer : register(b1) { float4 diffuseColor; }; cbuffer ViewProjectionConstantBuffer : register(b2) { float4x4 viewProjection[2]; float4x4 viewInverse; }; struct VertexShaderInput { half4 pos : POSITION; uint instId : SV_InstanceID; }; struct VertexShaderOutput { half4 pos : SV_POSITION; uint rtvId : SV_RenderTargetArrayIndex; }; VertexShaderOutput main(VertexShaderInput input) { VertexShaderOutput output; half4 pos = half4(input.pos); int idx = input.instId % 2; pos = mul(pos, model); pos = mul(pos, viewProjection[idx]); output.pos = (half4)pos; output.rtvId = idx; return output; } </script>';
@@ -189,7 +197,7 @@ function twxSxslplayer() {
       var ps4gl = '<script name="sxsl_proximityHilitegl" type="x-shader/x-fragment">  precision mediump float;  const float PI=3.1415926;   varying vec3 vertex;  varying vec3 normal;  varying vec2 texcoord;  varying vec4 vcolor;  varying float dist; uniform sampler2D tex0;  uniform vec4 surfaceColor;  uniform float cutoutDepth;  const vec4 ambientColor = vec4(0.15, 0.15, 0.15, 1.0);   const vec4 specColor    = vec4(0.05, 0.05, 0.05, 1.0);  void main() {    vec4 color = vec4(1.,.5,.25,1.); surfaceColor + texture2D(tex0,texcoord);;				     vec3 lightPos = vec3(1.,1.,1.);    vec3 lightDir = -normalize(lightPos);    vec3 finalNormal = normalize(normal);				    float lambertian = dot(lightDir,finalNormal);    float specular = 0.0;    vec3 viewDir = normalize(-vertex);    if (lambertian < 0.0)       finalNormal = - finalNormal;    vec3 reflectDir = reflect(-lightDir, finalNormal);    float specAngle = max(dot(reflectDir, viewDir), 0.0);    specular = pow(specAngle, 4.0);    color = ambientColor * color + color * abs(lambertian);					    float d2 = cutoutDepth/2.;    color.a  = smoothstep(d2,cutoutDepth,dist);    gl_FragColor=vec4(color);  }</script>';
       var vs4gl = '<script name="sxsl_proximityHilitegl" type="x-shader/x-vertex">  attribute vec3 vertexPosition;  attribute vec3 vertexNormal;  attribute vec2 vertexTexCoord;			  varying vec2 texcoord;  varying vec3 normal;    varying vec3 vertex;  varying float dist;    uniform mat4 modelViewProjectionMatrix;  uniform mat4 modelViewMatrix;  uniform mat4 normalMatrix;  void main() {    vec4 vp     = vec4(vertexPosition, 1.0);    gl_Position = modelViewProjectionMatrix * vp;    normal      = vec3(normalize(normalMatrix * vec4(vertexNormal,0.0)));    texcoord    = vertexTexCoord;    vertex      = vp.xyz;    vec3 vv     = vec3(modelViewMatrix * vp);    dist        = length(vv); } </script>';
       
-      var tmpl = `<div ng-sxslplayer holo-field=${isholo} logging-field={{me.logIncremental}} disabled-field={{me.disabled}} physical-field={{me.physical}} resource-field={{me.sxsldata}} status-field="me.status" running-field="me.running" canrun-field="me.canrun" clock-field="me.tick" reasoncode-field={{me.reasoncode}} context-field="me.context" steplist-field="me.steplist" delegate-field="delegate"></div>`;
+      var tmpl = `<div ng-sxslplayer holo-field=${isholo} logging-field={{me.logIncremental}} disabled-field={{me.disabled}} tracking-field="me.tracking" physical-field={{me.physical}} anchor-field={{me.anchor}} resource-field={{me.sxsldata}} status-field="me.status" running-field="me.running" canrun-field="me.canrun" clock-field="me.tick" reasoncode-field={{me.reasoncode}} steplist-field="me.steplist" delegate-field="delegate"></div>`;
       return tmpl+ps1gl+vs1gl+ps2gl+vs2gl+ps3gl+vs3gl+ps1hl+vs1hl+ps2hl+vs2hl+ps3hl+vs3hl+ps4gl+vs4gl;
     }
   }

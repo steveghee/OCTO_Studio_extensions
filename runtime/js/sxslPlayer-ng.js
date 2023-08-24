@@ -18,11 +18,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         physicalField: '@',
         resourceField: '@',
         reasoncodeField: '@',
+        anchorField: '@',
         holoField: '@',
         canrunField: '=',
         runningField: '=',
         clockField: '=',
-        contextField: '=',
+        trackingField: '=',
         statusField: '=',
         steplistField: '=',
         delegateField: '='
@@ -465,7 +466,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
           } else {
             console.log('disabled');
-            scope.contextField = '';
+            scope.trackingField = false;
             scope.steplistField = undefined;
 
             if (active)
@@ -829,6 +830,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           contextual.target = {};
           var targetExists = document.querySelector("twx-dt-target");
           if (targetExists != null) {
+            contextual.target.isExistingTarget = true;  
             contextual.target.tracker = 'tracker1';
             contextual.target.id = targetExists.id;
             var tgtsrc = targetExists.attributes['src'].value;
@@ -878,7 +880,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             // now create the tracker here
             var markerDef = [{ src: contextual.target.target }];
             scope.renderer.loadTrackerDef(markerDef, (successMarkerSrcs) => {
-
+                                          
+              contextual.target.isExistingTarget = false;  
               contextual.target.tracker = 'tracker1';
               scope.renderer.addTracker(contextual.target.tracker, () => {
 
@@ -927,7 +930,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           }
           return contextual;
         }
-
+        
+        //
+        //todo : we should only be doing this IF we are responsible for the tracking
         scope.$root.$on('trackingacquired', function (event, args) {
           var targetGuideDiv = document.querySelector("div.targetGuide");
           if (targetGuideDiv) {
@@ -936,7 +941,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             targetGuideDiv.style.backgroundImage = "";
             pscope.$applyAsync();
           }
-          scope.contextField = 'istracked set to true ' + args;
+          scope.trackingField = true;
         });
 
         scope.$root.$on('trackinglost', function (event, args) {
@@ -947,7 +952,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             targetGuideDiv.style.backgroundImage = "url('" + scope.data.guide + "')";
             pscope.$applyAsync();
           }
-          scope.contextField = 'istracked set to false for ' + args;
+          scope.trackingField = false;
         });
 
         //////////////////////////////////////////////////////////////////////////////////////////////////    
@@ -972,30 +977,77 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           return steplist;
         }
 
+        scope.$watch('anchorField', function () {
+          if (scope.anchorField != undefined && scope.anchorField.length > 0) 
+            scope.data.anchor = scope.anchorField;           
+        })
+        
+        const isValidUrl = urlString => {
+          try { 
+      	    return Boolean(new URL(urlString)); 
+          }
+          catch(e){ 
+      	    return false; 
+          }
+        }
+        
+        const isSxsl = val => {
+          try { 
+            val = JSON.parse(val);
+          }
+          catch(e){ 
+      	    return false; 
+          }
+            
+          if (val === null) { return false;}
+          return (typeof val === 'object') && val.sxslVersion != undefined ;
+        }
+
         scope.$watch('resourceField', function () {
           scope.data.src = (scope.resourceField != undefined) ? scope.resourceField : '';
-          scope.data.anchor = scope.data.src.slice(0, scope.data.src.lastIndexOf('/') + 1);
-          if (scope.helper) scope.helper.anchor = scope.data.anchor;
+          if (!isSxsl(scope.data.src)) {
+          
+            scope.data.anchor = scope.data.src.slice(0, scope.data.src.lastIndexOf('/') + 1);
+            if (scope.helper) scope.helper.anchor = scope.data.anchor;
 
-          $http.get(scope.data.src)
-            .success(function (data, status, headers, config) {
+            $http.get(scope.data.src)
+              .success(function (data, status, headers, config) {
 
-              if (data != undefined) {
-                var proc = scope.data.sxsl = data;
+                if (data != undefined) {
+                  var proc = scope.data.sxsl = data;
 
-                //for now. let's just grab the context block...      
-                var context = proc.contexts != undefined ? proc.contexts[Object.keys(proc.contexts)[0]] : undefined;
-                scope.data.context = getContext(context);
+                  //for now. let's just grab the context block...      
+                  var context = proc.contexts != undefined ? proc.contexts[Object.keys(proc.contexts)[0]] : undefined;
+                  scope.data.context = getContext(context);
 
-                // and the steps
-                scope.data.steplist = getSteps(proc);
-                startSxslPlayer();
-              }
-            })
-            .error(function (data, status, headers, config) {
-              console.log(status);
-            });
+                  // and the steps
+                  scope.data.steplist = getSteps(proc);
+                  startSxslPlayer();
+                }
+              })
+              .error(function (data, status, headers, config) {
+                console.log(status);
+              });
+          } else {
+              
+            // lets assume/hope its the sxsl in string form
+            var proc = scope.data.sxsl = JSON.parse(scope.data.src);
+            
+            // hopefullly this has already been set
+            if (scope.anchorField != undefined && scope.anchorField.length > 0) {
+              scope.data.anchor   = scope.anchorField;           
+              scope.helper.anchor = scope.data.anchor;
+            }
 
+            //for now. let's just grab the context block...      
+            var context = proc.contexts != undefined ? proc.contexts[Object.keys(proc.contexts)[0]] : undefined;
+            scope.data.context = getContext(context);
+
+            // and the steps
+            scope.data.steplist = getSteps(proc);
+            startSxslPlayer();
+             
+          }
 
         });
 
@@ -2049,7 +2101,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             return this.findInputValidator(a.details, a.tools);
           }
 
-          //find the named action handler
+          //find toolshe named action handler
           this.find = (actname) => new Promise((resolve, reject) => {
 
             console.log('...finding', actname, '...');
