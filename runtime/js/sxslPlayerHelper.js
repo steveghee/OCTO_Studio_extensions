@@ -424,24 +424,26 @@ function sxslHelper(renderer, anchor) {
     // 
     // scan all steps and actions for any tools that are referenced
     //
-    this.getToolList = () => {
+    this.getToolList = (aid) => {
         
       var tools  = [];
       var anchor = this.anchor;  
       var p = this.proc;
       p.steps.forEach(function (step, idx) {
-         step.actions.forEach(function(action) {
-           if (action.tools != undefined) {
-             action.tools.forEach(function(tool) {
-               tools.push( {
+        step.actions.forEach(function(action) {
+          if ((aid === undefined || action.id === aid) &&                                  
+             (action.tools != undefined)) {
+          
+            action.tools.forEach(function(tool) {
+              tools.push( {
                           name: tool.name, 
                             id: tool.id, 
                           info: tool.extras != undefined ? tool.extras.resources.filter(function(v) { return v.mimeType=='text/plain';}).map(v => { return v.text }) : undefined,
                            img: tool.extras != undefined ? tool.extras.resources.filter(function(v) { return v.mimeType=='image/jpeg';}).map( v => { return anchor + v.url }) : undefined
-                            } );
-             });
-           }
-         })
+              } );
+            });
+          }
+        })
       });
       return tools;    
     }

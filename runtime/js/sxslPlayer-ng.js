@@ -251,6 +251,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
               var as = proc.events.on('actionStart', function (evt, action) {
                 console.log('action Start');
+                scope.toollistField = proc.getToolList(action.id);
                 hideCapture();
               });
 
@@ -437,7 +438,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   };
                   if (scope.data.isHolo) {
 
-                    //hololens platform not supported at this time  
+                    //hololens platform not supported at this thisime  
                     scope.canrunField = false;
 
                     scope.logger.push({
