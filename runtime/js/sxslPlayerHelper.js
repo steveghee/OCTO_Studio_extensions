@@ -447,7 +447,40 @@ function sxslHelper(renderer, anchor) {
       });
       return tools;    
     }
-
+    
+    // 
+    // scan all steps and actions for any tools that are referenced
+    //
+    this.getConsumables = (aid) => {
+        
+      var materials = [];
+      var anchor = this.anchor;  
+      var p = this.proc;
+      p.steps.forEach(function (step, idx) {
+        step.actions.forEach(function(action) {
+          if ((aid === undefined || action.id === aid) &&                                  
+             (action.materials != undefined)) {
+          
+          action.materials.forEach(function(material) {
+            let sub = material.asset;                     
+            let asset = this.context != undefined ? this.context[sub.contextId].assets[sub.assetId] : {};
+            
+            materials.push( {
+                           // should realy check the name is specified and have a proper function to ge tthis info
+                          name: material.name.resources.filter(function(v) { return v.mimeType=='text/plain';}).map(v => { return v.text })[0],
+                        amount: material.amountConsumed,
+                         units: material.unitsOfConsumption != undefined ? material.unitsOfConsumption.resources.filter(v => { return v.mimeType=='text/plain'}).map(v => { return v.text }): "",
+                            id: sub.assetId, 
+                          info: asset.resources != undefined ? asset.resources.filter(function(v) { return v.mimeType=='text/plain';}).map(v => { return v.text }) : undefined,
+                           img: asset.resrouces != undefined ? asset.resources.filter(function(v) { return v.mimeType=='image/jpeg';}).map( v => { return anchor + v.url }) : undefined
+              } );
+            });
+          }
+        })
+      });
+      return materials;    
+    }
+    
     //
     // get a linked list of steps - we actually get the statements and the steps they refer to
     //

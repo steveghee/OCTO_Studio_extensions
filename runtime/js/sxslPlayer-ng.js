@@ -77,7 +77,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               scope.canrunField = true;
               scope.runningField = true;
               scope.toollistField = proc.getToolList();
-
+              scope.consumablesField = proc.getConsumables();
+              
               var eps = proc.events.on('procStart', function (evt, proc) {
                 scope.setHeadLabel(proc.title);
                 scope.steplistField = proc.getStepList();
@@ -251,13 +252,18 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
               var as = proc.events.on('actionStart', function (evt, action) {
                 console.log('action Start');
-                scope.toollistField = proc.getToolList(action.id);
+                scope.toollistField    = proc.getToolList(action.id);
+                scope.consumablesField = proc.getConsumables(action.id);
                 hideCapture();
               });
 
               var ae = proc.events.on('actionEnd', function (evt, action) {
 
                 console.log('completing action', action.type);
+                
+                scope.toollistField    = [];
+                scope.consumablesField = [];
+                
                 // disarm any tools that were in use
                 if (action.tools != undefined && action.tools[0].disarm != undefined) {
                   action.tools[0].disarm();
