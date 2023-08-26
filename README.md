@@ -176,6 +176,9 @@ The sxsl2 specification can be found here (TODO: link to be provided)
 
 The widget will display the instruction control UI, including any 2d (image, video) references.  
 
+Step List property holds areference to the list of valid steps that can be visited. You can bind this to a list, and clck on an item to jump to that step.
+Tools Required property holds a reference to a list of any tools that are required to execute this procedure. The tool name, info and (optional) image are included. This is for reference purposes only i.e. this list is non=interactive.
+
 ### properties
 The steplist property provides an infotable which lists all the available steps - you can display this in a list/repeater to view and select/jump to specific steps. Only valid next steps are presented.
 

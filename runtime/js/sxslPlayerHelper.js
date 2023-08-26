@@ -421,6 +421,31 @@ function sxslHelper(renderer, anchor) {
       next(pauseInfo);
     });
 
+    // 
+    // scan all steps and actions for any tools that are referenced
+    //
+    this.getToolList = () => {
+        
+      var tools  = [];
+      var anchor = this.anchor;  
+      var p = this.proc;
+      p.steps.forEach(function (step, idx) {
+         step.actions.forEach(function(action) {
+           if (action.tools != undefined) {
+             action.tools.forEach(function(tool) {
+               tools.push( {
+                          name: tool.name, 
+                            id: tool.id, 
+                          info: tool.extras != undefined ? tool.extras.resources.filter(function(v) { return v.mimeType=='text/plain';}).map(v => { return v.text }) : undefined,
+                           img: tool.extras != undefined ? tool.extras.resources.filter(function(v) { return v.mimeType=='image/jpeg';}).map( v => { return anchor + v.url }) : undefined
+                            } );
+             });
+           }
+         })
+      });
+      return tools;    
+    }
+
     //
     // get a linked list of steps - we actually get the statements and the steps they refer to
     //

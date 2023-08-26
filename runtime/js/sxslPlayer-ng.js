@@ -26,6 +26,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         trackingField: '=',
         statusField: '=',
         steplistField: '=',
+        toollistField: '=',
+        consumablesField: '=',
         delegateField: '='
       },
       template: '<div></div>',
@@ -74,6 +76,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               console.log('loaded', proc.getStepList().length, 'steps');
               scope.canrunField = true;
               scope.runningField = true;
+              scope.toollistField = proc.getToolList();
 
               var eps = proc.events.on('procStart', function (evt, proc) {
                 scope.setHeadLabel(proc.title);
