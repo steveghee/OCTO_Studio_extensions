@@ -268,7 +268,16 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 if (action.tools != undefined && action.tools[0].disarm != undefined) {
                   action.tools[0].disarm();
                 }
-
+                
+                // were there any materials consumed in this action?
+                if (action.materials != undefined) {
+                  scope.logger.push({
+                    id: action.id,
+                    event: "materialConsumed",
+                    time: Date.now(),
+                    response:action.materials
+                  });
+                }
               });
 
               var abp = proc.events.on('actionBypass', function (evt, action) {

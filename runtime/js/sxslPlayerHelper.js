@@ -20,11 +20,10 @@ function sxslHelper(renderer, anchor) {
     // we can have procedure, step and action=level contexts, so these get passed down
     this.context = a.contexts != undefined && a.contexts.length > 0 ? a.contexts[0] : s.context;
 
-    this.ack = s.ack;
+    this.ack  = s.ack;
     this.type = a.type;
-    this.details = a.details;
-    this.details = a.details;
-
+    this.details   = a.details;
+    this.materials = a.materials;
 
     this.subjects = undefined;
     var subcount = a.subjects != undefined ? a.subjects.length : 0;
@@ -469,7 +468,7 @@ function sxslHelper(renderer, anchor) {
                            // should realy check the name is specified and have a proper function to ge tthis info
                           name: material.name.resources.filter(function(v) { return v.mimeType=='text/plain';}).map(v => { return v.text })[0],
                         amount: material.amountConsumed,
-                         units: material.unitsOfConsumption != undefined ? material.unitsOfConsumption.resources.filter(v => { return v.mimeType=='text/plain'}).map(v => { return v.text }): "",
+                         units: material.unitsOfConsumption != undefined ? material.unitsOfConsumption.resources.filter(v => { return v.mimeType=='text/plain'}).map(v => { return v.text })[0]: "",
                             id: sub.assetId, 
                           info: asset.resources != undefined ? asset.resources.filter(function(v) { return v.mimeType=='text/plain';}).map(v => { return v.text }) : undefined,
                            img: asset.resrouces != undefined ? asset.resources.filter(function(v) { return v.mimeType=='image/jpeg';}).map( v => { return anchor + v.url }) : undefined
