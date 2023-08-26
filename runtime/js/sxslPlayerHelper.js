@@ -469,7 +469,7 @@ function sxslHelper(renderer, anchor) {
                           name: material.name.resources.filter(function(v) { return v.mimeType=='text/plain';}).map(v => { return v.text })[0],
                         amount: material.amountConsumed,
                          units: material.unitsOfConsumption != undefined ? material.unitsOfConsumption.resources.filter(v => { return v.mimeType=='text/plain'}).map(v => { return v.text })[0]: "",
-                            id: sub.assetId, 
+                            id: sub != undefined ? sub.assetId : undefined, 
                           info: asset.resources != undefined ? asset.resources.filter(function(v) { return v.mimeType=='text/plain';}).map(v => { return v.text }) : undefined,
                            img: asset.resrouces != undefined ? asset.resources.filter(function(v) { return v.mimeType=='image/jpeg';}).map( v => { return anchor + v.url }) : undefined
               } );

@@ -2160,7 +2160,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           this.register('Assemble', this.generic);
           this.register('Tighten', this.generic);
           this.register('Verify', this.generic);
-          this.register('Verification', this.generic);
           //from cwc
           this.register('Instructional', this.generic);
           //from vantage
@@ -2168,6 +2167,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           this.register('AssetCarousel', this.generic);
           this.register('GenericActionAtPointOfInterest', this.generic);
           this.register('Move', this.generic);
+          //new
+          this.register('Identify', this.generic);
 
         }
 
