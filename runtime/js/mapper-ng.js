@@ -114,7 +114,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                                                                  : [];
           
           // if the data item has 'selectedRows' then lets use the SUBSET of data to control the list
-          if (scope.data.results != undefined && scope.infoField.selectedRows != undefined)
+          if (scope.data.results != undefined && scope.infoField.selectedRows != undefined && scope.infoField.selectedRows.length > 0)
             scope.data.results = scope.infoField.selectedRows;
           
           if (scope.data.results === undefined || scope.data.results.length === 0) {

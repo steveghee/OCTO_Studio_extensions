@@ -1,3 +1,5 @@
+(function (root, undefined) {
+ 
 function Matrix4() {
     this.m = [ [1, 0, 0, 0],
                [0, 1, 0, 0],
@@ -904,6 +906,11 @@ function Bbox() {
         this.max[2] = parseFloat(pcs[5]);
         return this;
     }
+    this.FromArray = function(box) {
+        this.min = box.slice(0,3);
+        this.max = box.slice(-3);
+        return this;
+    }
     
     this.Add = function(box) {
         if (this.children === undefined)
@@ -1484,10 +1491,11 @@ function Quat() {
 
 }
 
-exports.Matrix4 = Matrix4;
-exports.MatrixO = MatrixO;
-exports.MatrixP = MatrixP;	
-exports.Vector4 = Vector4;
-exports.BBox    = Bbox;
-exports.Quat    = Quat;
+    root.Matrix4 = Matrix4;
+    root.MatrixO = MatrixO;
+    root.MatrixP = MatrixP;	
+    root.Vector4 = Vector4;
+    root.BBox    = Bbox;
+    root.Quat    = Quat;
 
+})(this);

@@ -32,6 +32,8 @@ exports.runtimeAngularModulesRequires = ["groupy-ng",
                                          
                                          //new - mainly alpha testing
                                          "sxslplayer-ng",
+                                         "locator-ng",
+                                         //"infodisplay-ng",
                                          
                                          "lighttube-ng", 
                                          "multiline3D-ng",

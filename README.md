@@ -195,7 +195,13 @@ TBC
 
 ## Misc
 
-### Image markup (** new **)
+
+### Locator (** new **)
+The Locator widget can be linked to the output of finder. The output of loator is a matching list if location points that match the items in the find results list.  
+this list could be bound to the input of the wayfinder, allow the user to locate items.
+
+
+### Image markup
 The markup widget can be used to provide in-situ markup (pen,text, shapes) over an 
 image e.g. a photo collected from the camera widget.  Connect the image_url output from the camera to the image_url input of the markup; connect the picture taken even from the camera to the start markup service of the markup widget. When you take a picture, the markup editor
 will open and you can draw on the image. Click ok to generate a new image - you can route this to thingworx or similar.
