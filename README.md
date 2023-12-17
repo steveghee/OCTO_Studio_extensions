@@ -22,10 +22,11 @@ The extension can be broken down into 4 main catagories
 
 1. Targets
 2. Inputs
-3. Containers
-4. Navigation
-5. Step by Step Instructions (new)
-6. Misc 
+3. Metadata (** new **)
+4. Containers
+5. Navigation
+6. Step by Step Instructions (new)
+7. Misc 
 
 Lets look at each in turn.
 
@@ -109,6 +110,11 @@ widget will quantize the value for example steps=5 will divide the control into 
 WIP
 
 ## Metadata 
+
+### Locator (** new **)
+The Locator widget can be linked to the output of Finder. The output of locator is a matching list if location points that match the items in the find results list.  
+This list could be bound to the input of the wayfinder, allow the user to locate items spatially.
+
 ### Finder
 Provides real-time metadata shearch within specified model ID.
 ou can supply the property name, the search value, and the operation to use e.g. "cost" "greater than" "20".  The property name, values, and the operand can be data driven via binding.
@@ -194,11 +200,6 @@ TBC
 
 
 ## Misc
-
-
-### Locator (** new **)
-The Locator widget can be linked to the output of finder. The output of locator is a matching list if location points that match the items in the find results list.  
-This list could be bound to the input of the wayfinder, allow the user to locate items spatially.
 
 If coumpound is set to true, s single composition location (box) which encompasses all N input items, is created.
 If false, each item in the input list is mapped to center point if the item
