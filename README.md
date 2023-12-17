@@ -197,9 +197,11 @@ TBC
 
 
 ### Locator (** new **)
-The Locator widget can be linked to the output of finder. The output of loator is a matching list if location points that match the items in the find results list.  
-this list could be bound to the input of the wayfinder, allow the user to locate items.
+The Locator widget can be linked to the output of finder. The output of locator is a matching list if location points that match the items in the find results list.  
+This list could be bound to the input of the wayfinder, allow the user to locate items spatially.
 
+If coumpound is set to true, s single composition location (box) which encompasses all N input items, is created.
+If false, each item in the input list is mapped to center point if the item
 
 ### Image markup
 The markup widget can be used to provide in-situ markup (pen,text, shapes) over an 

@@ -59,13 +59,8 @@ function twxLocator() {
         label: 'Completed'
       },
     ],
-    
-  services: [
-      {
-         name: 'reset',
-        label: 'Reset'
-      }
-    ],
+
+  services: [],
 
     designTemplate: function () {
       return '<div class="locatorWidget"></div>';
