@@ -22,7 +22,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
         var lastUpdated = 'unknown';
         scope.data = {    q: true, 
-                       auto: true,
+                       auto: false,
                      };
         
         var _setq = function() {

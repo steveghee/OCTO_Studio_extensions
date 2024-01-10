@@ -76,14 +76,18 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           }
 
           scope.data.input = (Array.isArray(scope.infoField)) ? scope.infoField 
-                             : scope.infoField.path != undefined ? [{model:scope.infoField.model,path:scope.infoField.path}]
-                                                                 : [];
+                             : scope.infoField != undefined && scope.infoField.path != undefined ? [{model:scope.infoField.model, path:scope.infoField.path}]
+                             : [];
 
           // if the data item has 'selectedRows' then lets use the SUBSET of data to control the list
           if (scope.data.input != undefined && scope.infoField.selectedRows != undefined && scope.infoField.selectedRows.length > 0)
             scope.data.input = scope.infoField.selectedRows;
-
-          // now iterate over the results finding the bounds items for those listed
+            
+          // do we have anything to process? if not, duck out here  
+          if (scope.data.input.length == 0) 
+            return;
+            
+          // otherwise, iterate over the results finding the bounds items for those listed
           scope.data.model = scope.data.input[0].model; // they might not all be the same model, so we may need to break this up
           scope.data.results = [];
           scope.data.group = undefined;
@@ -92,6 +96,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                        .then ( (structure) => {
             //   
             // Get the properties of the 'model-1' widget
+            // as we need to adjust the bbox into physical space to match where the widget has placed it
             var widgetProps = scope.$parent.view.wdg[scope.data.model];
 
             scope.data.input.forEach(function(result) {
@@ -106,7 +111,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               var xform_bbox = bbox.transform( [widgetProps.x,  widgetProps.y,  widgetProps.z],
                                                [widgetProps.rx, widgetProps.ry, widgetProps.rz],
                                                widgetProps.scale );
-
+              
+              // are we combining all results into one single point?
               if (scope.data.autogroup) {
                   autogroup(xform_bbox);
               } else {
@@ -121,13 +127,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 var sz = Math.abs(bm.z - bx.z);
                 var scale = {x:sx, y:sy, z:sz};
 
-                scope.data.results.push( { model:scope.data.model, 
-                                            path:pathid, 
-                                        position:bc, 
-                                            gaze:{x:0,y:0,z:0}, 
-                                              up:{x:0,y:1,z:0}, 
-                                            scale:scale, 
-                                            label:label });
+                scope.data.results.push( { model: scope.data.model, 
+                                            path: pathid, 
+                                        position: bc, 
+                                            gaze: {x:0,y:0,z:0}, 
+                                              up: {x:0,y:1,z:0}, 
+                                           scale: scale, 
+                                           label: label });
               }
             });
 

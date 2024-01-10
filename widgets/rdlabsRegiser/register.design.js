@@ -26,7 +26,7 @@ function twxRegister() {
             name: 'i',
            label: 'Input',
         datatype: 'string',
-         default: false,
+         default: '',
  isBindingSource: false,
  isBindingTarget: true,
        showInput: true
@@ -35,7 +35,7 @@ function twxRegister() {
             name: 'q',
            label: 'Register',
         datatype: 'string',
-         default: false,
+         default: '',
  isBindingSource: true,
  isBindingTarget: false,
        showInput: false
