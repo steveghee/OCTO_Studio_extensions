@@ -84,13 +84,17 @@ Note also : The 3d occluding model is (currently) not included in the runtime di
 Finally, the widget is in fact a generic target that will support any model target, so you can use standard and advanced/360 targets with this widget.  You don't have to use advanced/360 targets.
 
 ### Area targets
-Note : depricated : product now includes this target type
+Note : deprecated : product now includes this target type
 
 ### Cloud Image Targets
-depricated: product now includes this target type
+Reference your Vuforia cloudimage targets from your experience.  You supply your Vuforia cloud keys to this widget, and it will
+communicate with the Cloud Server and establish tracking when any of your cloud image targets are recognised. The tracking feedback event will included
+information on the target ID and any metadata associated.
 
 ### Custom Vumarks
-depricated: product now includes this target type
+Handle custom vumarks by including you vumark target data and xml files.  Operationally these work exactly the same
+as Thingmarks (which are PTC vumarks). When a custom vumark is identified, you will receive trackingacquired message which will include the 
+vumark ID that is being tracked.
 
 ## Inputs
 UI elements such as Hololens2-ready UI controls.
