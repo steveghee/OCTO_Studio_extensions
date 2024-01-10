@@ -40,6 +40,28 @@ function Matrix4() {
         return this;
     }
     
+    this.Set4A = function(a) {
+        this.m[0][0] = a[0][0];
+        this.m[0][1] = a[0][1];
+        this.m[0][2] = a[0][2];
+        this.m[0][3] = a[0][3];
+        
+        this.m[1][0] = a[1][0];
+        this.m[1][1] = a[1][1];
+        this.m[1][2] = a[1][2];
+        this.m[1][3] = a[1][3];
+        
+        this.m[2][0] = a[2][0];
+        this.m[2][1] = a[2][1];
+        this.m[2][2] = a[2][2];
+        this.m[2][3] = a[2][3];
+        
+        this.m[3][0] = a[3][0];
+        this.m[3][1] = a[3][1];
+        this.m[3][2] = a[3][2];
+        this.m[3][3] = a[3][3];
+        return this;
+    }
     this.SetM4 = function(m) {
         this.m[0][0] = m.m[0][0];
         this.m[0][1] = m.m[0][1];
@@ -104,6 +126,13 @@ function Matrix4() {
             // euler/translation
             this.SetM4(this.RotateFromEuler(pcs[0],pcs[1],pcs[2],true)
                            .Translate(pcs[3],pcs[4],pcs[5]));
+        } else if (pcs.length === 12) {
+            // its a 3x4  matrix
+            for (var i=0;i<4;i++) {
+                for (var j=0;j<3;j++) {
+                    this.m[i][j]=parseFloat(pcs[3*i + j]);      
+                }
+            }
         }
         return this;
     }
@@ -568,7 +597,22 @@ function Matrix4() {
         simple.pos = new Vector4().Set3(clamp(this.m[3][0]), clamp(this.m[3][1]), clamp(this.m[3][2]));
         simple.rot = new Matrix4().SetM3(this);
         return simple;
-    }}
+    }
+    
+    this.ToPosAxisAngle = function() {
+        var clamp = function(x) {
+            if (Math.abs(x) < 1e-6)
+              return 0;
+            else 
+              return x;
+        }
+
+        var simple = {};
+        simple.pos = new Vector4().Set3(clamp(this.m[3][0]), clamp(this.m[3][1]), clamp(this.m[3][2]));
+        simple.rot = new Quat().FromMatrix(this).ToAxisAngle();
+        return simple;
+    }
+}
 
 // quick way to do perspective matrices
 function MatrixP() { }
@@ -669,6 +713,8 @@ function Vector4() {
     this.Y = function() { return this.v[1] }
     this.Z = function() { return this.v[2] }
     this.W = function() { return this.v[3] }
+    this.XYZ = function() { return new Vector4().Set3(this.X(),this.Y(),this.Z()) };
+    this.YZW = function() { return new Vector4().Set3(this.Y(),this.Z(),this.W()) };
 
     this.FromString = function (str) {
         var pcs = str.trim().split(',');                // split by comma
@@ -738,6 +784,12 @@ function Vector4() {
         return cost;
     }
 
+    this.DotP4 = function (v2) {
+        // cos(theta)
+        var cost = (this.v[0] * v2.v[0]) + (this.v[1] * v2.v[1]) + (this.v[2] * v2.v[2]) + (this.v[3] * v2.v[3]);
+        return cost;
+    }
+    
     this.CrossP = function (v2) {
         var x = (this.v[1] * v2.v[2]) - (v2.v[1] * this.v[2]);
         var y = (this.v[2] * v2.v[0]) - (v2.v[2] * this.v[0]);
@@ -868,6 +920,13 @@ function Vector4() {
                                          _clamp(this.v[2],min,max),
                                          _clamp(this.v[3],min,max));
         return clamped;
+    }
+    
+    this.Floor = function() {
+        return new Vector4().Set4(Math.floor(this.v[0]),
+                                  Math.floor(this.v[1]),
+                                  Math.floor(this.v[2]),
+                                  Math.floor(this.v[3]));
     }
     
     this.ToString = function (p) {
