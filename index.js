@@ -20,8 +20,10 @@ exports.runtimeAngularModulesRequires = ["groupy-ng",
                                          "fieldgetter-ng",
                                          "idresolution-ng",
                                          "amp-ng",
+                                         "lighttube-ng", 
+                                         "locator-ng",
                                          
-                                         ///////////// depricated
+                                         ///////////// deprecated
                                          //"octotoggle3D-ng",
                                          //"octopress3D-ng",
                                          //"image3D-ng", 
@@ -32,10 +34,10 @@ exports.runtimeAngularModulesRequires = ["groupy-ng",
                                          
                                          //new - mainly alpha testing
                                          "sxslplayer-ng",
-                                         "locator-ng",
+                                         "cart-ng",
                                          //"infodisplay-ng",
+                                         //"dynamictarget-ng",
                                          
-                                         "lighttube-ng", 
                                          "multiline3D-ng",
                                          "list3D-ng",
                                          "progress3D-ng",

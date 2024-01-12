@@ -143,6 +143,11 @@ all the properties/value associated with the selected item.
 
 Next, using "fields to include", you can set a list (comma separated, no spaces) of properties that are to be included in the output. Use this to filter down to the properties you need.
 
+### Cart
+The cart can be used to hold on to items that have been identified (found via the finder, clicked via the metagetta) - it operates like a shopping cart.
+Bind the output from the Finder to the Cart. Use the Add service to add found items (you can bind to a list control to select specific items). Use the remove service to remove selected items. Reset will clear the cart.
+The items output is an info table that can be passed to other widget or thingworx service. 
+
 ## Containers
 TBC
 
