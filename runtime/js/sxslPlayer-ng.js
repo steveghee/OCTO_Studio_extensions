@@ -28,6 +28,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         steplistField: '=',
         toollistField: '=',
         consumablesField: '=',
+        focusField: '=',
         delegateField: '='
       },
       template: '<div></div>',
@@ -49,7 +50,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           firstStep: true,
           isProcessThingAvailable: false,
           isToolThingAvailable: false,
-          pois: []
+          pois: [],
+          events:[]
         };
 
         scope.renderer = $window.cordova ? vuforia : $injector.get('threeJsTmlRenderer');
@@ -67,19 +69,24 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             on: function (evt, fn) { return scope.$parent.$on(evt, fn) },
             emit: function (evt, arg) { return scope.$parent.$emit(evt, arg) }
           };
-
+          
           scope.logger = new scope.data.logger();
           scope.player = new scope.helper.sxsl2Player(eventHandler, scope.helper, scope.procValidator, scope.stepValidator)
             .fromData(scope.data.sxsl)
             .then((proc) => {
-
+                  
+              scope.data.events = [];
+              var registerEvent = function(evt,fn) {
+                scope.data.events.push(proc.events.on(evt,fn));
+              }
+          
               console.log('loaded', proc.getStepList().length, 'steps');
               scope.canrunField = true;
               scope.runningField = true;
               scope.toollistField = proc.getToolList();
               scope.consumablesField = proc.getConsumables();
               
-              var eps = proc.events.on('procStart', function (evt, proc) {
+              registerEvent('procStart', function (evt, proc) {
                 scope.setHeadLabel(proc.title);
                 scope.steplistField = proc.getStepList();
 
@@ -91,7 +98,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 console.log('<<<<<<<<<<<<<<<<<<<<<<<\nstarting proc', proc.id, proc.intro);
               });
 
-              var eps = proc.events.on('stepStart', function (evt, step) {
+              registerEvent('stepStart', function (evt, step) {
                 console.log('+++++++++++++++++++++++\nstarting step', step.id, step.title);
                 scope.setHeadLabel(step.title);
                 scope.setStepLabel(proc.sti + " OF " + proc.statementcount);
@@ -117,24 +124,27 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 }
               });
 
-              var epe = proc.events.on('procEnd', function (evt, proc) {
-                console.log('ending proc', proc.id + '\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
+              registerEvent('procEnd', function (evt, procedure) {
+                console.log('ending proc', procedure.id + '\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
 
-                scope.setHeadLabel(proc.title);
+                scope.setHeadLabel(procedure.title);
                 scope.canrunField = false;
                 scope.runningField = false;
 
                 scope.logger.push({
-                  id: proc.id,
+                  id: procedure.id,
                   event: "procend",
                   time: Date.now()
                 });
-
+                    
+                if (procedure.consumed != undefined) 
+                  console.log('in total, we consumed', procedure.consumed);     
+                    
                 //and signal termination    
                 scope.$parent.$emit("finished");
               });
 
-              var ese = proc.events.on('stepEnd', function (evt, step) {
+              registerEvent('stepEnd', function (evt, step) {
                 scope.stopStepTimeClock(step);
                 hidepassfail();
 
@@ -148,10 +158,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   duration: Math.floor(step.ref.clock.elapsedTime / 1000).toString(), // seconds
                   ack: step.ack
                 });
+                    
+                if (step.ref.consumed != undefined) 
+                  console.log('for this step, we consumed',step.ref.consumed);     
+                    
                 console.log('completing step', step.id + '\n---------------------------', step.outro);
               });
 
-              var epp = proc.events.on('procPause', function (evt, reason) {
+              registerEvent('procPause', function (evt, reason) {
                 console.log('proc pause');
                 scope.logger.push({
                   id: reason.step.id,
@@ -161,7 +175,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 });
               });
 
-              var epr = proc.events.on('procResume', function (evt, reason) {
+              registerEvent('procResume', function (evt, reason) {
                 console.log('proc resume');
                 scope.logger.push({
                   id: reason.step.id,
@@ -171,7 +185,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 maximise();
               });
 
-              var eph = proc.events.on('procHalt', function (evt, reason) {
+              registerEvent('procHalt', function (evt, reason) {
                 console.log('halting proc\n============================');
 
                 //stop the clock    
@@ -194,12 +208,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 scope.$parent.$emit("terminated");
               });
 
-              var espp = proc.events.on('stepProofPending', function (evt, proof) {
+              registerEvent('stepProofPending', function (evt, proof) {
                 console.log('step proof pending - please provide ', proof.length, 'items');
                 $timeout(function () { collectProof(proof); }, 10);
               });
 
-              var espd = proc.events.on('stepProofDelivered', function (evt, proof) {
+              registerEvent('stepProofDelivered', function (evt, proof) {
                 console.log('step proof delivered');
                 scope.logger.push({
                   id: proof.step.id,
@@ -209,12 +223,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 });
               });
 
-              var eaip = proc.events.on('actionInputPending', function (evt, input) {
+              registerEvent('actionInputPending', function (evt, input) {
                 console.log('action input pending', input.type);
                 scope.advanceWindow.className = 'sxsl-button sxsl-button-round sxsl-icon-nav-right';
               });
 
-              var eaid = proc.events.on('actionInputDelivered', function (evt, input) {
+              registerEvent('actionInputDelivered', function (evt, input) {
                 console.log('action input delivered');
                 hideCapture();
                 scope.logger.push({
@@ -225,7 +239,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 });
               });
 
-              var escp = proc.events.on('stepCompletionPending', function (evt, step) {
+              registerEvent('stepCompletionPending', function (evt, step) {
                 console.log('step completion pending');
                 scope.stopStepTimeClock(step);
 
@@ -250,14 +264,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
               });
 
-              var as = proc.events.on('actionStart', function (evt, action) {
+              registerEvent('actionStart', function (evt, action) {
                 console.log('action Start');
                 scope.toollistField    = proc.getToolList(action.id);
                 scope.consumablesField = proc.getConsumables(action.id);
                 hideCapture();
               });
 
-              var ae = proc.events.on('actionEnd', function (evt, action) {
+              registerEvent('actionEnd', function (evt, action) {
 
                 console.log('completing action', action.type);
                 
@@ -270,9 +284,15 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 }
                 
                 // were there any materials consumed in this action?
+                //
                 if (action.materials != undefined) {
+                    
+                  // TODO: should we roll these up at the step/proc level?  
+                  
+                  
+                  // let's log the info
                   scope.logger.push({
-                    id: action.id,
+                    id: action.materials.id,
                     event: "materialConsumed",
                     time: Date.now(),
                     response:action.materials
@@ -280,11 +300,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 }
               });
 
-              var abp = proc.events.on('actionBypass', function (evt, action) {
+              registerEvent('actionBypass', function (evt, action) {
                 console.log('skipping action', action.type);
               });
 
-              var sbp = proc.events.on('stepBypass', function (evt, step) {
+              registerEvent('stepBypass', function (evt, step) {
                 console.log('step bypass');
                 hidepassfail();
                 scope.stopStepTimeClock(step);
@@ -488,8 +508,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             scope.trackingField = false;
             scope.steplistField = undefined;
 
-            if (active)
+            if (active) {
               scope.pause({ reason: 'widget disabled', event: 'pause' });
+            
+              minimise();
+            }
+
           }
         };
 
@@ -813,7 +837,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         //////////////////////////////////////////////////////////////////////////////////////
         // handle tracking context
 
-        function getContext(context) {
+        function getContext(context, cscope) {
 
           if (context == undefined) return {};
 
@@ -824,7 +848,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             if (model.tags != undefined) model.tags.forEach(function (tag) {
               switch (tag) {
                 case "full":
-                  contextual.model = scope.data.anchor + model.url;
+                  contextual.model = cscope.data.anchor + model.url;
                   contextual.mime = model.mimeType;
                   contextual.scale = model.scale != undefined ? model.scale : 1;
                   contextual.tag = tag;
@@ -832,7 +856,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   break;
                 case "occlusion":
                   if (contextual.tag === undefined || contextual.tag != "full") {
-                    contextual.model = scope.data.anchor + model.url;
+                    contextual.model = cscope.data.anchor + model.url;
                     contextual.scale = model.scale != undefined ? model.scale : 1;
                     contextual.mime = model.mimeType;
                     contextual.tag = tag;
@@ -840,7 +864,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   console.log("using", tag);
                   break;
                 case "heroes":
-                  contextual.hero = scope.data.anchor + model.url;
+                  contextual.hero = cscope.data.anchor + model.url;
                   break;
               }
             });
@@ -868,24 +892,29 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               switch (tracker.mimeType) {
                 case "application/vnd.ptc.tracker.advancedmodeltracker":
                 case "application/vnd.ptc.tracker.modeltracker":
-                  var target = 'vuforia-model:///' + scope.data.anchor;
+                  var target = 'vuforia-model:///' + cscope.data.anchor;
 
                   var tgt = tracker.content.dataset.dat;
                   var urlidx = tgt.lastIndexOf('.dat');
-                  target = target + tgt.substring(0, urlidx) + '?id=';
+                  target = target + tgt.substring(0, urlidx) + '?id=' + tracker.content.targetName;
 
                   if (contextual.target.mimeType != "application/vnd.ptc.tracker.advancedmodeltracker") {
                     contextual.target.mimeType = tracker.mimeType;
                     contextual.target.target = target;
-                    contextual.target.y = 0;
-                    contextual.target.rx = 0;
-
+                    contextual.target.position = tracker.content.offset != undefined && tracker.content.offset.translation != undefined 
+                                               ? new Vector4().Set3a(tracker.content.offset.translation)
+                                               : new Vector4();
+                    contextual.target.rotation = tracker.content.offset != undefined && tracker.content.offset.rotation != undefined 
+                                               ? new Vector4().Set4a(tracker.content.offset.rotation)
+                                               : new Vector4().Set4(0,1,0,0);
+                    contextual.target.size = tracker.content.offset != undefined ? tracker.content.offset.size : undefined;
+                                               
                     if (tracker.content.guideView != undefined) {
-                      contextual.target.guide = scope.data.anchor + tracker.content.guideView.url;
+                      contextual.target.guidesrc = cscope.data.anchor + tracker.content.guideView.url;
                     } else if (tracker.guideview != undefined) {
-                      contextual.target.guide = scope.data.anchor + tracker.guideview.url;
+                      contextual.target.guidesrc = cscope.data.anchor + tracker.guideview.url;
                     } else {
-                      contextual.target.guide = "";
+                      contextual.target.guidesrc = "";
                     }
                     contextual.target.id = tracker.content.targetName;
                   }
@@ -896,32 +925,34 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               }
             });
 
+            var wscope = cscope; //grab the scope into local var
+
             // now create the tracker here
             var markerDef = [{ src: contextual.target.target }];
-            scope.renderer.loadTrackerDef(markerDef, (successMarkerSrcs) => {
+            wscope.renderer.loadTrackerDef(markerDef, (successMarkerSrcs) => {
                                           
               contextual.target.isExistingTarget = false;  
               contextual.target.tracker = 'tracker1';
-              scope.renderer.addTracker(contextual.target.tracker, () => {
-
-                scope.renderer.addMarker(contextual.target.tracker, contextual.target.id, contextual.target.target, undefined, () => {
-
-                  scope.renderer.setTranslation(name, 0, 0, 0);
-                  scope.renderer.setRotation(name, 0, 0, 0);
-                  scope.renderer.setScale(name, 1, 1, 1);
-
-                  if (typeof (scope.renderer.addTargetGuide) === "function") {
-                    scope.renderer.addTargetGuide({ tracker: contextual.target.tracker, target: contextual.target.target, src: contextual.target.guide });
+              wscope.renderer.addTracker(contextual.target.tracker, () => {
+                                         
+                wscope.renderer.addMarker(contextual.target.tracker, contextual.target.id, contextual.target.target, contextual.target.size, () => {
+                                          
+                  var tgtmat = new Matrix4().RotateFromAxisAngleV(contextual.target.rotation).TranslateV(contextual.target.position.v).ToPosEuler(true);
+                  wscope.renderer.setTranslation(name, tgtmat.pos.X(), tgtmat.pos.Y(), tgtmat.pos.Z());
+                  wscope.renderer.setRotation(name, tgtmat.rot.X(), tgtmat.rot.X(), tgtmat.rot.X());
+                  wscope.renderer.setScale(name, 1, 1, 1);
+                  
+                  if (typeof (wscope.renderer.addTargetGuide) === "function") {
+                    wscope.renderer.addTargetGuide({ tracker: contextual.target.tracker, target: contextual.target.id, src: contextual.target.guidesrc });
                   } else {
-                    var targetGuideDiv = document.querySelectorctor("div.targetGuide");
-                    if (targetGuideDiv && contextual.target.guide != undefined) {
+                    var targetGuideDiv = document.querySelector("div.targetGuide");
+                    if (targetGuideDiv && contextual.target.guidesrc != undefined) {
 
-                      scope.data.guide = contextual.target.guide;
-
-                      var pscope = scope.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent;
+                      wscope.data.guide = contextual.target.guidesrc;
+                      var pscope = wscope.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent;
                       pscope.hideTargetGuide = false;
                       pscope.targetGuideClass = "imagemark";
-                      targetGuideDiv.style.backgroundImage = "url('" + scope.data.guide + "')";
+                      targetGuideDiv.style.backgroundImage = "url('" + contextual.target.guidesrc + "')";
                       pscope.$applyAsync();
 
                     }
@@ -1037,7 +1068,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
                   //for now. let's just grab the context block...      
                   var context = proc.contexts != undefined ? proc.contexts[Object.keys(proc.contexts)[0]] : undefined;
-                  scope.data.context = getContext(context);
+                  scope.data.context = getContext(context, scope);
 
                   // and the steps
                   scope.data.steplist = getSteps(proc);
@@ -1060,7 +1091,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
             //for now. let's just grab the context block...      
             var context = proc.contexts != undefined ? proc.contexts[Object.keys(proc.contexts)[0]] : undefined;
-            scope.data.context = getContext(context);
+            scope.data.context = getContext(context, scope);
 
             // and the steps
             scope.data.steplist = getSteps(proc);
@@ -1372,7 +1403,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         scope.$root.$on("$ionicView.beforeLeave", function (event) {
           // clean up
 
-          // deallocate any event listeners we registered ($on, addEventListener etc.)              
         });
 
         //
@@ -1427,6 +1457,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             this.renderer.setProperties(name, { hidden: false });
             me.hidden = false;
             me.deactivated = false;
+            scope.focusField = [{model:name, path:"/"}];
             if (me.animated) {
 
               var currentStep = me.seqplayer.getCurrentStep();
@@ -1454,6 +1485,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             if (rot != undefined) scope.renderer.setRotation(name, rot[0], rot[1], rot[2]);
             else scope.renderer.setRotation(name, 0, 0, 0);
             scope.renderer.setScale(name, scale, scale, scale);
+            
+            scope.focusField = [{model:name, path:"/"}];
+
             if (context != undefined) {
               var isDigital = !(context.target.mimeType != "application/vnd.ptc.tracker.spatialtracker" || scope.data.physical);
               scope.renderer.setProperties(name, { hidden: hide, shader: isDigital ? "sxsl_desaturatedgl" : "sxsl_screendoorgl", occlude: !isDigital, phantom: isDigital, opacity: isDigital ? 0.7 : 1, decal: false });
@@ -1545,6 +1579,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           }
           //and remove any references
           scope.setPreviewList("");
+          
+          // deallocate any event listeners we registered ($on, addEventListener etc.)              
+          scope.data.events.forEach(function(evtfn) {
+            evtfn();
+          });
 
         }
         scope.animatePOIs = function (start) {
@@ -1588,7 +1627,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             minimisePreview();
 
             scope.setInstLabel(conclusion != undefined ? conclusion : 'Procedure completed');
-
+            
           }
 
           const actionClassLookup = (act) => {
@@ -1754,9 +1793,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   //
                   scope.twxToolConnect(tools[0].name)
                     .then(() => {
-
+                          
+                      let tc = tools[0].infoToCollect.count;
                       scope.setFeedbackLabel("Connected to " + tools[0].name +
-                        " ok!<p>Collecting " + tools[0].infoToCollect.count + " values");
+                        " ok!<p>Collecting " + tc + (tc > 1 ? " values" : " value"));
 
                       scope.twxToolSet(tools[0].name, tools[0].infoToCollect)
                         .then(() => {

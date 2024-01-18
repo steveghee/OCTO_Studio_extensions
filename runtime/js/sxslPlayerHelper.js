@@ -447,6 +447,39 @@ function sxslHelper(renderer, anchor) {
       return tools;    
     }
     
+    //
+    // rollup material consumption at the step and proc level
+    //
+    this.consume = (materials, step) => {
+        
+      function gather(x,material) {  
+        // we collect based on material id  
+        if (x.consumed == undefined) 
+          x.consumed = {}; 
+      
+        if (x.consumed[material.id] == undefined) {
+          
+          // add a new record  
+          x.consumed[material.id] = { 
+            amount: material.amountConsumed, 
+             units: material.unitsOfConsumption != undefined ? material.unitsOfConsumption.resources.filter(v => { return v.mimeType=='text/plain'}).map(v => { return v.text })[0]: "" 
+          };
+        } else {
+          // add to the record
+          
+          // should we assume its the same units for the same  
+          x.consumed[material.id].amount += material.amountConsumed;   
+        } 
+      } 
+      
+      var proc = this;
+      materials.forEach(function(material) {
+        gather(step, material);
+        gather(proc, material);
+      });
+  
+    }
+    
     // 
     // scan all steps and actions for any tools that are referenced
     //
@@ -478,6 +511,36 @@ function sxslHelper(renderer, anchor) {
         })
       });
       return materials;    
+    }
+    
+    // 
+    // scan all steps and actions for any subject(hero) references
+    // we will return these in the form {model:name, path:idpath, label:id}
+    //
+    this.getSubjects = (aid) => {
+        
+      var subjects = [];
+      var anchor = this.anchor;  
+      var p = this.proc;
+      p.steps.forEach(function (step, idx) {
+        step.actions.forEach(function(action) {
+          if ((aid === undefined || action.id === aid) &&                                  
+             (action.subjects != undefined)) {
+          
+            action.subjects.forEach(function(subject) {
+              let sub = subject;                     
+              let asset = this.context != undefined ? this.context[sub.contextId].assets[sub.assetId] : {};
+            
+              subjects.push( {
+                          // should realy check the name is specified and have a proper function to ge tthis info
+                          model:subject.assetId,
+                          path:"/" 
+              });
+            });
+          }
+        })
+      });
+      return subjects;    
     }
     
     //
@@ -567,9 +630,14 @@ function sxslHelper(renderer, anchor) {
           me.action.details.pending = undefined;
 
           me.events.emit('actionInputDelivered', { event: "input", step: this.step, action: this.action });
-
+          
         }
+        
+        // consume materials
+        if (jumpRef == undefined && me.action.materials != undefined)
+          me.consume(me.action.materials, me.step.ref);
 
+        // and signal we're done with this action
         me.events.emit(jumpRef != undefined ? 'actionBypass' : 'actionEnd', me.action);
       }
 
@@ -658,7 +726,7 @@ function sxslHelper(renderer, anchor) {
           // unless we're bypassing this, mark the step as complete
           if (jumpRef == undefined)
             me.step.ref.status = "done";
-
+        
           // is there any closeout required on the previous step?  
           // let folks know we've reached the end of the step
           me.events.emit(jumpRef != undefined ? 'stepBypass' : 'stepEnd', me.step);
