@@ -104,10 +104,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           }
           scope.contentField = final;
           scope.countField = scope.contentField.length; 
+          scope.$parent.$applyAsync();
           
           // signal we are done
-          scope.$parent.fireEvent('changed');
-          scope.$parent.$applyAsync();
+          $timeout(function() { 
+            scope.$parent.fireEvent('changed'); 
+          } , 10);
         };
       
         var reset = function() {
@@ -117,8 +119,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           scope.contentField = [];
           scope.countField = 0;
           
-          scope.$parent.fireEvent('changed');
           scope.$parent.$applyAsync();
+          
+          $timeout(function() { 
+            scope.$parent.fireEvent('changed'); 
+          } , 10);
         }
 
         scope.$watchGroup(['includeField'], function () {
