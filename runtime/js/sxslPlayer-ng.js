@@ -905,8 +905,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                                                ? new Vector4().Set3a(tracker.content.offset.translation)
                                                : new Vector4();
                     contextual.target.rotation = tracker.content.offset != undefined && tracker.content.offset.rotation != undefined 
-                                               ? new Vector4().Set4a(tracker.content.offset.rotation)
-                                               : new Vector4().Set4(0,1,0,0);
+                                               ? new Quat().Set4a(tracker.content.offset.rotation)
+                                               : new Quat().Set4(0,0,0,1);
                     contextual.target.size = tracker.content.offset != undefined ? tracker.content.offset.size : undefined;
                                                
                     if (tracker.content.guideView != undefined) {
@@ -937,7 +937,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                                          
                 wscope.renderer.addMarker(contextual.target.tracker, contextual.target.id, contextual.target.target, contextual.target.size, () => {
                                           
-                  var tgtmat = new Matrix4().RotateFromAxisAngleV(contextual.target.rotation).TranslateV(contextual.target.position.v).ToPosEuler(true);
+                  var tgtmat = new Matrix4().RotateFromQuaternion(contextual.target.rotation).TranslateV(contextual.target.position.v).ToPosEuler(true);
                   wscope.renderer.setTranslation(name, tgtmat.pos.X(), tgtmat.pos.Y(), tgtmat.pos.Z());
                   wscope.renderer.setRotation(name, tgtmat.rot.X(), tgtmat.rot.X(), tgtmat.rot.X());
                   wscope.renderer.setScale(name, 1, 1, 1);
