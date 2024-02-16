@@ -673,10 +673,13 @@ function sxslHelper(renderer, anchor) {
                     });
                   }
                   break;
+                default:
+                  console.log('incorrect sxsl specification : acknowledgement must hae associated type');
+                  break;
               }
 
               // process the incoming response; if the user hasnt already pressed the correct key...
-              if (!keyreq.includes(response)) {
+              if (keyreq.length > 0 && !keyreq.includes(response)) {
 
                 //
                 // inform caller of step completion requirements

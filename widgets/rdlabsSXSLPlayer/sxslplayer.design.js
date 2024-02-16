@@ -183,6 +183,10 @@ function twxSxslplayer() {
 
     services: [
       {
+        name: 'reset',
+        label: 'Reset'
+      },
+      {
         name: 'resume',
         label: 'Resume'
       },
@@ -206,7 +210,7 @@ function twxSxslplayer() {
     runtimeTemplate: function (props, twxWidgetEl, fullOriginalDoc, $, projectSettings) {
       var forholo = (projectSettings.projectType === 'eyewear');
       var isholo  = forholo ;   
-      var ps1gl ='<script name="sxslPlayerWidgetsl_screendoorgl" type="x-shader/x-fragment">precision mediump float; vec2 rotate2D(vec2 _st, float _angle) { _st -= 0.5;_st =  mat2(cos(_angle),-sin(_angle), sin(_angle),cos(_angle)) * _st; _st += 0.5; return _st;} vec2 tile(vec2 _st, float _zoom){ _st *= _zoom; return fract(_st);}float box(vec2 _st, vec2 _size, float _smoothEdges){ _size = vec2(0.5)-_size*0.5; vec2 aa = vec2(_smoothEdges*0.5); vec2 uv = smoothstep(_size,_size+aa,_st); uv *= smoothstep(_size,_size+aa,vec2(1.0)-_st); return uv.x*uv.y;} void main(void){ vec2 st = gl_FragCoord.xy / 32. ;vec3 color = vec3(0.0); st = tile(st,4.); st = rotate2D(st,0.785398163); float b = box(st,vec2(0.7),0.01); if (b < 0.01) discard; gl_FragColor = vec4(b,b,b,1.0); }</script>';
+      var ps1gl ='<script name="sxsl_screendoorgl" type="x-shader/x-fragment">precision mediump float; vec2 rotate2D(vec2 _st, float _angle) { _st -= 0.5;_st =  mat2(cos(_angle),-sin(_angle), sin(_angle),cos(_angle)) * _st; _st += 0.5; return _st;} vec2 tile(vec2 _st, float _zoom){ _st *= _zoom; return fract(_st);}float box(vec2 _st, vec2 _size, float _smoothEdges){ _size = vec2(0.5)-_size*0.5; vec2 aa = vec2(_smoothEdges*0.5); vec2 uv = smoothstep(_size,_size+aa,_st); uv *= smoothstep(_size,_size+aa,vec2(1.0)-_st); return uv.x*uv.y;} void main(void){ vec2 st = gl_FragCoord.xy / 32. ;vec3 color = vec3(0.0); st = tile(st,4.); st = rotate2D(st,0.785398163); float b = box(st,vec2(0.7),0.01); if (b < 0.01) discard; gl_FragColor = vec4(b,b,b,1.0); }</script>';
       var vs1gl ='<script name="sxsl_screendoorgl" type="x-shader/x-vertex">attribute vec4 vertexPosition;uniform mat4 modelViewProjectionMatrix;void main() {gl_Position = modelViewProjectionMatrix * vertexPosition;}</script>';
       var ps1hl ='<script name="sxsl_screendoorhl" type="x-shader/x-fragment">  cbuffer ShaderConstantBuffer : register(b0) {  float4 highlightColor; bool useTexture; bool useLight; float transparency; int pad; }; cbuffer RenderConstantBuffer : register(b1) { float tick; float3 ding; }; struct PixelShaderInput { half4 pos : SV_POSITION; }; min16float4 main(PixelShaderInput input) : SV_TARGET {  min16float4 color = min16float4(0.0,0.0,0.0,0.0); min16float4 finalShadedColor = color; return finalShadedColor; } </script>';
       var vs1hl ='<script name="sxsl_screendoorhl" type="x-shader/x-vertex"> cbuffer ModelConstantBuffer : register(b0) { float4x4 model; float4x4 inverse; }; cbuffer MaterialConstantBuffer : register(b1) { float4 diffuseColor; }; cbuffer ViewProjectionConstantBuffer : register(b2) { float4x4 viewProjection[2]; float4x4 viewInverse; }; struct VertexShaderInput { half4 pos : POSITION; uint instId : SV_InstanceID; }; struct VertexShaderOutput { half4 pos : SV_POSITION; uint rtvId : SV_RenderTargetArrayIndex; }; VertexShaderOutput main(VertexShaderInput input) { VertexShaderOutput output; half4 pos = half4(input.pos); int idx = input.instId % 2; pos = mul(pos, model); pos = mul(pos, viewProjection[idx]); output.pos = (half4)pos; output.rtvId = idx; return output; } </script>';
