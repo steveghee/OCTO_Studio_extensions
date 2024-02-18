@@ -51,10 +51,10 @@ function sxslHelper(renderer, anchor) {
               };
             }
             let asset = this.context[sub.contextId].assets[sub.assetId];
-            this.subjects.push({ context: fctx, asset: asset, id: sub.assetId });
+            this.subjects.push({ context: fctx, asset: asset, id: sub.assetId, occurrenceIds:sub.occurrenceIds });
           } else {
             //no context, so is the resource defined inline?
-            this.subjects.push({ asset: sub, id: sub.assetId });
+            this.subjects.push({ asset: sub, id: sub.assetId, occurrenceIds:sub.occurrenceIds });
           }
         }
       }

@@ -2214,9 +2214,15 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 if (res.mimeType == "application/vnd.ptc.pvz" || res.mimeType == "model/gltf-binary") {
 
                   var src = scope.data.anchor + (res.composition == "partset" ? res.modelUrl : res.url);
+                  
+                  // one monster hack here; runtime metadata only works for angular-represented Model widgets, meaning we can't get
+                  // metadata for tml model loads.  Ideally we want a fix or a ay around that, but for now we can leverage the fact that
+                  // we can get the experience designer to create a 'special' model that we can use from inside the sxsl player. This only works for single-asset subjects (though you can specify more than one part via occurrence id inside that asset)
+                  //
                   if (scope.data.heroWidget != undefined) {  
                     var name="sxslhero";
                     scope.data.heroWidget.visible = true;
+                    
                     //has the source changed?
                     if (scope.data.heroWidget.src == undefined || scope.data.heroWidget.src != src) {
                       scope.data.heroWidget.src = src;
