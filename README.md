@@ -179,7 +179,7 @@ This section TO BE COMPLETED
 (Important note : this is an early alpha version of this widget : testing has been limited so far to landscape ipad devices, so any other device/display format may 
 look wrong - it will get fixed over time. Right now the focus is functionality)
 
-sxsl is a language (implemented as a json data format) for defining step-by-step instructions.  
+sxsl is a language (implemented as a json data format) for defining step-by-step instructions, which are defined as a series of human-centric 'actions' e.g. check this, tighten that etc..  
 Sxsl content can be output from Creo Illustrate, or created in tools such as Expert Capture. The format is designed to be very simple, allowing sxsl content to be
 generated using simple tools such as Python or node.js, taking content (assets, resources etc.) from any instruction source.
 
@@ -190,16 +190,24 @@ associated 2d/3d resources, including any associated tracking targets, are inclu
 the experience) or could be situated on a remote data service e.g. the Experience Service, Thingworx or elsewhere.  Src is a URL that points to this resource. You can 
 also bind this property to an inline serialised (JSON serialised string) representation of the sxsl structure - if detected the widget will interpret the sxsl directly 
 (it does not need to load a file). An optional (hidden) 'Content Location' field is provided for cases where you might have sxsl content which includes file 
-references fro another location; the "content location" property can be a string which describes the base file path/url to the data, in the form "server:path/to/data/".  Note the / on the end 
+references from another location; the "content location" property can be a string which describes the base file path/url to the data, in the form "server:path/to/data/".  Note the / on the end 
 is important. 
 
 The sxsl2 specification can be found here (TODO: link to be provided)
 
 The widget will display the instruction control UI, including any 2d (image, video) references.  
+Click the 'next' (arrow) button to advance through the actions.
 
 Step List property holds a reference to the list of valid steps that can be visited. You can bind this to a list/repeater widget, and clck on an item to jump to that step.
 Tools Required property holds a reference to a list of any tools that are required to execute this procedure. 
 The tool name, info and (optional) image are included. This is for reference purposes only i.e. this list is non=interactive.
+Consumables is similar - this is an information-only field that will list any items that are required to be consued (used) during this step/action.
+
+With a valid sxsl specified, the "Ready" flag will apear true, and when the player is running (executing actions) the Running flag is set to true. You can use these to control other features of your experience UI.
+Eexcution of the player can be interrupted, for example to pause or to halt a procedure, by triggering the Pause or Halt services; both expect a Reason Code to be set to explain the reason behind the interruption.
+
+All execution is logged to the Status field, with an event being triggered for each change - this field could, for example, be bound to a thingworx Service where the real-time status could be logged.
+
 
 ### properties
 The steplist property provides an infotable which lists all the available steps - you can display this in a list/repeater to view and select/jump to specific steps. Only valid next steps are presented.
