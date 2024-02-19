@@ -189,15 +189,15 @@ The src property should be set to point to a valid sxsl defintion/file (json for
 associated 2d/3d resources, including any associated tracking targets, are included in the same relative location as the the sxsl json.  This file could be local (in 
 the experience) or could be situated on a remote data service e.g. the Experience Service, Thingworx or elsewhere.  Src is a URL that points to this resource. You can 
 also bind this property to an inline serialised (JSON serialised string) representation of the sxsl structure - if detected the widget will interpret the sxsl directly 
-(it does not need to load a file). An optional (hidden) 'Content Location' field is provided for cases wher eyou might have sxsl content which includes relative file 
-references; the content location property can be a string which describes the base file path/url to the data, in the form "server:path/to/data/".  Note the / on the end 
+(it does not need to load a file). An optional (hidden) 'Content Location' field is provided for cases where you might have sxsl content which includes file 
+references fro another location; the "content location" property can be a string which describes the base file path/url to the data, in the form "server:path/to/data/".  Note the / on the end 
 is important. 
 
 The sxsl2 specification can be found here (TODO: link to be provided)
 
 The widget will display the instruction control UI, including any 2d (image, video) references.  
 
-Step List property holds areference to the list of valid steps that can be visited. You can bind this to a list/repeater, and clck on an item to jump to that step.
+Step List property holds a reference to the list of valid steps that can be visited. You can bind this to a list/repeater widget, and clck on an item to jump to that step.
 Tools Required property holds a reference to a list of any tools that are required to execute this procedure. 
 The tool name, info and (optional) image are included. This is for reference purposes only i.e. this list is non=interactive.
 

@@ -75,16 +75,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             emit: function (evt, arg) { return scope.$parent.$emit(evt, arg) }
           };
           
-          //are we working with external here object?  note that today this
-          //has a fixed name (sxslhero)
-          scope.data.heroWidget = scope.$parent.view.wdg.sxslhero;
-          if (scope.data.heroWidget != undefined) {
-            listenToExternalContext("sxslhero");
-            
-            //hide things, initially
-            scope.renderer.setProperties("sxslhero-/", { hidden: true, shader: "sxsl_proximityHilitegl", occlude: false, phantom: false, decal: false });
-          }
-
           scope.logger = new scope.data.logger();
           scope.player = new scope.helper.sxsl2Player(eventHandler, scope.helper, scope.procValidator, scope.stepValidator)
             .fromData(scope.data.sxsl)
@@ -1010,44 +1000,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           return contextual;
         }
         
-        //this function listens to external changes on the special 'sxslhero' widget which can be used to expose the subject
-        //should the user want to do locator/waypointing. this is NOT ideal - the best usecase
-        //would be the metadata working at the tml node level, not requiring the Angular widgets
-        //
-        function listenToExternalContext(context) {
-          //listen to tml events on the widget - note the depth of the listener here!!  
-          scope.data.events.push(scope.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$on('modelLoaded',function(evt,mdl) {
-            if (mdl==context) {                
-                
-              // model loaded, lets see if there's a seuqence to load (listener below)
-              scope.data.heroWidget.sequence = scope.data.heroWidget.sequenceToLoad; 
-              
-              //and work out if there are any specific items called out to view, or just the entire asseet
-              var focusField = [];
-              
-              //undo any previous speecific highlights
-              if (scope.data.heroWidget.occurrenceIds != undefined) {
-                scope.renderer.setProperties(context+"-/", { forceHidden: false, hidden:true, shader: "sxsl_screendoorgl", occlude: false, phantom: false, decal: false });
-                scope.data.heroWidget.occurrenceIds.forEach(function(id) {
-                  scope.renderer.setProperties(context+"-"+id, { forceHidden:false, hidden:false, shader: "sxsl_proximityHilitegl", occlude: false, phantom: false, decal: false });
-                  focusField.push({model:context, path:id});
-                });
-              } else {
-                scope.renderer.setProperties(context+"-/", { forceHidden: false, hidden:false, shader: "sxsl_proximityHilitegl", occlude: false, phantom: false, decal: false });
-                focusField.push({model:context, path:'/'});
-              }
-              //tell the experience about the subject items (for waypointing etc.)
-              scope.focusField = focusField;
-              scope.$parent.$applyAsync();
-            }
-          }));
-
-          //wait for the sequence to load
-          scope.data.events.push(scope.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$on('sequenceloaded',function(evt,tgt,type,seq) {
-            scope.renderer.setProperties(context+"-/", { hidden: false, shader: "sxsl_proximityHilitegl", occlude: false, phantom: false, decal: false });
-          }));
-        }
-        
         //
         //todo : we should only be doing this IF we are responsible for the tracking
         scope.$root.$on('trackingacquired', function (event, args) {
@@ -1535,22 +1487,29 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             console.log('reusing', name);
             var me = scope.data.pois[name];
 
-            scope.renderer.setProperties(name, { forceHidden: false });
-            
             //it must be the occurrences that have change - 
             //undo the old ones
-            if (me.occurrenceIds != undefined) me.occurrenceIds.forEach(function(id) {
-              scope.renderer.setProperties(name+"-"+id, { hidden: true, shader: undefined });                                                            
-            });
+            if (me.occurrenceIds != undefined) {
+              me.occurrenceIds.forEach(function(id) {
+                if (oid != undefined && !oid.includes(id))                       
+                  scope.renderer.setProperties(name+"-"+id, { hidden: true });                                                            
+              });
+            }
             //add the new ones
-            if (oid != undefined) oid.forEach(function(id) {
-              scope.renderer.setProperties(name+"-"+id, { hidden: false, shader: "sxsl_proximityHilitegl", occlude: false, phantom: false, decal: false});                                                            
-            });
-            me.occurrenceIds = oid;    
+            if (oid != undefined) {
+              oid.forEach(function(id) {
+                scope.renderer.setProperties(name+"-"+id, { hidden: false, shader: "sxsl_proximityHilitegl"});                                                            
+              });
+              me.occurrenceIds = oid;    
+            } else {
+              scope.renderer.setProperties(name+"-/", { hidden: false, shader: "sxsl_proximityHilitegl"});                        
+              me.occurrenceIds = ['/'];    
+            }
 
             me.hidden = false;
             me.active = true;
             me.deactivated = false;
+            
             if (me.animated) {
 
               var currentStep = me.seqplayer.getCurrentStep();
@@ -1586,6 +1545,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               scope.renderer.setProperties(name, { hidden: hide, shader: "sxsl_proximityHilitegl", occlude: false, phantom: false, decal: false });
 
               var seq2load = scope.data.pois[name].sequenceToLoad;
+              var oids = scope.data.pois[name].occurrenceIds;
               if (seq2load != undefined) {
                 $timeout(function () {
                   scope.data.pois[name].seqplayer = VF_ANG.NativeSequencerHelper(name, VF_ANG.nativeEventHandler, scope.renderer);
@@ -1602,34 +1562,32 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                     scope.data.pois[name].animated = false;
                   });
                 }, 10);
-              } else if (scope.data.pois[name].occurrenceIds != undefined) {
-                var oids = scope.data.pois[name].occurrenceIds;
+              } else if (oids != undefined) {
                 oids.forEach(function(oid) {
                   scope.renderer.setProperties(name+'-'+oid, { hidden: false, shader: "sxsl_proximityHilitegl", occlude: false, phantom: false, decal: false });
                 });
-                } else {
-                  scope.renderer.setProperties(name+'-/', { hidden: false, shader: "sxsl_proximityHilitegl", occlude: false, phantom: false, decal: false });
-                }
+              } else {
+                oids = ['/'];
+                scope.renderer.setProperties(name+'-/', { hidden: false, shader: "sxsl_proximityHilitegl", occlude: false, phantom: false, decal: false });
+              }
 
               // we can use this later...
-              scope.data.pois[name] = { pos: pos, rot: rot, scale: scale, hidden: hide, active: true, animated: false, sequenceToLoad: seq2load }
+              scope.data.pois[name] = { pos: pos, rot: rot, scale: scale, hidden: hide, active: true, animated: false, sequenceToLoad: seq2load, occurrenceIds:oids  }
             }
+            
             if (scope.data.pois[name].occurrenceIds != undefined) {
               var focusField = [];
               scope.data.pois[name].occurrenceIds.forEach(function(id) {
-                focusField.push({model:'sxslhero', originalId:assetId, path:id});
+                focusField.push({model:name, path:id});
               });
               scope.focusField = focusField;     
             }
 
-            var pscope = scope.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent;
-            pscope.$applyAsync();
-
           },
-            (err) => {
-              // something went wrong
-              console.log(`addPVS failed to add new model: ${JSON.stringify(err)}`);
-            });
+          (err) => {
+            // something went wrong
+            console.log(`addPVS failed to add new model: ${JSON.stringify(err)}`);
+          });
         }
         scope.showPOIs = function () {
           for (const name in scope.data.pois) {
@@ -1639,13 +1597,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               me.hidden = false;
             }
           }
-          
-          //show sxsl_proximityHiliteglhero
-          if (scope.data.heroWidget) {
-            scope.data.heroWidget.visible = true;
-            this.renderer.setProperties("sxslhero-/", { forceHidden: false });
-            scope.$parent.$applyAsync();
-          }
         }
         scope.hidePOIs = function () {
           //
@@ -1653,7 +1604,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             var me = scope.data.pois[name];
             if (me.deactivated != undefined && me.deactivated == true) {
               this.renderer.setProperties(name, { forceHidden: true });
-
               if (me.animated == true) {
                 me.animated = false;
                 scope.renderer.loadPVI({ modelID: name, url: "" }, function () {
@@ -1664,26 +1614,17 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               me.hidden = true;
             }
           }
-          //scope.focusField = undefined;
+          scope.focusField = undefined;
         }
         scope.deactivatePOIs = function () {
           //
           for (const name in scope.data.pois) {
             var me = scope.data.pois[name];
             if (me.active == true) {
-              this.renderer.setProperties(name, { forceHidden: true });
-              me.hidden = true;
+              //this.renderer.setProperties(name, { forceHidden: true });
+              //me.hidden = true;
               me.deactivated = true;
             }
-          }
-          if (scope.data.heroWidget) {
-            //hide sxslhero  
-            if (scope.data.heroWidget.occurrenceIds) scope.data.heroWidget.occurrenceIds.forEach(function(id) {
-              scope.renderer.setProperties("sxslhero-"+id, { hidden: true, shader: undefined });                                                            
-            });
-            scope.data.heroWidget.visible = false;
-            scope.renderer.setProperties("sxslhero-/", { forceHidden: true });
-            scope.$parent.$applyAsync();
           }
           scope.focusField = undefined;
         }
@@ -1699,13 +1640,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 scope.data.pois[name].animated = false;
               });
             }
-          }
-          
-          if (scope.data.heroWidget) {
-            //hide sxslhero  
-            scope.data.heroWidget.visible = false;
-            this.renderer.setProperties("sxslhero-/", { forceHidden: true });
-            scope.$parent.$applyAsync();
           }
           
           //and remove any references
@@ -2214,57 +2148,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 if (res.mimeType == "application/vnd.ptc.pvz" || res.mimeType == "model/gltf-binary") {
 
                   var src = scope.data.anchor + (res.composition == "partset" ? res.modelUrl : res.url);
-                  
-                  // one monster hack here; runtime metadata only works for angular-represented Model widgets, meaning we can't get
-                  // metadata for tml model loads.  Ideally we want a fix or a ay around that, but for now we can leverage the fact that
-                  // we can get the experience designer to create a 'special' model that we can use from inside the sxsl player. This only works for single-asset subjects (though you can specify more than one part via occurrence id inside that asset)
-                  //
-                  if (scope.data.heroWidget != undefined) {  
-                    var name="sxslhero";
-                    scope.data.heroWidget.visible = true;
-                    
-                    //has the source changed?
-                    if (scope.data.heroWidget.src == undefined || scope.data.heroWidget.src != src) {
-                      scope.data.heroWidget.src = src;
-                 
-                      if (res.translation!=undefined) scope.renderer.setTranslation(name, res.translation[0], res.translation[1], res.translation[2]);
-                      else scope.renderer.setTranslation(name, 0, 0, 0);
-                      var rot = genrotation(res.normal);
-                      scope.renderer.setRotation(name, rot[0], rot[1], rot[2]);
-                      scope.renderer.setScale(name, 1, 1, 1);
-                  
-                      // this is speculative - ideally the sxsl wil tell us there is a specific pvi linked to this step
-                      scope.data.heroWidget.sequenceToLoad = (res.composition == "partset" ? res.sceneName : undefined); //"Figure 1");
-                      isAnimated = isAnimated || scope.data.heroWidget.sequenceToLoad != undefined;
-                    } else {
-                      //it must be the occurrences that have change - 
-                      //undo the old ones
-                      var focusField=[];
-                      scope.renderer.setProperties(name+"-/", { forceHidden:false, hidden:true, shader:"sxsl_screendoorgl" });                                                            
-                      if (scope.data.heroWidget.occurrenceIds) scope.data.heroWidget.occurrenceIds.forEach(function(id) {
-                        if (occurrenceIds!= undefined && occurrenceIds.includes(id))                                          
-                           scope.renderer.setProperties(name+"-"+id, { hidden: true, shader: "" });                                                            
-                      });
-                      //add the new ones
-                      if (occurrenceIds != undefined) {
-                        occurrenceIds.forEach(function(id) {
-                          scope.renderer.setProperties(name+"-"+id, { hidden: false, shader: "sxsl_proximityHilitegl"});
-                          focusField.push({model:name, path:id});                    
-                        });
-                      } else {
-                        scope.renderer.setProperties(name+"-/", { forceHidden:false, hidden: false, shader: "sxsl_proximityHilitegl", occlude: false, phantom: false, decal: false});                                                            
-                        focusField.push({model:name, path:'/'});
-                      }
-                      scope.focusField = focusField;
-                    }
-                    // does the asset specify the subjects 
-                    //scope.renderer.setProperties("sxslhero-/", { forceHidden: false, hidden: true });
-                    scope.data.heroWidget.occurrenceIds = occurrenceIds;
-                    scope.$parent.$applyAsync();
-                  } else {
-                    scope.addNamedPOI(assetId, src, res.translation, genrotation(res.normal), 1, true, undefined, (res.composition == "partset" ? res.sceneName : undefined), occurrenceIds); //"Figure 1");
-                    isAnimated = isAnimated || scope.data.pois[assetId].sequenceToLoad != undefined;
-                  }
+                  scope.addNamedPOI(assetId, src, res.translation, genrotation(res.normal), 1, true, undefined, (res.composition == "partset" ? res.sceneName : undefined), occurrenceIds); //"Figure 1");
+                  isAnimated = isAnimated || scope.data.pois[assetId].sequenceToLoad != undefined;
                 }
                 if (res.mimeType == "application/vnd.ptc.pvi") {
                   if (scope.data.pois[assetId] == undefined) scope.data.pois[res.id] = {};
