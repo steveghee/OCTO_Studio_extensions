@@ -22,6 +22,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         holoField: '@',
         canrunField: '=',
         runningField: '=',
+        executingField: '=',
         clockField: '=',
         trackingField: '=',
         statusField: '=',
@@ -59,6 +60,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         scope.helper = new sxslHelper(scope.renderer, scope.data.anchor);
         scope.canrunField = false;
         scope.runningField = false;
+        scope.executingField = false;
+        
+        var registerRootEvent = function(evt,fn) {
+          scope.data.events.push(scope.$root.$on(evt,fn));
+        }
+        var registerParentEvent = function(evt,fn) {
+          scope.data.events.push(scope.$parent.$on(evt,fn));
+        }
 
         var startSxslPlayer = function () {
 
@@ -80,19 +89,20 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             .fromData(scope.data.sxsl)
             .then((proc) => {
                   
-              scope.data.events = [];
               var registerEvent = function(evt,fn) {
                 scope.data.events.push(proc.events.on(evt,fn));
               }
-          
+
               console.log('loaded', proc.getStepList().length, 'steps');
               scope.canrunField = true;
               scope.runningField = true;
+              scope.executingField = false;
+              
               scope.toollistField = proc.getToolList();
               scope.consumablesField = proc.getConsumables();              
               // time to wake up the UI
               maximise();
-              
+
               registerEvent('procStart', function (evt, proc) {
                 scope.setHeadLabel(proc.title);
                 scope.steplistField = proc.getStepList();
@@ -109,6 +119,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 console.log('+++++++++++++++++++++++\nstarting step', step.id, step.title);
                 scope.setHeadLabel(step.title);
                 scope.setStepLabel(proc.sti + " OF " + proc.statementcount);
+                scope.executingField = true;
 
                 scope.startStepTimeClock(step, scope.ticker, scope);
 
@@ -137,6 +148,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 scope.setHeadLabel(procedure.title);
                 scope.canrunField = false;
                 scope.runningField = false;
+                scope.executingField = false;
 
                 scope.logger.push({
                   id: procedure.id,
@@ -154,6 +166,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               registerEvent('stepEnd', function (evt, step) {
                 scope.stopStepTimeClock(step);
                 hidepassfail();
+                scope.executingField = false;
 
                 //update the list
                 scope.steplistField = proc.getStepList();
@@ -199,6 +212,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 if (reason.step) scope.stopStepTimeClock(reason.step);
                 scope.canrunField = false;
                 scope.runningField = false;
+                scope.executingField = false;
 
                 scope.logger.push({
                   id: reason.step != undefined ? reason.step.id : "",
@@ -404,8 +418,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                     proc.pause(reason)
                       .then((state) => {
 
-                        // stop the timer
-                        scope.stopStepTimeClock(state.step);
+                        // stop the timer (if it is running)
+                        if (scope.stopStepTimeClock != undefined)
+                          scope.stopStepTimeClock(state.step);
                         scope.runningField = false;
                       })
                   };
@@ -1014,7 +1029,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         
         //
         //todo : we should only be doing this IF we are responsible for the tracking
-        scope.$root.$on('trackingacquired', function (event, args) {
+        registerRootEvent('trackingacquired', function (event, args) {
           var targetGuideDiv = document.querySelector("div.targetGuide");
           if (targetGuideDiv) {
             var pscope = scope.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent;
@@ -1025,7 +1040,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           scope.trackingField = true;
         });
 
-        scope.$root.$on('trackinglost', function (event, args) {
+        registerRootEvent('trackinglost', function (event, args) {
           var targetGuideDiv = document.querySelector("div.targetGuide");
           if (targetGuideDiv) {
             var pscope = scope.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent;
@@ -1430,7 +1445,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         scope.setStepLabel = datasink;
         scope.setPreviewList = datasink;
 
-        scope.$root.$on("$ionicView.afterEnter", function (event) {
+        registerRootEvent("$ionicView.afterEnter", function (event, info) {
+          console.log('entering view',info.title);
+
           if (!scope.data.isHolo) {
             createInstructionPanelHTML();
             createReferencePreviewHTML();
@@ -1439,16 +1456,18 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
             startSxslPlayer();
           } else {
+              
             //TODO : creaate holographic UI
-
             //for now...
 
           }
         });
-        scope.$root.$on("$ionicView.beforeLeave", function (event) {
+            
+        registerRootEvent("$ionicView.beforeLeave", function (event,info) {
           // clean up
-
+          console.log('leaving view',info.title);
         });
+          
 
         //
         // example showing how to add a shape
@@ -1472,7 +1491,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
         // add them as we need them - a better version might use a re-usable pool of shapes but let's keep 
         // it simple for now
-        scope.$parent.$on('stepcompleted', function (event, target, unused, data) {
+        registerParentEvent('stepcompleted', function (event, target, unused, data) {
           //console.log('stepcomplete for',target,data);
           var me = scope.data.pois[target];
 
@@ -2298,7 +2317,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         //
         // TODO : should this be integral to the player, or separate widget?
 
-        var sepsic = scope.$parent.$on('statusUpdateComplete', function (evt) {
+        scope.$parent.$on('statusUpdateComplete', function (evt) {
           console.log('incremental sent ok');
           scope.logger.sending = undefined;
 
@@ -2505,8 +2524,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           }];
         };
 
-        scope.startStepTimeClock = function (step, callback, scope) {
-          var me = scope;
+        scope.startStepTimeClock = function (step, callback, lscope) {
+          var me = lscope;
           function clock(step, callback) {
             return $interval((function (step, callback) {
               var s = step;
@@ -2567,21 +2586,21 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         // list for the serviceinvokecomplete event. Ideally we should get back a list of valid services
         // but for now lsts get back the boolean 
         //
-        scope.$parent.$on('initialiseTools.serviceInvokeComplete', function (evt) {
+        registerParentEvent('initialiseTools.serviceInvokeComplete', function (evt) {
 
           scope.data.isToolThingAvailable = scope.$parent.app.mdl['toolThing'].svc['initialiseTools'].data[0].result;
 
           //if we get success, this is where we shoud register the other services.                
           if (scope.data.isToolThingAvailable) {
 
-            scope.$parent.$on('toolConnect.serviceInvokeComplete', function (evt) {
+            registerParentEvent('toolConnect.serviceInvokeComplete', function (evt) {
               if (scope.toolConnectResponse != undefined) {
                 var valid = scope.$parent.app.mdl['toolThing'].svc['toolConnect'].data[0].result;
                 scope.toolConnectResponse(valid);
               }
             });
 
-            scope.$parent.$on('toolConnect.serviceFailure', function (evt) {
+            registerParentEvent('toolConnect.serviceFailure', function (evt) {
               if (scope.toolConnectResponse != undefined) {
                 scope.toolConnectResponse(false);
               }
@@ -2630,13 +2649,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             // settings values are passed as raw json object - the Thing on the other side is assumed to be
             // a building block implementation so it can do whatever specialist stuff it needs to with the json
             //
-            scope.$parent.$on('toolSet.serviceInvokeComplete', function (evt) {
+            registerParentEvent('toolSet.serviceInvokeComplete', function (evt) {
               if (scope.toolSetResponse != undefined) {
                 var valid = scope.$parent.app.mdl['toolThing'].svc['toolSet'].data[0].result;
                 scope.toolSetResponse(valid);
               }
             });
-            scope.$parent.$on('toolSet.serviceFailure', function (evt) {
+            registerParentEvent('toolSet.serviceFailure', function (evt) {
               if (scope.toolSetResponse != undefined) {
                 scope.toolSetResponse(false);
               }
@@ -2677,13 +2696,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             //
             // now (dis)arm the tool (turn it on/off, prepare it...)
             //
-            scope.$parent.$on('toolArm.serviceInvokeComplete', function (evt) {
+            registerParentEvent('toolArm.serviceInvokeComplete', function (evt) {
               if (scope.toolArmResponse != undefined) {
                 var armedok = scope.$parent.app.mdl['toolThing'].svc['toolArm'].data[0].result;
                 scope.toolArmResponse(armedok);
               }
             });
-            scope.$parent.$on('toolSet.serviceFailure', function (evt) {
+            registerParentEvent('toolSet.serviceFailure', function (evt) {
               if (scope.toolArmResponse != undefined) {
                 scope.toolArmResponse(false);
               }
@@ -2722,13 +2741,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             //
             // finally, activate it
             //
-            scope.$parent.$on('toolActivate.serviceInvokeComplete', function (evt) {
+            registerParentEvent('toolActivate.serviceInvokeComplete', function (evt) {
               if (scope.toolActivateResponse != undefined) {
                 var response = scope.$parent.app.mdl['toolThing'].svc['toolActivate'].data;
                 scope.toolActivateResponse(response);
               }
             });
-            scope.$parent.$on('toolActivate.serviceFailure', function (evt) {
+            registerParentEvent('toolActivate.serviceFailure', function (evt) {
               if (scope.toolActivateResponse != undefined) {
                 scope.toolActivateResponse(false);
               }
@@ -2844,20 +2863,20 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         //
         // is remote validation configured?
         //
-        scope.$parent.$on('initialiseProcess.serviceInvokeComplete', function (evt) {
+        registerParentEvent('initialiseProcess.serviceInvokeComplete', function (evt) {
 
           scope.data.isProcessThingAvailable = scope.$parent.app.mdl['processThing'].svc['initialiseProcess'].data[0].result;
 
           if (scope.data.isProcessThingAvailable) {
             // lets now register the other services
 
-            scope.$parent.$on('validateStep.serviceInvokeComplete', function (evt) {
+            registerParentEvent('validateStep.serviceInvokeComplete', function (evt) {
               if (scope.sxslStepValidated != undefined) {
                 var valid = scope.$parent.app.mdl['processThing'].svc['validateStep'].data[0].result;
                 scope.sxslStepValidated(valid);
               }
             });
-            scope.$parent.$on('validateStep.serviceFailure', function (evt) {
+            registerParentEvent('validateStep.serviceFailure', function (evt) {
               if (scope.sxslStepValidated != undefined) {
                 scope.sxslStepValidated(false);
               }
@@ -2898,13 +2917,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
             });
 
-            scope.$parent.$on('validateProc.serviceInvokeComplete', function (evt) {
+            registerParentEvent('validateProc.serviceInvokeComplete', function (evt) {
               if (scope.sxslProcValidated != undefined) {
                 var valid = scope.$parent.app.mdl['processThing'].svc['validateProc'].data[0].result;
                 scope.sxslProcValidated(valid);
               }
             });
-            scope.$parent.$on('validateProc.serviceFailure', function (evt) {
+            registerParentEvent('validateProc.serviceFailure', function (evt) {
               if (scope.sxslProcValidated != undefined) {
                 scope.sxslProcValidated(false);
               }

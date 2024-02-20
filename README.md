@@ -203,7 +203,7 @@ Tools Required property holds a reference to a list of any tools that are requir
 The tool name, info and (optional) image are included. This is for reference purposes only i.e. this list is non=interactive.
 Consumables is similar - this is an information-only field that will list any items that are required to be consued (used) during this step/action.
 
-With a valid sxsl specified, the "Ready" flag will apear true, and when the player is running (executing actions) the Running flag is set to true. You can use these to control other features of your experience UI.
+With a valid sxsl specified, the "Ready" flag will apear true, and when the player is running (executing actions) the Active flag is set to true. You can use these to control other features of your experience UI.
 Eexcution of the player can be interrupted, for example to pause or to halt a procedure, by triggering the Pause or Halt services; both expect a Reason Code to be set to explain the reason behind the interruption.
 
 All execution is logged to the Status field, with an event being triggered for each change - this field could, for example, be bound to a thingworx Service where the real-time status could be logged.
