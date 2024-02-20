@@ -89,8 +89,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               scope.canrunField = true;
               scope.runningField = true;
               scope.toollistField = proc.getToolList();
-              scope.consumablesField = proc.getConsumables();
-              
+              scope.consumablesField = proc.getConsumables();              
               // time to wake up the UI
               maximise();
               
@@ -895,10 +894,23 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             var tgtsrc = targetExists.attributes['src'].value;
             var tgttype = tgtsrc.split(':')[0];
             switch (tgttype) {
-              case "spatial": contextual.target.mimeType = "application/vnd.ptc.tracker.spatialtracker"; break;
-              case "vuforia-model": contextual.target.mimeType = "application/vnd.ptc.tracker.modeltracker"; break;
-              case "vuforia-image": contextual.target.mimeType = "application/vnd.ptc.tracker.imagetracker"; break;
-              case "vuforia-area": contextual.target.mimeType = "application/vnd.ptc.tracker.areatracker"; break;
+              case "spatial": 
+                contextual.target.mimeType = "application/vnd.ptc.tracker.spatialtracker"; 
+              
+                //ugly hack to cater for auto-rotated model targets (where Y was not the UP vector)
+                if (context.trackers != undefined) {
+                  context.trackers.forEach(function (tracker) {
+                    if (tracker.content!= undefined && tracker.content.upvector != undefined) {
+                      var uv = tracker.content.upvector;
+                      // if z=up then rotate -90 in X.  similar for x=up, though its normally z that is the ooption  
+                      contextual.target.rotation = new Quat().FromEuler3(uv[2]*-90,0,uv[0]*-90,true);
+                    }
+                  })
+                }
+                break;
+              case "vuforia-model" : contextual.target.mimeType = "application/vnd.ptc.tracker.modeltracker"; break;
+              case "vuforia-image" : contextual.target.mimeType = "application/vnd.ptc.tracker.imagetracker"; break;
+              case "vuforia-area"  : contextual.target.mimeType = "application/vnd.ptc.tracker.areatracker"; break;
               case "vuforia-vumark": contextual.target.mimeType = "application/vnd.ptc.tracker.thingmarktracker"; break;
               default: contextual.target.mimeType = "application/vnd.ptc.tracker.unknown"; break;
             }
@@ -1148,7 +1160,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           scope.data.disabled = (scope.disabledField != undefined && scope.disabledField === 'true') ? true : false;
           scope.data.isHolo = (scope.holoField != undefined && scope.holoField == 'true') ? true : false;
           scope.data.loggingEnabled = (scope.loggingField != undefined && scope.loggingField == 'true') ? true : false;
-          executesxslPlayer();
+          //executesxslPlayer();
         });
             
         // if there is a SUBSET of data defined, lets watch to see if that list changes    
@@ -1210,7 +1222,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         }
 
         function createInstructionPanelHTML() {
-          const container = document.querySelector('.twx-2d-overlay > twx-container-content');
+          const container = document.querySelector('.sxslroot');
           scope.sxslPlayerWindowMinimised = document.createElement('div');
           scope.sxslPlayerWindowMinimised.innerHTML = "<div id='sxsl-instruction-max' class='sxsl-thumbnail-hide' style='position: absolute;left: 24px;bottom: 24px;'><button id='maximise' class='sxsl-button sxsl-button-round sxsl-icon-work-instruction sxsl-blue-bb'/></div>";
 
@@ -1336,7 +1348,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
 
         function createReferenceViewerHTML() {
-          const container = document.querySelector('.twx-2d-overlay > twx-container-content');
+          const container = document.querySelector('.sxslroot');
           scope.referenceViewerWindow = document.createElement('div');
 
           scope.referenceViewerWindow.innerHTML = "\
@@ -1362,7 +1374,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         };
 
         function createProofCaptureHTML() {
-          const container = document.querySelector('.twx-2d-overlay > twx-container-content');
+          const container = document.querySelector('.sxslroot');
           scope.proofWindow = document.createElement('div');
 
           scope.proofWindow.innerHTML = "\
@@ -1392,7 +1404,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
 
         function createReferencePreviewHTML() {
-          const container = document.querySelector('.twx-2d-overlay > twx-container-content');
+          const container = document.querySelector('.sxslroot');
           scope.referencePreviewWindow = document.createElement('div');
 
           scope.referencePreviewWindow.innerHTML = "\
@@ -1532,10 +1544,15 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           scope.renderer.addPVS(scope.data.context.target.tracker, name, shape, undefined, undefined, () => {
 
             // we added the model, so set the location
-            if (pos != undefined) scope.renderer.setTranslation(name, pos[0], pos[1], pos[2]);
-            else scope.renderer.setTranslation(name, 0, 0, 0);
-            if (rot != undefined) scope.renderer.setRotation(name, rot[0], rot[1], rot[2]);
-            else scope.renderer.setRotation(name, 0, 0, 0);
+            var locn = new Matrix4();
+            if (rot != undefined) locn.RotateFromEuler(rot[0], rot[1], rot[2], true);
+            if (pos != undefined) locn.Translate(pos[0], pos[1], pos[2]);
+            if (scope.data.context != undefined && scope.data.context.target.mimeType == "application/vnd.ptc.tracker.spatialtracker" && scope.data.context.target.rotation != undefined) 
+              //locn.RotateFromEuler(-90,0,0,true);
+              locn.RotateFromQuaternion(scope.data.context.target.rotation);
+            var tr = locn.ToPosEuler(true);
+            scope.renderer.setTranslation(name, tr.pos.X(), tr.pos.Y(), tr.pos.Z());
+            scope.renderer.setRotation(name, tr.rot.X(), tr.rot.Y(), tr.rot.Z());
             scope.renderer.setScale(name, scale, scale, scale);
             
             if (context != undefined) {
@@ -1614,15 +1631,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               me.hidden = true;
             }
           }
-          scope.focusField = undefined;
         }
         scope.deactivatePOIs = function () {
           //
           for (const name in scope.data.pois) {
             var me = scope.data.pois[name];
             if (me.active == true) {
-              //this.renderer.setProperties(name, { forceHidden: true });
-              //me.hidden = true;
+              me.hidden = true;
               me.deactivated = true;
             }
           }
