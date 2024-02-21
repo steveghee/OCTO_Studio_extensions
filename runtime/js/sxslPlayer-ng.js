@@ -18,6 +18,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         physicalField: '@',
         resourceField: '@',
         reasoncodeField: '@',
+        includeField: '@',
         anchorField: '@',
         holoField: '@',
         canrunField: '=',
@@ -53,10 +54,28 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           isToolThingAvailable: false,
           heroWidget: undefined,
           pois: [],
+          ask: undefined,
           events:[]
         };
 
         scope.renderer = $window.cordova ? vuforia : $injector.get('threeJsTmlRenderer');
+        if (PTC.Structure) {
+          PTC.Structure.fromData = function(id, data) {
+            return new Promise(function (resolve, reject) {
+              PTC.Metadata.fromData(id,data).then(
+                (metadata) => {
+                  const struct = new PTC.Structure(id);
+                  struct.metadata = metadata;
+                  metadata._setPropertyCache(id, data);
+                  resolve(struct);
+                },
+                (error) => {
+                  reject(error);
+                }
+              )
+            });
+          }
+        }
         scope.helper = new sxslHelper(scope.renderer, scope.data.anchor);
         scope.canrunField = false;
         scope.runningField = false;
@@ -1170,11 +1189,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
         });
 
-        scope.$watchGroup(['physicalField', 'disabledField', 'holoField', 'loggingField'], function () {
+        scope.$watchGroup(['physicalField', 'disabledField', 'holoField', 'loggingField', 'includField'], function () {
           scope.data.physical = (scope.physicalField != undefined && scope.physicalField === 'true') ? true : false;
           scope.data.disabled = (scope.disabledField != undefined && scope.disabledField === 'true') ? true : false;
           scope.data.isHolo = (scope.holoField != undefined && scope.holoField == 'true') ? true : false;
           scope.data.loggingEnabled = (scope.loggingField != undefined && scope.loggingField == 'true') ? true : false;
+          scope.data.ask = (scope.includeField != undefined && scope.includeField.length > 0) ? scope.includeField.split(',') : undefined;
           //executesxslPlayer();
         });
             
@@ -1509,8 +1529,59 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               $timeout(me.seqplayer.playSequence, 100);
           }
         });
-
-        scope.addNamedPOI = function (name, shape, pos, rot, scale, hide, context, seq, oid) {
+            
+        scope.setFocus = function(name,me) {
+          if (me.occurrenceIds != undefined) {
+            PTC.Structure.fromData(name, me.metadata).then( (structure) => {  
+                                                           
+              var focusField = [];
+              focusField.current = 0;
+              
+              me.occurrenceIds.forEach(function(id) {
+                var loc = undefined;         
+                var ask = undefined;
+                                                          
+                try {
+                  var p = { x:me.pos.X(), y:me.pos.Y(), z:me.pos.Z() };
+                  var o = { x:me.rot.X(), y:me.rot.Y(), z:me.rot.Z() };  
+                  var bbox = structure.getBounds(id).transform(p, o, 1);
+                  loc = bbox.center;
+                  
+                  ask = (scope.data.ask != undefined) ? structure.metadata.get(id, scope.data.ask) : undefined;
+                  if (ask != undefined) ask = ask.map( (v,i) => { return { name:scope.data.ask[i], value:v }; } );
+                } 
+                catch (err) { 
+                  console.log('no bounds for',id);
+                }
+                focusField.push( { model: name, 
+                                    path: id, 
+                                position: loc, 
+                                    gaze: {x:0,y:0,z:0}, 
+                                      up: {x:0,y:1,z:0},
+                                metadata: ask,
+                                   label: ask != undefined ? ask[0].value : undefined,
+                             _isSelected: false });
+              });
+              scope.focusField = focusField;     
+            });
+          } else 
+            scope.focusField = [];
+        }
+        scope.$root.$on('userpick', function(evt, src, type, evtdata) { 
+                        
+          console.log(src,'userpick');
+          var id = JSON.parse(evtdata).occurrence;
+          if (scope.focusField != undefined) {
+            scope.focusField.forEach( (v,i) => {
+              v._isSelected = (id == v.path);
+              if (v._isSelected == true) {
+                scope.focusField.current = i;
+              }
+            });
+          }
+        });
+            
+        scope.addNamedPOI = function (name, shape, pos, rot, scale, hide, context, seq, oid, focal) {
 
           //does this item exist already - are we reusing it
           if (scope.data.pois[name] != undefined) {
@@ -1554,14 +1625,19 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               } else
                 $timeout(me.seqplayer.playSequence, 100);
             }
-
+            
+            if (focal) scope.setFocus(name,me);
+            
             return;
           }
 
           // otherwise, create a new one
           scope.data.pois[name] = { active: false, sequenceToLoad: seq, occurrenceIds: oid };
-          scope.renderer.addPVS(scope.data.context.target.tracker, name, shape, undefined, undefined, () => {
-
+          scope.renderer.addPVS(scope.data.context.target.tracker, name, shape, undefined, undefined, (resp) => {
+                                
+            scope.data.pois[name].metadata = resp.modelMetadata;
+            scope.data.pois[name].sequenceList = resp.sequenceList;
+            
             // we added the model, so set the location
             var locn = new Matrix4();
             if (rot != undefined) locn.RotateFromEuler(rot[0], rot[1], rot[2], true);
@@ -1570,6 +1646,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               //locn.RotateFromEuler(-90,0,0,true);
               locn.RotateFromQuaternion(scope.data.context.target.rotation);
             var tr = locn.ToPosEuler(true);
+            
+            scope.data.pois[name].pos = tr.pos;
+            scope.data.pois[name].rot = tr.rot;
             scope.renderer.setTranslation(name, tr.pos.X(), tr.pos.Y(), tr.pos.Z());
             scope.renderer.setRotation(name, tr.rot.X(), tr.rot.Y(), tr.rot.Z());
             scope.renderer.setScale(name, scale, scale, scale);
@@ -1608,17 +1687,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               }
 
               // we can use this later...
-              scope.data.pois[name] = { pos: pos, rot: rot, scale: scale, hidden: hide, active: true, animated: false, sequenceToLoad: seq2load, occurrenceIds:oids  }
+              scope.data.pois[name].active = true;
+              scope.data.pois[name].occurrenceIds = oids; // = { pos: pos, rot: rot, scale: scale, hidden: hide, active: true, animated: false, sequenceToLoad: seq2load, occurrenceIds:oids, metadata:resp.modelMetadata  }
             }
             
-            if (scope.data.pois[name].occurrenceIds != undefined) {
-              var focusField = [];
-              scope.data.pois[name].occurrenceIds.forEach(function(id) {
-                focusField.push({model:name, path:id});
-              });
-              scope.focusField = focusField;     
-            }
-
+            if (focal) scope.setFocus(name, scope.data.pois[name]);
           },
           (err) => {
             // something went wrong
@@ -2182,7 +2255,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 if (res.mimeType == "application/vnd.ptc.pvz" || res.mimeType == "model/gltf-binary") {
 
                   var src = scope.data.anchor + (res.composition == "partset" ? res.modelUrl : res.url);
-                  scope.addNamedPOI(assetId, src, res.translation, genrotation(res.normal), 1, true, undefined, (res.composition == "partset" ? res.sceneName : undefined), occurrenceIds); //"Figure 1");
+                  scope.addNamedPOI(assetId, src, res.translation, genrotation(res.normal), 1, true, undefined, (res.composition == "partset" ? res.sceneName : undefined), occurrenceIds, true); //"Figure 1");
                   isAnimated = isAnimated || scope.data.pois[assetId].sequenceToLoad != undefined;
                 }
                 if (res.mimeType == "application/vnd.ptc.pvi") {
@@ -2199,7 +2272,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   //$scope.view.wdg.alternative.visible = true;
                 }
                 else if (res.mimeType == "application/vnd.ptc.poi") {
-                  scope.addNamedPOI(res.id, 'extensions/images/diamond.pvz', res.translation, genrotation(res.normal), 0.1, false);
+                  scope.addNamedPOI(res.id, 'extensions/images/diamond.pvz', res.translation, genrotation(res.normal), 0.1, false, undefined, undefined, undefined, true);
                 }
                 else if (res.mimeType == "application/vnd.ptc.partref") {
                   //TODO : how do we deal with gltf node referencing; thingview doesnt support it  
