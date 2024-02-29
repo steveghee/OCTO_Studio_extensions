@@ -7,7 +7,7 @@
 
 (function(twxAppBuilder){
 
-  function octo360mtTarget( widgetLabel ) {
+  function octoParametricTarget( widgetLabel ) {
     var overlay = {};
     
     // lets use defaults 
@@ -18,41 +18,72 @@
     overlay.y  = Twx3dCommon.common3dProp('y');
     overlay.z  = Twx3dCommon.common3dProp('z');
 
-    overlay.placeholder_img = Twx3dCommon.getPlaceHolderImgProperty('/extensions/images/360target.png');
+    overlay.placeholder_img = Twx3dCommon.getPlaceHolderImgProperty('/extensions/images/dynamictarget.png');
     
     overlay.dataset = {
             name: 'dataset',
            label: 'ves-ar-extension:Data Set',
-        datatype: 'resource_url',
+        datatype: 'string',
          default: '',
-    resource_url: true,
- allowedPatterns: ['.dat'],
-           tFrag: 'src="#_src_#"',
+           tFrag: 'ng-src="{{me.dataset + \'?id=\' + me.targetId}}"',
        sortOrder: 1,
+ isBindingTarget: true,
        isVisible: true
        };
     overlay.imgurl = {
             name: 'url',
            label: 'ves-ar-extension:Image',
-        datatype: 'resource_url',
-  resource_image: true,
- allowedPatterns: ['.png', '.jpg', '.svg', '.jpeg', '.gif','.bmp'],
+        datatype: 'string',
        isVisible: true,
            tFrag: 'guide-src="{{me.url}}"',
+ isBindingTarget: true,
        sortOrder: 2
         };
-    overlay.modelurl = {
-            name: 'maskurl',
-           label: 'Mask',
-        datatype: 'resource_url',
-  resource_image: true,
- allowedPatterns: ['.pvz'],
-       isVisible: false,
-           tFrag: 'model-src="" model-src="{{me.maskurl}}"',
+        overlay.size = {
+            name: 'size',
+           label: 'width (m) override',
+        datatype: 'string',
+         default: '',
+           tFrag: 'size="{{me.size}}"',
+ isBindingSource: false,
+ isBindingTarget: true,
        sortOrder: 3
-        };
-        
-        overlay.istracked = {
+    };
+    
+    overlay.enablescalegesture = {
+      name: 'enablescalegesture',
+      label: '@ptc/ves-ar-extension:Enable Scale Gesture',
+      datatype: 'boolean',
+      default: false,
+      isBindingSource: false,
+      isBindingTarget: true,
+      sortOrder: 5002,
+      isVisible: true,
+    };
+
+    overlay.enabletranslategesture = {
+      name: 'enabletranslategesture',
+      label: '@ptc/ves-ar-extension:Enable Pan Gesture',
+      datatype: 'boolean',
+      default: true,
+      isBindingSource: false,
+      isBindingTarget: true,
+      sortOrder: 5000,
+      isVisible: true,
+    };
+
+    overlay.enablerotategesture = {
+      name: 'enablerotategesture',
+      label: '@ptc/ves-ar-extension:Enable Rotate Gesture',
+      datatype: 'boolean',
+      default: true,
+      isBindingSource: false,
+      isBindingTarget: true,
+      sortOrder: 5001,
+      isVisible: true,
+    };
+
+    overlay.istracked = {
             name: 'istracked',
            label: 'ves-ar-extension:Tracked',
         datatype: 'boolean',
@@ -86,24 +117,24 @@
          return projectSettings.projectType === 'eyewear';
        }
     };
-    
+
     var removals = ['billboard', 'occlude', 'opacity', 'visible', 'shader', 'scale', 'decal'];
-    
+
     // create the default props list (add the ones we created, remove the list above)
     var props = Twx3dCommon.new3dProps(overlay, removals);
     // and create the template
     var template = Twx3dCommon.buildRuntimeTemplate("twx-dt-target", props, true);
-    
+
     // create a design template - this is a 3D image (can be dragged etc.)
-    var designTemplate = '<twx-dt-model id="#widgetId#-mask" src="{{me.maskurl}}" opacity="1" hidden="false" sx="1" sy="1" sz="1" x="{{me.x}}" y="{{me.y}}" z="{{me.z}}" rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" occlude="true" decal="false" shader=""></twx-dt-model>';
+    var designTemplate = '<twx-dt-model id="#widgetId#" src="{{me.maskurl}}" opacity="1" hidden="false" sx="1" sy="1" sz="1" x="0" y="0" z="0" rx="0" ry="0" rz="0" occlude="true" decal="false" shader=""></twx-dt-model>';
 
     var retObj = {
-        
-         elementTag: "octothreesixty-dt-target",
+
+         elementTag: "octoparametric-dt-target",
               label: widgetLabel,
  isVisibleInPalette: function(scope) {
                        let builderSettings = scope.$root.builderSettings || {};
-                       return true; //!!builderSettings.octo; // whilst we await support in the viewer..
+                       return !!builderSettings.octo; // whilst we await support in the viewer..
                      },
            category: 'ar',
              groups: ['Targets'],
@@ -122,24 +153,15 @@
            datatype: 'string',
           isVisible: true
            },
-           {
-               name: 'size',
-              label: 'Width (override)',
-           readonly: false,
-            default: '',
-           datatype: 'string',
-          isVisible: true
-           },
       {
             name: 'occluder',
            label: 'Occlusion',
-        datatype: 'resource_url',
+        datatype: 'string',
          default: '',
-  resource_image: true,
- allowedPatterns: ['.pvz'],
+ isBindingTarget: true,
        isVisible: true,
         }
-      
+
          ]),
              events: [
                {
@@ -162,47 +184,28 @@
 
     runtimeTemplate: function (props) {
                        var tmpl = template.replace("#widgetId#", props.widgetId);
-                       
-                       // strip off .dat extension: 'app/resources/Uploaded/DB2.dat' -> 'app/resources/Uploaded/DB2'
-                       var data = props.dataset ? props.dataset.replace(/\.[^\.]*$/, '') : '';
-                       
-                       if (props.size != '') 
-                         tmpl = tmpl.replace('#_src_#"', '#_src_#" size='+props.size);
-                       
-                       // result is like: src="vuforia-model:///app/resources/Uploaded/DB2?id=T1"
-                       tmpl = tmpl.replace('#_src_#', 'vuforia-model:///' + data + '?id=' + props.targetId);
-                       var occluder = props.occluder.length > 0 ? '<twx-dt-model id="'+props.widgetId+'-occluder" src="{{me.occluder}}" occlude="true" phantom="false" opacity="1" hidden="false" decal="false" shader="" sx="1" sy="1" sz="1" x={{me.x}} y={{me.y}} z={{me.z}} rx={{me.rx}} ry={{me.ry}} rz={{me.rz}}></twx-dt-model>' : '';
+                       var occluder = '<twx-dt-model id="'+props.widgetId+'-occluder" src="{{me.occluder}}" occlude="true" phantom="false" opacity="1" hidden={{me.occluder.length==0}} decal="false" shader="" sx="1" sy="1" sz="1" x={{me.x}} y={{me.y}} z={{me.z}} rx={{me.rx}} ry={{me.ry}} rz={{me.rz}}></twx-dt-model>';
                        return occluder + tmpl;
                      },
-                   
+
            delegate: function () {
 
                        // called when a widgets properties are altered
                        this.widgetUpdated = function (widgetCtrl, currentProps, changedProps, oldProps) {
-            
-                         // automatically sets the viewable when the dat is chosen
-                         if (changedProps.dataset) {
-              
-                           //note we only want the Uploaded/filename(no extension)  
-                           var data = changedProps.dataset ? changedProps.dataset.replace(/\.[^\.]*$/, '') : '';
-                           data = data.substring(data.indexOf('Uploaded'));
-                           widgetCtrl.setProp('maskurl', data+".pvz");
-                           
-                         }
+
                        }
                        return this;
                      }
-                   
+
     };
 
     TargetUtils.registerWidgetAsTarget(retObj);
     return retObj;
   }
 
-  function octo360mt360Target() {
-    var widget = Twx3dCommon.getWidget( 'OCTO 360 Model Target', octo360mtTarget );
+  twxAppBuilder.widget('octoParametricTarget', function() {
+    var widget = Twx3dCommon.getWidget( 'OCTO Parametric Target', octoParametricTarget );
     return widget;
-  }
-  twxAppBuilder.widget('octo360mt360Target', octo360mt360Target);
+  });
 
 })(twxAppBuilder);
