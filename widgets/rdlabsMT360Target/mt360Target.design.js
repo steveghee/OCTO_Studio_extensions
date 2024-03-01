@@ -48,8 +48,16 @@
   resource_image: true,
  allowedPatterns: ['.pvz'],
        isVisible: false,
-           tFrag: 'model-src="" model-src="{{me.maskurl}}"',
-       sortOrder: 3
+        };
+   
+    overlay.occluder = {
+            name: 'occluder',
+           label: 'Occlusion Geometry',
+        datatype: 'resource_url',
+  resource_image: true,
+ allowedPatterns: ['.pvz'],
+       isVisible: true,
+       sortOrder: 4
         };
         
         overlay.istracked = {
@@ -95,7 +103,7 @@
     var template = Twx3dCommon.buildRuntimeTemplate("twx-dt-target", props, true);
     
     // create a design template - this is a 3D image (can be dragged etc.)
-    var designTemplate = '<twx-dt-model id="#widgetId#-mask" src="{{me.maskurl}}" opacity="1" hidden="false" sx="1" sy="1" sz="1" x="{{me.x}}" y="{{me.y}}" z="{{me.z}}" rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" occlude="true" decal="false" shader=""></twx-dt-model>';
+    var designTemplate = '<twx-dt-model id="#widgetId#-mask" src="{{me.maskurl}}" phantom="true" opacity="0.5" hidden="false" sx="1" sy="1" sz="1" x="{{me.x}}" y="{{me.y}}" z="{{me.z}}" rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" occlude="true"></twx-dt-model>';
 
     var retObj = {
         
@@ -129,15 +137,6 @@
             default: '',
            datatype: 'string',
           isVisible: true
-           },
-      {
-            name: 'occluder',
-           label: 'Occlusion',
-        datatype: 'resource_url',
-         default: '',
-  resource_image: true,
- allowedPatterns: ['.pvz'],
-       isVisible: true,
         }
       
          ]),
@@ -157,7 +156,8 @@
        },
 
      designTemplate: function (props) {
-                        return designTemplate;
+                        var tmpl = designTemplate.replace("#widgetId#", props.widgetId);
+                        return tmpl;
                      },
 
     runtimeTemplate: function (props) {

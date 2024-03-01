@@ -49,6 +49,15 @@
  isBindingTarget: true,
        sortOrder: 3
     };
+    overlay.occluder = {
+            name: 'occluder',
+           label: 'Occlusion Geometry',
+        datatype: 'string',
+ isBindingSource: false,
+ isBindingTarget: true,
+       isVisible: true,
+       sortOrder: 4
+        };
     
     overlay.enablescalegesture = {
       name: 'enablescalegesture',
@@ -152,14 +161,6 @@
     isBindingTarget: true,
            datatype: 'string',
           isVisible: true
-           },
-      {
-            name: 'occluder',
-           label: 'Occlusion',
-        datatype: 'string',
-         default: '',
- isBindingTarget: true,
-       isVisible: true,
         }
 
          ]),

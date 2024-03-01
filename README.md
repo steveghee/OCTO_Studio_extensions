@@ -35,19 +35,20 @@ Lets look at each in turn.
 
 Work In Progress
 
-The dynamic target widget can be used to bind external target references e.g. targets that are created and stored in the Experience Service repository or a Thingworx file repository.
+The Parametric Target widget can be used to bind external target references e.g. targets that are created and stored in the Experience Service repository or a Thingworx file repository.
 These target dat/xml and guide view sets can be referenced as url, and this widget will load them.
 
 Suggestions for using this widget
 1. prepare your external targets in suitable repositories
 2. know the type of target - the url you provide will define the target type
-for example, a model target is defined as "vuforia-model:///path to target/tartname?id=targetid".  You must fill in the parmaters correctly
-a spatial target is simplly "spatial://"
+For example, a model target is defined as "vuforia-model:///path to target/tartname?id=targetid".  You must fill in the parmaters correctly
+A spatial target is simply "spatial://"
 
 To make your experience dynamic, you wlil pass the target information to the experience at launch - you can do this by passing application parameters in the launch url
 these parameters can be formed using services such as the Identity Resolution Service (IRS) - part of the Experience Server - or you can form the url yourself e.g. using a QR code.
 
 Bind your application parameter to the 'dataset' and 'guide' parameters of the dynamic target widget.  These paameters, when supplied at runtime, will then supply the values needed to load the target.
+You can also (optionally) bind a pvz (3d model) as the occluder geometry, if this makes sense for your taget. An occluder will mask any virtual augmentatoin that might appear behind a physical item in the scene.
 
 An mention abve, this widget is still work in progress, so there's a few issues to be ironed out still.  Basic testing shows that spatial, image and model targets all work.
 
@@ -79,7 +80,7 @@ Note the 3d pvz model is displayed as 'occluding' as this should help the author
 around the target, and understand what the user will/not see when viewing from 
 various perspectives.  
 
-Note also : The 3d occluding model is (currently) not included in the runtime display. 
+You can also (optionally) bind a pvz (3d model) as the occluder geometry, if this makes sense for your taget. An occluder will mask any virtual augmentatoin that might appear behind a physical item in the scene.
 
 Finally, the widget is in fact a generic target that will support any model target, so you can use standard and advanced/360 targets with this widget.  You don't have to use advanced/360 targets.
 
