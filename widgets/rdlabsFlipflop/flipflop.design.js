@@ -85,7 +85,7 @@ function twxFlipflop() {
     },
 
     runtimeTemplate: function (props) {
-      var tmpl = '<div ng-flipflop delegate-field="delegate" auto-field={{me.auto}} toggle-field={{me.toggle}}></div>';
+      var tmpl = '<div ng-flipflop delegate-field="delegate" q-field="me.q" qbar-field="me.qbar" auto-field={{me.auto}} toggle-field={{me.toggle}}></div>';
       return tmpl;
     }
   }

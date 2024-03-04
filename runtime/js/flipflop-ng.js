@@ -13,9 +13,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
     return {
       restrict: 'EA',
       scope: {
-          autoField  : '@',
-        toggleField  : '@',
-        delegateField: '='
+           autoField: '@',
+         toggleField: '@',
+              qField: '=',
+           qbarField: '=',
+       delegateField: '='
       },
       template: '<div></div>',
       link: function (scope, element, attr) {
@@ -28,13 +30,15 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                      };
         
         var _setq = function() {
-          scope.$parent.view.wdg[scope.$parent.widgetId]['q']    = scope.data.q;
-          scope.$parent.view.wdg[scope.$parent.widgetId]['qbar'] = scope.data.qbar;
-          scope.$parent.fireEvent('qclocked');
+          scope.qField    = scope.data.q;
+          scope.qbarField = scope.data.qbar;
+          $timeout(function() {
+            scope.$parent.fireEvent('qclocked');
+          },10);
         }
 
         var clkq = function(){
-          // toggle, and then propogate clock
+          // toggle?, and then propogate clock
           $timeout(function () {
             if (scope.data.toggle) 
             {
