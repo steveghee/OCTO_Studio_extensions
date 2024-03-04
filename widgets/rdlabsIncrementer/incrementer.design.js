@@ -68,7 +68,7 @@ function twxIncrementer() {
     },
 
     runtimeTemplate: function (props) {
-      var tmpl = '<div ng-incrementer delegate-field="delegate" quotient-field={{me.quotient}} base-field={{me.base}}></div>';
+      var tmpl = '<div ng-incrementer delegate-field="delegate" sum-field="me.sum" quotient-field={{me.quotient}} base-field={{me.base}}></div>';
       return tmpl;
     }
   }

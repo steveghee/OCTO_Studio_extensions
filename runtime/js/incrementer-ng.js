@@ -13,8 +13,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
     return {
       restrict: 'EA',
       scope: {
-        baseField    : '@',
+            baseField: '@',
         quotientField: '@',
+             sumField: '=',
         delegateField: '='
       },
       template: '<div></div>',
@@ -31,7 +32,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         // too (this triggers anyone watching this value)
         var _seti = function(v) {
           scope.data.value = v;
-          scope.$parent.view.wdg[scope.$parent.widgetId]['sum']    = scope.data.value;
+          scope.sumField = scope.data.value;
         }
 
         // iterate/increment the current value by the current step
@@ -56,6 +57,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         scope.$watch('quotientField', function () {
           scope.data.inc = (scope.quotientField != undefined) ? parseFloat(scope.quotientField) : 1 ;
         });
+            
         scope.$watch('baseField', function () {
           scope.data.base = (scope.baseField != undefined) ? parseFloat(scope.baseField) : 0 ;
           reseti();
