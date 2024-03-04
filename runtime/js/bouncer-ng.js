@@ -20,6 +20,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         limitField    : '@',
         startField    : '@',
         waveField     : '@',
+        valueField    : '=',
+        cycleField    : '=',
         delegateField : '='
       },
       template: '<div></div>',
@@ -89,7 +91,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               
               if (data && scope.limitField != undefined && 
                           scope.limitField != '' && 
-                          data.count >= scope.limitField) {
+                          data.count > scope.limitField) {
                 
                 // stop bouncing
                 $interval.cancel(scope.data.interval);
@@ -108,8 +110,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   var output = data.min + data.bounce * (data.max - data.min); 
 
                   // output the output variables
-                  scope.$parent.view.wdg[scope.$parent.widgetId]['value']       = output;
-                  scope.$parent.view.wdg[scope.$parent.widgetId]['cycleCount'] = data.count;
+                  scope.valueField = output;
+                  scope.cycleField = data.count;
                   
                   data.value += data.step;
                   if (data.value > M2PI) {

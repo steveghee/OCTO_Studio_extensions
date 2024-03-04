@@ -126,7 +126,7 @@ function twxBouncer() {
     },
 
     runtimeTemplate: function (props) {
-      var tmpl = '<div ng-bouncer delegate-field="delegate" wave-field={{me.wave}} bouncing-field={{me.oscillating}} min-field={{me.min}} max-field={{me.max}} start-field={{me.start}} rate-field={{me.rate}} limit-field={{me.maxCycles}}></div>';
+      var tmpl = '<div ng-bouncer delegate-field="delegate" value-field="me.value" cycle-field="me.cycleCount" wave-field={{me.wave}} bouncing-field={{me.oscillating}} min-field={{me.min}} max-field={{me.max}} start-field={{me.start}} rate-field={{me.rate}} limit-field={{me.maxCycles}}></div>';
       return tmpl;
     }
   }
