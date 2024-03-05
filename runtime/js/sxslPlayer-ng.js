@@ -21,7 +21,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         includeField: '@',
         anchorField: '@',
         holoField: '@',
-        hiliteField: '@',
+        hiliteshadeField: '@',
+        annotateshadeField: '@',
+        toolshadeField: '@',
         canrunField: '=',
         runningField: '=',
         executingField: '=',
@@ -57,7 +59,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           pois: [],
           ask: undefined,
           debug:undefined,
-          hilite: "sxsl_proximityHilitegl",
+          hiliteshade: "sxsl_proximityHilitegl",
+          annotateshade: "sxsl_coloredHilitegl;r f 0; g f 1;b f 1",
+          toolshade: "sxsl_coloredHilitegl;r f 1; g f 1;b f 0",
           events:[]
         };
 
@@ -1211,14 +1215,15 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
         });
 
-        scope.$watchGroup(['physicalField', 'disabledField', 'holoField', 'loggingField', 'includeField', 'hiliteField'], function () {
+        scope.$watchGroup(['physicalField', 'disabledField', 'holoField', 'loggingField', 'includeField', 'hiliteshadeField', 'annotateshadeField'], function () {
           scope.data.physical = (scope.physicalField != undefined && scope.physicalField === 'true') ? true : false;
           scope.data.disabled = (scope.disabledField != undefined && scope.disabledField === 'true') ? true : false;
           scope.data.isHolo = (scope.holoField != undefined && scope.holoField == 'true') ? true : false;
           scope.data.loggingEnabled = (scope.loggingField != undefined && scope.loggingField == 'true') ? true : false;
           scope.data.ask = (scope.includeField != undefined && scope.includeField.length > 0) ? scope.includeField.split(',') : undefined;
-          scope.data.hilite = (scope.hiliteField != undefined && scope.hiliteField.length > 0) ? scope.hiliteField : "sxsl_proximityHilitegl";
-          //executesxslPlayer();
+          scope.data.hiliteshade = (scope.hiliteshadeField != undefined && scope.hiliteshadeField.length > 0) ? scope.hiliteshadeField : "sxsl_proximityHilitegl";
+          scope.data.annotateshade = (scope.annotateshadeField != undefined && scope.annotateshadeField.length > 0) ? scope.annotateshadeField : "sxsl_coloredHilitegl;r f 0;g f 1;b f 1";
+          scope.data.toolshade = (scope.toolshadeField != undefined && scope.toolshadeField.length > 0) ? scope.toolshadeField : "sxsl_coloredHilitegl;r f 1;g f 1;b f 0";
         });
             
         // if there is a SUBSET of data defined, lets watch to see if that list changes    
@@ -1610,8 +1615,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           }
         });
             
-        scope.addNamedPOI = function (name, shape, pos, rot, scale, hide, context, seq, oid, focal) {
-
+        scope.addNamedPOI = function (name, shape, pos, rot, scale, hide, context, seq, oid, focal, shader) {
+            
           //does this item exist already - are we reusing it
           if (scope.data.pois[name] != undefined) {
 
@@ -1630,11 +1635,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             //add the new ones
             if (oid != undefined) {
               oid.forEach(function(id) {
-                scope.renderer.setProperties(name+"-"+id, { hidden: false, shader: scope.data.hilite});                                                            
+                scope.renderer.setProperties(name+"-"+id, { hidden: false, shader: shader});                                                            
               });
               me.occurrenceIds = oid;    
             } else {
-              scope.renderer.setProperties(name+"-/", { hidden: false, shader: scope.data.hilite});                        
+              scope.renderer.setProperties(name+"-/", { hidden: false, shader: shader});                        
               me.occurrenceIds = ['/'];    
             }
 
@@ -1691,11 +1696,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             scope.renderer.setScale(name, scale, scale, scale);
             
             if (context != undefined) {
-              var isDigital = true;//!(context.target.mimeType != "application/vnd.ptc.tracker.spatialtracker" || scope.data.physical);
-              scope.renderer.setProperties(name, { forceHidden:false, hidden: true, shader: isDigital ? "sxsl_desaturatedgl" : "sxsl_screendoorgl", occlude: !isDigital, phantom: isDigital, opacity: isDigital ? 0.35 : 1, decal: false });
+              var isDigital = !(context.target.mimeType != "application/vnd.ptc.tracker.spatialtracker" || scope.data.physical);
+              scope.renderer.setProperties(name, { forceHidden:false, hidden: hide, shader: isDigital ? "sxsl_desaturatedgl" : "sxsl_screendoorgl", occlude: !isDigital, phantom: isDigital, opacity: isDigital ? 0.35 : 1, decal: false });
               debugLog('context loaded');
             } else {
-              scope.renderer.setProperties(name, { forceHidden:false, hidden: hide, shader: scope.data.hilite, occlude: false, phantom: false, decal: false });
+              scope.renderer.setProperties(name, { forceHidden:false, hidden: hide, shader: shader, occlude: false, phantom: false, decal: false });
               debugLog('asset loaded for',name);  
 
               var seq2load = scope.data.pois[name].sequenceToLoad;
@@ -1720,12 +1725,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               } else if (oids != undefined) {
                 oids.forEach(function(oid) {
                   debugLog('showing occurrence',oid,'for',name);               
-                  scope.renderer.setProperties(name+'-'+oid, { hidden: false, shader: scope.data.hilite, occlude: false, phantom: false, decal: false });
+                  scope.renderer.setProperties(name+'-'+oid, { hidden: false, shader: shader, occlude: false, phantom: false, decal: false });
                 });
               } else {
                 debugLog('showing full model for', name);               
                 oids = ['/'];
-                scope.renderer.setProperties(name+'-/', { hidden: false, shader: scope.data.hilite, occlude: false, phantom: false, decal: false });
+                scope.renderer.setProperties(name+'-/', { hidden: false, shader: shader, occlude: false, phantom: false, decal: false });
               }
 
               // we can use this later...
@@ -2299,7 +2304,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 if (res.mimeType == "application/vnd.ptc.pvz" || res.mimeType == "model/gltf-binary") {
 
                   var src = scope.data.anchor + (res.composition == "partset" ? res.modelUrl : res.url);
-                  scope.addNamedPOI(assetId, src, res.translation, genrotation(res.normal), 1, true, undefined, (res.composition == "partset" ? res.sceneName : undefined), occurrenceIds, true); //"Figure 1");
+                  scope.addNamedPOI(assetId, src, res.translation, genrotation(res.normal), 1, true, undefined, (res.composition == "partset" ? res.sceneName : undefined), occurrenceIds, true, scope.data.hiliteshade);
                   isAnimated = isAnimated || scope.data.pois[assetId].sequenceToLoad != undefined;
                 }
                 if (res.mimeType == "application/vnd.ptc.pvi") {
@@ -2316,7 +2321,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   //$scope.view.wdg.alternative.visible = true;
                 }
                 else if (res.mimeType == "application/vnd.ptc.poi") {
-                  scope.addNamedPOI(res.id, 'extensions/images/diamond.pvz', res.translation, genrotation(res.normal), 0.1, false, undefined, undefined, undefined, true);
+                  scope.addNamedPOI(res.id, 'extensions/images/diamond.pvz', res.translation, genrotation(res.normal), 0.1, false, undefined, undefined, undefined, true, scope.data.hiliteshade);
                 }
                 else if (res.mimeType == "application/vnd.ptc.partref") {
                   //TODO : how do we deal with gltf node referencing; thingview doesnt support it  
@@ -2328,8 +2333,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
             if (a.annotations != undefined) {
               var me = a.annotations[0];
-              var src = scope.data.anchor + me.asset.resources[0].modelUrl;
-              scope.addNamedPOI(me.id, src, undefined, undefined, 1, false, undefined, me.asset.resources[0].sceneName);
+              var res = me.asset.resources[0];
+              var occurrenceIds = (res.occurrenceIds == undefined) ? me.occurrenceIds : res.occurrenceIds;
+              var src = scope.data.anchor + res.modelUrl;
+              scope.addNamedPOI(me.id, src, undefined, undefined, 1, true, undefined, (res.composition == "partset" ? res.sceneName : undefined), occurrenceIds, false, scope.data.annotateshade);
               isAnimated = isAnimated || scope.data.pois[me.id].sequenceToLoad != undefined;
             }
 
@@ -2338,8 +2345,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               // note technically we should do this PER tool - in general, we'll assume one tool per action, for this POC at least
               if (a.tools[0] != undefined && a.tools[0].asset != undefined) {
                 var me = a.tools[0];
+                var res = me.asset.resources[0];
+                var occurrenceIds = (res.occurrenceIds == undefined) ? me.occurrenceIds : res.occurrenceIds;
                 var src = scope.data.anchor + me.asset.resources[0].modelUrl;
-                scope.addNamedPOI(me.id, src, undefined, undefined, 1, false, undefined, me.asset.resources[0].sceneName);
+                scope.addNamedPOI(me.id, src, undefined, undefined, 1, false, undefined, (res.composition == "partset" ? res.sceneName : undefined), occurrenceIds, false, scope.data.toolshade);
                 isAnimated = isAnimated || scope.data.pois[me.id].sequenceToLoad != undefined;
               }
 
