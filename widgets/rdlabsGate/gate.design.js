@@ -101,7 +101,7 @@ function twxGate() {
 
 
     designTemplate: function () {
-      return '<div class="gateWidget"></div>';
+      return '<div class="gateWidget">Gate: {{me.op}}</div>';
     },
 
     runtimeTemplate: function (props) {

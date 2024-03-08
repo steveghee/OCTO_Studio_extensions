@@ -45,7 +45,7 @@ function twxAmp() {
 
 
     designTemplate: function () {
-      return '<div class="ampWidget">{{me.gain}}</div>';
+      return '<div class="ampWidget">Amp<p>Gain: {{me.gain}}</div>';
     },
 
     runtimeTemplate: function (props) {

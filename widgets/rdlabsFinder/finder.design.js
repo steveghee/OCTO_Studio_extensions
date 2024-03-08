@@ -8,10 +8,8 @@ function twxFinder() {
     //                     exist in any template
     
     groups    : ['OCTO Labs'],
-    isVisibleInPalette: function(scope) {
-      let builderSettings = scope.$root.builderSettings || {};
-      return true; //!!builderSettings.octo;
-    },
+    
+    isVisibleInPalette: true,
 
     properties: [
       {
@@ -138,7 +136,7 @@ function twxFinder() {
 
 
     designTemplate: function () {
-      return '<div class="finderWidget"></div>';
+      return '<div class="finderWidget">Finder<p>Op: {{me.op}}</div>';
     },
 
     runtimeTemplate: function (props) {

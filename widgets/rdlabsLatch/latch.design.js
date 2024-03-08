@@ -71,7 +71,7 @@ function twxLatch() {
     },
 
     designTemplate: function () {
-      return '<div class="latchWidget">latch</div>';
+      return '<div class="latchWidget">Latch</div>';
     },
 
     runtimeTemplate: function (props) {

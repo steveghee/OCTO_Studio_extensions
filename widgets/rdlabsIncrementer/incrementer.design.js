@@ -7,10 +7,8 @@ function twxIncrementer() {
     //category: 'ar',  
     // in this case, we want this widget to be available anywhere, so we do NOT specify a category
     groups    : ['OCTO Labs'],
-    isVisibleInPalette: function(scope) {
-      let builderSettings = scope.$root.builderSettings || {};
-      return true; //!!builderSettings.octo;
-    },
+    
+    isVisibleInPalette: true,
 
     properties: [
       {
@@ -59,7 +57,7 @@ function twxIncrementer() {
     ],
 
     designTemplate: function () {
-      return '<div class="incrementerWidget"></div>';
+      return '<div class="incrementerWidget">Incrementer<p>Quotient: {{me.quotient}}</div>';
     },
 
     dependencies: {

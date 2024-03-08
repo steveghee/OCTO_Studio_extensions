@@ -122,7 +122,7 @@ function twxBouncer() {
     },
 
     designTemplate: function () {
-      return '<div class="bouncerWidget"></div>';
+      return '<div class="bouncerWidget">Oscillator<p>Wave: {{me.wave}}</div>';
     },
 
     runtimeTemplate: function (props) {

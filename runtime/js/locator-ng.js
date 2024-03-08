@@ -106,35 +106,42 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               var label  = (scope.data.label!= undefined) ? result[scope.data.label] : undefined;
 
               // Get the bounding box information for part '/0/9/1/2'
-              var bbox = structure.getBounds(pathid);
-
-              // Transform the bounding box to account for the 'model-1' widget’s location
-              var xform_bbox = bbox.transform( [widgetProps.x,  widgetProps.y,  widgetProps.z],
-                                               [widgetProps.rx, widgetProps.ry, widgetProps.rz],
-                                               widgetProps.scale );
+              try {
+                var bbox = structure.getBounds(pathid);
+                
+                // Transform the bounding box to account for the 'model-1' widget’s location
+                var xform_bbox = widgetProps != undefined ? 
+                                               bbox.transform( [widgetProps.x,  widgetProps.y,  widgetProps.z],
+                                                               [widgetProps.rx, widgetProps.ry, widgetProps.rz],
+                                                               widgetProps.scale )
+                                               : bbox;
               
-              // are we combining all results into one single point?
-              if (scope.data.autogroup) {
-                  autogroup(xform_bbox);
-              } else {
+                // are we combining all results into one single point?
+                if (scope.data.autogroup) {
+                    autogroup(xform_bbox);
+                } else {
 
-                //  utimately we'll get the specified corner; the default for now is the center
-                var bc = xform_bbox.center; // box center
-                var bm = xform_bbox.min; // min
-                var bx = xform_bbox.max; // max
+                  //  utimately we'll get the specified corner; the default for now is the center
+                  var bc = xform_bbox.center; // box center
+                  var bm = xform_bbox.min; // min
+                  var bx = xform_bbox.max; // max
 
-                var sx = Math.abs(bm.x - bx.x);
-                var sy = Math.abs(bm.y - bx.y);    
-                var sz = Math.abs(bm.z - bx.z);
-                var scale = {x:sx, y:sy, z:sz};
+                  var sx = Math.abs(bm.x - bx.x);
+                  var sy = Math.abs(bm.y - bx.y);    
+                  var sz = Math.abs(bm.z - bx.z);
+                  var scale = {x:sx, y:sy, z:sz};
 
-                scope.data.results.push( { model: scope.data.model, 
-                                            path: pathid, 
-                                        position: bc, 
-                                            gaze: {x:0,y:0,z:0}, 
-                                              up: {x:0,y:1,z:0}, 
-                                           scale: scale, 
-                                           label: label });
+                  scope.data.results.push( { model: scope.data.model, 
+                                              path: pathid, 
+                                          position: bc, 
+                                              gaze: {x:0,y:0,z:0}, 
+                                                up: {x:0,y:1,z:0}, 
+                                             scale: scale, 
+                                             label: label });
+                }
+              } 
+              catch (err) { 
+                  console.log('no bounds for',pathid);
               }
             });
 

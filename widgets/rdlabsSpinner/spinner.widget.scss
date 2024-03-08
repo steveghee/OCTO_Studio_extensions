@@ -1,27 +1,16 @@
-.spinnerElement {
+.turntableElement {
 	display: block;
 	height: 100%;
 	width: 100%;
 }
 
-.spinnerWidget {
+.turntableWidget {
 	margin: auto;
 	width: 198px;
-	height: 54px;
+	height: 72px;
 	border-radius: 5px;
 	background-color: #DDDDDD;
 	padding: 3px;
 	opacity: 0.5;
 }
 
-.spinnerButton {
-	border-style: none;
-	margin: 0;
-	padding: 0;
-	width: 48px;
-	height: 48px;
-}
-
-.spinnerButton[disabled] {
-	opacity: 0.5;
-}

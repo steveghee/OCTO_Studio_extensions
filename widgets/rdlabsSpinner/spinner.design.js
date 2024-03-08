@@ -80,7 +80,7 @@ function twxTurntable() {
     ],
 
     designTemplate: function () {
-      return '<div class="turntableWidget"></div>';
+      return '<div class="turntableWidget">Turntable<p>Rate: {{me.rate}}<br>Direction: {{me.direction}}</div>';
     },
 
     dependencies: {

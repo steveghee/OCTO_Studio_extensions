@@ -86,7 +86,7 @@ function twxLogic() {
 
 
     designTemplate: function () {
-      return '<div class="logicWidget">{{me.op}}</div>';
+      return '<div class="logicWidget">Logic: {{me.op}}</div>';
     },
 
     runtimeTemplate: function (props) {

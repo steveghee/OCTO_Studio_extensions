@@ -7,10 +7,8 @@ function twxABSwitch() {
     //category: 'ar',  
     // in this case, we want this widget to be available anywhere, so we do NOT specify a category
     groups    : ['OCTO Labs'],
-    isVisibleInPalette: function(scope) {
-      let builderSettings = scope.$root.builderSettings || {};
-      return true; //!!builderSettings.octo;
-    },
+    
+    isVisibleInPalette: true,
 
     properties: [
       {
@@ -50,7 +48,7 @@ function twxABSwitch() {
     },
 
     designTemplate: function () {
-      return '<div class="abswitchWidget">{{me.polarity}}</div>';
+      return '<div class="abswitchWidget">ABSwitch<p>Polarity:{{me.polarity?"A":"B"}}</div>';
     },
 
     runtimeTemplate: function (props) {

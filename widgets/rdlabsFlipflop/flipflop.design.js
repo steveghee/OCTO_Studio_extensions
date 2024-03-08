@@ -9,10 +9,7 @@ function twxFlipflop() {
     // in this case, we want this widget to be available anywhere, so we do NOT specify a category
     
     groups    : ['OCTO Labs'],
-    isVisibleInPalette: function(scope) {
-      let builderSettings = scope.$root.builderSettings || {};
-      return true; //!!builderSettings.octo;
-    },
+    isVisibleInPalette: true,
 
     properties: [
       {
@@ -81,7 +78,7 @@ function twxFlipflop() {
     },
 
     designTemplate: function () {
-      return '<div class="flipflopWidget"></div>';
+      return '<div class="flipflopWidget">Flip Flop<p>Toggle: {{me.toggle}}</div>';
     },
 
     runtimeTemplate: function (props) {

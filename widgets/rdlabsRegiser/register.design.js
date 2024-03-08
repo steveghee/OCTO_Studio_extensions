@@ -62,7 +62,7 @@ function twxRegister() {
     },
 
     designTemplate: function () {
-      return '<div class="registerWidget">register</div>';
+      return '<div class="registerWidget">Register</div>';
     },
 
     runtimeTemplate: function (props) {
