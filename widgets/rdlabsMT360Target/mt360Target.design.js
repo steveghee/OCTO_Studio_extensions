@@ -47,7 +47,7 @@
         datatype: 'resource_url',
   resource_image: true,
  allowedPatterns: ['.pvz'],
-       isVisible: false,
+       isVisible: false
         };
    
     overlay.occluder = {
@@ -55,6 +55,7 @@
            label: 'Occlusion Geometry',
         datatype: 'resource_url',
   resource_image: true,
+         default: '',
  allowedPatterns: ['.pvz'],
        isVisible: true,
        sortOrder: 4
@@ -156,8 +157,7 @@
        },
 
      designTemplate: function (props) {
-                        var tmpl = designTemplate.replace("#widgetId#", props.widgetId);
-                        return tmpl;
+                        return designTemplate;
                      },
 
     runtimeTemplate: function (props) {
