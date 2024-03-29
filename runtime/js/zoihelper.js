@@ -48,6 +48,8 @@ function zoiHelper(renderer, targets) {
       // and set new ones
       this._addZOIs(zois);
     }
+  
+    return this;
   }
 
   // 
