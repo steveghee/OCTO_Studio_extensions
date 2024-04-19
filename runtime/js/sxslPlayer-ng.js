@@ -2283,8 +2283,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             //TODO : push the html generation piece down into the setter
             scope.setInstLabel(pdesc + "<span style='color:black;font-size:100%'>" + odesc + "</span>");
 
-            //unpack the action subject(s) - also look for associated animations
-            //which subject type (resource) can i view - 3d or 2d
+            // unpack the action subject(s) - also look for associated animations
+            // which subject type (resource) can i view - 3d or 2d
 
             //TODO: how do we deal with alternative representations e.g 2d vs 3d
             //$scope.view.wdg.alternative.visible = false;
@@ -2331,16 +2331,20 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               })
             })
 
-            if (a.annotations != undefined) {
-              var me = a.annotations[0];
+            // like subjects, we can have 0 or more annotations
+            //
+            if (a.annotations != undefined) a.annotations.forEach(function (me) {
               var res = me.asset.resources[0];
               var occurrenceIds = (res.occurrenceIds == undefined) ? me.occurrenceIds : res.occurrenceIds;
               var src = scope.data.anchor + res.modelUrl;
               scope.addNamedPOI(me.id, src, undefined, undefined, 1, true, undefined, (res.composition == "partset" ? res.sceneName : undefined), occurrenceIds, false, scope.data.annotateshade);
               isAnimated = isAnimated || scope.data.pois[me.id].sequenceToLoad != undefined;
-            }
-
+            })
+            
+            // right now we only support 0 or 1 tool - per action
+            //
             if (a.tools != undefined) {
+                
               // does the tool have any animation defined?
               // note technically we should do this PER tool - in general, we'll assume one tool per action, for this POC at least
               if (a.tools[0] != undefined && a.tools[0].asset != undefined) {
