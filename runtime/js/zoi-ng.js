@@ -40,6 +40,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                      extent: 0.5,
                      cutoff: 666,
                       floor: 0,
+                        src: undefined,
                      helper: undefined,
                        args: undefined,
                       color: undefined,
@@ -114,6 +115,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                         cutoff: h.cutoff
                     };
           scope.valueField = buildInfoTable( [row] );
+          
           // small delay to allow value to propogate
           $timeout(function() {
             scope.$parent.fireEvent('arrived',target);
@@ -147,10 +149,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         // not updated too often, so handle as a group    
         //
         //
-        scope.$watchGroup(['idField', 'colorField', 'isholoField'], function () {
+        scope.$watchGroup(['idField', 'colorField', 'isholoField', 'srcField'], function () {
           scope.data.id     = (scope.idField     != undefined) ? scope.idField : undefined;
           scope.data.color  = (scope.colorField  != undefined) ? scope.colorField.split(',') : [0,1,0];
           scope.data.isholo = (scope.isholoField != undefined) ? isbool(scope.isholoField) : false;
+          scope.data.src    = scope.srcField;
         });
 
         //
@@ -247,6 +250,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         });
             
         var show = function(){
+            
           //force visble      
           scope.data.disabled = false;  
           
@@ -256,9 +260,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         
         };
         
-        
         var hide = function(force) {
             
+          // force invissible  
           if (scope.data.helper != undefined) 
             scope.data.helper.hide();
         };
@@ -295,6 +299,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                       
                   // select the last item    
                   scope.zoidataField     = scope.data.zoidata;
+                  
                   // small delay to allow value to propogate
                   $timeout(function() {
                     scope.$parent.fireEvent('marked');
@@ -309,6 +314,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         // make sure we are triggered when the page is ready    
         //    
         scope.$root.$on("$ionicView.afterEnter", function (event) {
+                        
           // check that I (as named widget) am referenced in this view              
           if (event.targetScope.view.wdg[scope.data.id] != undefined) {
             scope.data.ready = true;
