@@ -16,6 +16,7 @@ function zoiHelper(renderer, targets) {
   this.zoiImage     = targets != undefined && targets.image!= undefined ? targets.image : "extensions/images/loading.png";
   this.showing      = false;
   this.showZOIs     = false;
+  this.enabled      = true;
   
   this.headloc      = undefined;
   this.selected     = undefined;
@@ -168,7 +169,7 @@ function zoiHelper(renderer, targets) {
   this.Offset = function(offset) { this.floor = offset; this.dirty = true; return this; }
   
   //
-  // cutoff values can be specified PER poi, so this is a fallback case
+  // cutoff varlues can be specified PER poi, so this is a fallback case
   // set the cutoff distance.  if auto is true, helper will hide itself
   // when the user gets within the specified distance. the third parameter
   // is a callback funciton which can be used to perform some action based 
@@ -195,6 +196,11 @@ function zoiHelper(renderer, targets) {
     return this;
   }
   
+  this.Enabled = function(enabled) {
+    this.enabled = enabled;
+    this._toggleZOIs(enabled);
+    return this;
+  }
   //
   ///////////////////////////////////////////////////////////////////////////////////////
   // private API
