@@ -48,7 +48,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                       ready: false
                      };
                      
-        scope.renderer = $window.cordova ? vuforia : $injector.get('threeJsTmlRenderer');
+        scope.renderer = $window.cordova ? vuforia 
+                                         : $injector.get('threeJsTmlRenderer');
                      
         //
         // lets create a single navigator manager
@@ -113,7 +114,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                         cutoff: h.cutoff
                     };
           scope.valueField = buildInfoTable( [row] );
-          scope.$parent.fireEvent('arrived',target);
+          // small delay to allow value to propogate
+          $timeout(function() {
+            scope.$parent.fireEvent('arrived',target);
+          },100);
         }
         scope.exited = function(h,d) {
             
@@ -126,7 +130,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                         cutoff: h.cutoff
                     };
           scope.valueField = buildInfoTable( [row] );
-          scope.$parent.fireEvent('departed',target);
+                    
+          // small delay to allow value to propogate
+          $timeout(function() {
+            scope.$parent.fireEvent('departed',target);
+          },100);
         }
         
         //////////////////////////////////////////////////////////////////////
@@ -284,7 +292,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                       
                   // select the last item    
                   scope.zoidataField     = scope.data.zoidata;
-                  scope.$parent.fireEvent('marked');
+                  // small delay to allow value to propogate
+                  $timeout(function() {
+                    scope.$parent.fireEvent('marked');
+                  }, 100);
                 },1);
               }
             };
