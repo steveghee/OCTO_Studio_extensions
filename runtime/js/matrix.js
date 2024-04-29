@@ -693,11 +693,26 @@ function Vector4() {
         return this;
     }
     
+    this.Set3o = function (o) {
+        this.v[0] = o.x;
+        this.v[1] = o.y;
+        this.v[2] = o.z;
+        return this;
+    }
+    
     this.Set4a = function (a) {
         this.v[0] = a[0];
         this.v[1] = a[1];
         this.v[2] = a[2];
         this.v[3] = a[3];
+        return this;
+    }
+    
+    this.Set4o = function (o) {
+        this.v[0] = o.x;
+        this.v[1] = o.y;
+        this.v[2] = o.z;
+        this.v[3] = o.w || o.a || 1;
         return this;
     }
     

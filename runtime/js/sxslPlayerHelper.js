@@ -6,7 +6,16 @@ function sxslHelper(renderer, anchor) {
 
   this.anchor = anchor;
   this.renderer = renderer;
-
+  
+  function getViewpoint(ref, context) {
+    if (ref != undefined) {
+      let asset = context[ref.contextId].assets[ref.assetId];
+      return asset.resources[0].content;  // should really look for the right role-based resource here e.g. POSE
+    }
+    else 
+      return undefined;
+  }
+  
   this.sxslAction = function (a, s, i, last, e) {
     this.step = s;
     this.stepid = s.id;
@@ -24,6 +33,14 @@ function sxslHelper(renderer, anchor) {
     this.type = a.type;
     this.details   = a.details;
     this.materials = a.materials;
+    
+    this.animation = undefined;
+    if (a.animations != undefined) {
+      //for now, let's assume there is one
+      let sub = a.animations[0];
+      //really should check to see this is valid
+      this.animation = this.context[sub.contextId].assets[sub.assetId].resources[0].content.animationName;
+    }
 
     this.subjects = undefined;
     var subcount = a.subjects != undefined ? a.subjects.length : 0;
@@ -54,7 +71,7 @@ function sxslHelper(renderer, anchor) {
             this.subjects.push({ context: fctx, asset: asset, id: sub.assetId, occurrenceIds:sub.occurrenceIds });
           } else {
             //no context, so is the resource defined inline?
-            this.subjects.push({ asset: sub, id: sub.assetId, occurrenceIds:sub.occurrenceIds });
+            this.subjects.push({ asset: sub, id: sub.assetId, occurrenceIds: sub.occurrenceIds });
           }
         }
       }
@@ -62,12 +79,13 @@ function sxslHelper(renderer, anchor) {
 
     // same for annotations
     this.annotations = undefined;
-    var subcount = a.annotations != undefined ? a.annotations.length : 0;
+    var anyans = a.annotations != undefined ? a.annotations : s.annotations;
+    var subcount = anyans != undefined ? anyans.length : 0;
     if (subcount > 0) {
       this.annotations = [];
-      if (a.annotations != undefined) {
+      if (anyans != undefined) {
         for (var subc = 0; subc < subcount; subc++) {
-          var sub = a.annotations[subc];
+          var sub = anyans[subc];
           // idealy we will look these up from the context store  
           // work out the final context for this specific action
           if (this.context != undefined) {
@@ -84,7 +102,7 @@ function sxslHelper(renderer, anchor) {
               };
             }
             let asset = this.context[sub.contextId].assets[sub.assetId];
-            this.annotations.push({ context: fctx, asset: asset, id: sub.assetId });
+            this.annotations.push({ context: fctx, asset: asset, id: sub.assetId, ann:sub });
           }
         }
       }
@@ -151,7 +169,9 @@ function sxslHelper(renderer, anchor) {
         }
       }
     }
-
+    
+    this.viewpoint = getViewpoint(a.viewpoint != undefined ? a.viewpoint : s.viewpoint, this.context);
+    this.sceneName = a.sceneName != undefined ? a.sceneName : s.sceneName; // if defined, use this to drive the background context (model/occluder)
     this.id = a.id;
     this.instruction = a.instructions != undefined ? a.instructions.resources[0].text : undefined;
 
@@ -211,8 +231,11 @@ function sxslHelper(renderer, anchor) {
     this.title = s.title != undefined ? s.title.resources[0].text : undefined;
     this.intro = s.introduction != undefined ? s.introduction.resources[0].text : undefined;
     this.outro = s.conclusion != undefined ? s.conclusion.resources[0].text : undefined;
-
-    // we can have processordure, step and action=level contexts, so we capture and pass these down
+    this.sceneName = p.sceneName != undefined ? p.sceneName : s.sceneName; //optional
+    this.viewpoint = s.viewpoint;
+    this.annotations = s.annotations;
+    
+    // we can have processoressordure, step and action=level contexts, so we capture and pass these down
     this.context = s.contexts != undefined && s.contexts.length > 0 ? s.contexts[0] : c;
     this.ack = s.acknowledgement != undefined ? s.acknowledgement : undefined;
 
@@ -898,6 +921,8 @@ function sxslHelper(renderer, anchor) {
         me.proc = JSON.parse(fs.readFileSync(fi, 'utf8'));
         me.id = me.proc.id;
         me.title = me.proc.title != undefined ? me.proc.title.resources[0].text : undefined;
+        me.versionInfo = me.proc.versionDisplayName != undefined ? me.proc.versionDisplayName : undefined;
+        me.published = me.proc.publishDate != undefined ? new Date(me.proc.publishDate) : undefined;
         me.thumbnail = me.proc.thumbnail != undefined ? me.anchor + me.proc.thumbnail : me.proc.thumbnail;
         // we can have procedure, step and action=level contexts, so we capture and pass these down
         me.context = me.proc.contexts != undefined ? me.proc.contexts : me.context;
@@ -920,6 +945,8 @@ function sxslHelper(renderer, anchor) {
         me.proc = data;
         me.id = me.proc.id;
         me.title = me.proc.title != undefined ? me.proc.title.resources[0].text : undefined;
+        me.versionInfo = me.proc.versionDisplayName != undefined ? me.proc.versionDisplayName : undefined;
+        me.published = me.proc.publishDate != undefined ? new Date(me.proc.publishDate) : undefined;
         me.thumbnail = me.proc.thumbnail != undefined ? me.anchor + me.proc.thumbnail : me.proc.thumbnail;
         // we can have procedure, step and action=level contexts, so we capture and pass these down
         me.context = me.proc.contexts != undefined ? me.proc.contexts : me.context;

@@ -56,9 +56,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           isProcessThingAvailable: false,
           isToolThingAvailable: false,
           heroWidget: undefined,
-          pois: [],
+          pois: {},
           ask: undefined,
-          debug:undefined,
+          debug: undefined,
+          focus: [],
           hiliteshade: "sxsl_proximityHilitegl",
           annotateshade: "sxsl_coloredHilitegl;r f 0; g f 1;b f 1",
           toolshade: "sxsl_coloredHilitegl;r f 1; g f 1;b f 0",
@@ -109,9 +110,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         
         var registerRootEvent = function(evt,fn) {
           scope.data.events.push(scope.$root.$on(evt,fn));
+          //scope.$root.$on(evt,fn);
         }
         var registerParentEvent = function(evt,fn) {
           scope.data.events.push(scope.$parent.$on(evt,fn));
+          //scope.$parent.$on(evt,fn);
         }
 
         var startSxslPlayer = function () {
@@ -135,8 +138,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             .then((proc) => {
                   
               var registerEvent = function(evt,fn) {
-                scope.data.events.push(proc.events.on(evt,fn));
+//                scope.data.events.push(proc.events.on(evt,fn));
+                scope.$parent.$on(evt,fn);
               }
+            
 
               debugLog('loaded', proc.getStepList().length, 'steps');
               scope.canrunField = true;
@@ -149,7 +154,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               maximise();
 
               registerEvent('procStart', function (evt, proc) {
-                scope.setHeadLabel(proc.title);
+                var titleString = (proc.title || "" ) + (proc.versionInfo != undefined ? (" (" + proc.versionInfo + ") ") : "") + (proc.published != undefined ? ("Last published: " + proc.published.toUTCString()) : "")
+                scope.setHeadLabel(titleString);
                 scope.steplistField = proc.getStepList();
 
                 scope.logger.push({
@@ -194,7 +200,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 scope.canrunField = false;
                 scope.runningField = false;
                 scope.executingField = false;
-
+                scope.focusField = scope.data.focus = [];
+                scope.focusField.current = 0; 
+                
                 scope.logger.push({
                   id: procedure.id,
                   event: "procend",
@@ -249,7 +257,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 });
                 maximise();
               });
-
+                  
+              registerParentEvent('procHalt', function(evt, reason) {
+                console.log('parent event for procHalt');
+              });
+                      
               registerEvent('procHalt', function (evt, reason) {
                 debugLog('halting proc\n============================');
 
@@ -335,6 +347,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 scope.toollistField    = proc.getToolList(action.id);
                 scope.consumablesField = proc.getConsumables(action.id);
                 hideCapture();
+                
+                if (scope.data.context.model != undefined)  // start (or stop) any scene-based override
+                  scope.animateNamedPOI('context', action.sceneName, scope.data.context);
               });
 
               registerEvent('actionEnd', function (evt, action) {
@@ -499,8 +514,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                             scope.actions.end(conclusion);
 
                             // TODO : let thingworx know? 
-                            //                                                scope.statusField = scope.logger.sanitise();
-                            debugLog('results:', JSON.stringify(scope.logger.results, null, ' '));
+                            scope.statusField = scope.logger.sanitise();
+                            //debugLog('results:', JSON.stringify(scope.logger.results, null, ' '));
                           })
                           .catch(e => {
 
@@ -508,7 +523,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                             var abortmsg = "Procedure failed<p>" + e.reason;
                             scope.actions.end(abortmsg);
 
-                            proc.events.emit('procHalt', { event: e.event, reason: abortmsg });
+                            scope.$parent.$emit('procHalt', { event: e.event, reason: abortmsg });
                           })
                         else if (e.cmd == 'ack') {
                           // we are waiting for user input      
@@ -1349,7 +1364,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           scope.feedbackLabel = document.querySelector('div#captureFeedback');
 
           scope.setHeadLabel = function (text) {
-            scope.headLabel.innerHTML = text;
+            scope.headLabel.innerHTML = text || "";
           }
           scope.setInstLabel = function (text) {
             scope.instLabel.innerHTML = text;
@@ -1536,7 +1551,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           var rot = new Matrix4().Set3V(rg, up, gz).ToPosEuler(true).rot;
           return rot.v;
         }
-
+            
         // add them as we need them - a better version might use a re-usable pool of shapes but let's keep 
         // it simple for now
         scope.$parent.$on('stepcompleted', function (event, target, unused, data) {
@@ -1562,13 +1577,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         // use with, for example, the wayfinder.  The user can also ask for additional metadata, the first item being used as the label
         // for the currently selected item
         //
-        scope.setFocus = function(name,me) {
-          if (me.occurrenceIds != undefined) {
+        scope.setFocus = function(name, me) {
+          if (name != undefined && me != undefined && me.occurrenceIds != undefined) {
             PTC.Structure.fromData(name, me.metadata).then( (structure) => {  
                                                            
-              var focusField = [];
-              focusField.current = 0;
-              
               me.occurrenceIds.forEach(function(id) {
                 var loc = undefined;         
                 var ask = undefined;
@@ -1585,7 +1597,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 catch (err) { 
                   debugLog('no bounds for',id);
                 }
-                focusField.push( { model: name, 
+                scope.data.focus.push( { model: name, 
                                     path: id, 
                                 position: loc, 
                                     gaze: {x:0,y:0,z:0}, 
@@ -1594,18 +1606,42 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                                    label: ask != undefined ? ask[0].value : undefined,
                              _isSelected: false });
               });
-              scope.focusField = focusField;     
+
+              scope.focusField = scope.data.focus;     
+              scope.focusField.current = 0;
+              
             });
-          } else 
-            scope.focusField = [];
+
+          } else if (me != undefined && me.translation != undefined) {
+              
+            // get the orientation matrix
+            var q = new Quat().Set4a(me.rotation);
+            var m = new Matrix4().RotateFromQuaternion(q);
+            scope.data.focus = [
+                                 { model: name, 
+                                    path: undefined, 
+                                position: {x: me.translation[0], y: me.translation[1], z: me.translation[2]}, 
+                                    gaze: {x: -m.m[2][0], y: -m.m[2][1], z: -m.m[2][2]}, 
+                                      up: {x:  m.m[1][0], y:  m.m[1][1], z:  m.m[1][2]},
+                                metadata: undefined,
+                                   label: undefined,
+                             _isSelected: false }];
+          
+            scope.focusField = scope.data.focus;     
+            scope.focusField.current = 0;
+
+          } else
+            scope.focusField = scope.data.focus = [];
+            scope.focusField.current = 0;
         }
+        
         // listen for pick events - if the items picked is one our (current) focus items, lets make 
         // it the 'selected' item - this has the effect of redirecting the wayfinder ribbon and also (potentially) displaying
         // any associated metadata
         //
         scope.$root.$on('userpick', function(evt, src, type, evtdata) { 
-          var id = JSON.parse(evtdata).occurrence;
-          if (scope.focusField != undefined) {
+          var id = (type == 'twx-dt-model' && evtdata != undefined) ? JSON.parse(evtdata).occurrence : undefined;
+          if (id != undefined && scope.focusField != undefined) {
             scope.focusField.forEach( (v,i) => {
               v._isSelected = (id == v.path);
               if (v._isSelected == true) {
@@ -1615,15 +1651,119 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           }
         });
             
+        scope.animateNamedPOI = function(name, aniname, context) {
+           
+          var named = scope.data.pois[name];
+          if (named != undefined && !named.loaded) {
+            named.sequenceToLoad = aniname;
+            named.loadcontext = context;  
+            console.log('animate pending - waiting for model',name,'to load');
+            return; //wait for it to load
+          }
+          
+          //lookup the actual sequence filename  
+          var seq2load = undefined;
+          if (aniname != undefined && scope.data.pois[name].sequenceList != undefined && scope.data.pois[name].sequenceList.length > 0) {
+            scope.data.pois[name].sequenceList.forEach(function(fig) {
+              if (fig.name == aniname) seq2load = fig.filename;
+            });
+                
+            if(seq2load == undefined) {
+              console.log('unable to load animation',aniname,'for model',name);
+            }
+          }
+          
+          if (seq2load != undefined) {   
+              
+            if (named.seqplayer == undefined) 
+              named.seqplayer = VF_ANG.NativeSequencerHelper(name, VF_ANG.nativeEventHandler, scope.renderer);
+
+            scope.data.pois[name].seqplayer.loadSequence(seq2load, 1, function () {
+              debugLog('sequence loaded', seq2load,'for',name);
+              scope.data.pois[name].sequenceToLoad = undefined;
+              scope.data.pois[name].animated = true;
+
+              scope.data.pois[name].seqplayer.playSequence();
+              
+              $timeout(function() {
+                if (context != undefined) {
+                  var isDigital = !(context.target.mimeType != "application/vnd.ptc.tracker.spatialtracker" || scope.data.physical);
+                  scope.renderer.setProperties(name, { forceHidden:false, 
+                                             hidden: false, 
+                                             shader: isDigital ? "sxsl_desaturatedgl" : "sxsl_screendoorgl", 
+                                             occlude: !isDigital, 
+                                             phantom: isDigital, 
+                                             opacity: isDigital ? 0.35 : 1, 
+                                             decal: false 
+                                         });
+                  for(key in scope.data.pois[name].metadata) {
+                      scope.renderer.setProperties(name+'-'+key, {
+                                             phantom: isDigital, 
+                                             opacity: isDigital ? 0.35 : 1
+                                         });
+                  
+                  }
+                  scope.$parent.$applyAsync();
+                }
+              },1);
+              
+              
+              scope.$parent.$applyAsync();
+              
+            }, function (failed) {
+              debugLog('failed to load sequence for', name, failed);
+              scope.data.pois[name].sequenceToLoad = undefined;
+              scope.data.pois[name].animated = false;
+            });
+          } else {
+            console.log('unloading animation for',name);
+            scope.data.pois[name].seqplayer.unloadSequence();
+            scope.data.pois[name].sequenceToLoad = undefined;
+            scope.data.pois[name].animated = false;
+          }
+        };
+        
+        // we must wait for the item to actually load to get some of the data
+        //
+        scope.$root.$on('loaded3DObj',function(event, model) {
+          let name = model.name;
+          console.log('3d obj',name,'loaded');
+          
+          var named = scope.data.pois[name];
+          if (named != undefined && named.loaded == false) {
+            named.loaded = true;  
+            
+            var seq2load = named.sequenceToLoad;
+            var oids     = named.occurrenceIds;
+            var shader   = named.shader;
+            
+            if (seq2load != undefined && oids == undefined) {
+              $timeout(function () {
+                scope.animateNamedPOI(name, seq2load, named.loadcontext);           
+              }, 100);
+            } else if (oids != undefined) {
+              oids.forEach(function(oid) {
+                debugLog('showing occurrence',oid,'for',name);               
+                scope.renderer.setProperties(name+'-'+oid, { hidden: false, shader: shader, occlude: false, phantom: false, decal: false });
+              });
+            } else {
+              debugLog('showing full model for', name);               
+              oids = ['/'];
+              scope.renderer.setProperties(name+'-/', { hidden: false, shader: shader, occlude: false, phantom: false, decal: false });
+            }
+          }
+        });
+
         scope.addNamedPOI = function (name, shape, pos, rot, scale, hide, context, seq, oid, focal, shader) {
             
           //does this item exist already - are we reusing it
           if (scope.data.pois[name] != undefined) {
 
-            debugLog('reusing POI', name);
+            //debugLog('reusing POI', name);
             var me = scope.data.pois[name];
             
             this.renderer.setProperties(name, { forceHidden: false });
+            
             //it must be the occurrences that have change - 
             //undo the old ones
             if (me.occurrenceIds != undefined) {
@@ -1632,6 +1772,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   scope.renderer.setProperties(name+"-"+id, { hidden: true });                                                            
               });
             }
+            
             //add the new ones
             if (oid != undefined) {
               oid.forEach(function(id) {
@@ -1647,38 +1788,29 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             me.active = true;
             me.deactivated = false;
             
-            if (seq != undefined) {
-
-              me.seqplayer.loadSequence(seq, 1, function () {
-                debugLog('poi', name, 'sequence loaded', seq);
-                scope.data.pois[name].sequenceToLoad = undefined;
-                scope.data.pois[name].animated = true;
-
-                me.seqplayer.reset(function () {
-                  $timeout(me.seqplayer.playSequence, 100);
-                });
-
-              }, function (failed) {
-                debugLog('poi', name, 'failed to load', seq, failed);
-                scope.data.pois[name].sequenceToLoad = undefined;
-                scope.data.pois[name].animated = false;
-              });
+            if (seq != undefined && oid == undefined) {
+                
+              scope.animateNamedPOI(name, seq, context);  
+          
             }
             
-            if (focal) scope.setFocus(name,me);
+            if (focal) scope.setFocus(name, me);
             scope.$parent.$applyAsync();
     
             return;
           }
 
           // otherwise, create a new one
-          scope.data.pois[name] = { active: false, sequenceToLoad: seq, occurrenceIds: oid };
+          //
+          scope.data.pois[name] = { active: false, sequenceToLoad: seq, occurrenceIds: oid, loaded: false, shader: shader };
+          
           debugLog('loading',shape,'for poi',name);
           scope.renderer.addPVS(scope.data.context.target.tracker, name, shape, undefined, undefined, (resp) => {
                                 
-            debugLog('shape loaded for',name);                    
+            debugLog('shape node loaded for',name);                    
             scope.data.pois[name].metadata = resp.modelMetadata;
             scope.data.pois[name].sequenceList = resp.sequenceList;
+            scope.data.pois[name].loaded = true;
             
             // we added the model, so set the location
             var locn = new Matrix4();
@@ -1698,44 +1830,17 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             if (context != undefined) {
               var isDigital = !(context.target.mimeType != "application/vnd.ptc.tracker.spatialtracker" || scope.data.physical);
               scope.renderer.setProperties(name, { forceHidden:false, hidden: hide, shader: isDigital ? "sxsl_desaturatedgl" : "sxsl_screendoorgl", occlude: !isDigital, phantom: isDigital, opacity: isDigital ? 0.35 : 1, decal: false });
+              
+              //we may use this in subsequent actions to set specific state
+              scope.data.pois[name].seqplayer = VF_ANG.NativeSequencerHelper(name, VF_ANG.nativeEventHandler, scope.renderer);
+              
               debugLog('context loaded');
             } else {
               scope.renderer.setProperties(name, { forceHidden:false, hidden: hide, shader: shader, occlude: false, phantom: false, decal: false });
               debugLog('asset loaded for',name);  
-
-              var seq2load = scope.data.pois[name].sequenceToLoad;
-              var oids = scope.data.pois[name].occurrenceIds;
-              if (seq2load != undefined) {
-                $timeout(function () {
-                  scope.data.pois[name].seqplayer = VF_ANG.NativeSequencerHelper(name, VF_ANG.nativeEventHandler, scope.renderer);
-                  scope.data.pois[name].seqplayer.loadSequence(seq2load, 1, function () {
-                    debugLog('sequence loaded', seq2load,'for',name);
-                    scope.data.pois[name].sequenceToLoad = undefined;
-                    scope.data.pois[name].animated = true;
-
-                    scope.data.pois[name].seqplayer.playSequence();
-                    scope.$parent.$applyAsync();
-
-                  }, function (failed) {
-                    debugLog('failed to load sequence for', name, failed);
-                    scope.data.pois[name].sequenceToLoad = undefined;
-                    scope.data.pois[name].animated = false;
-                  });
-                }, 10);
-              } else if (oids != undefined) {
-                oids.forEach(function(oid) {
-                  debugLog('showing occurrence',oid,'for',name);               
-                  scope.renderer.setProperties(name+'-'+oid, { hidden: false, shader: shader, occlude: false, phantom: false, decal: false });
-                });
-              } else {
-                debugLog('showing full model for', name);               
-                oids = ['/'];
-                scope.renderer.setProperties(name+'-/', { hidden: false, shader: shader, occlude: false, phantom: false, decal: false });
-              }
-
+              
               // we can use this later...
               scope.data.pois[name].active = true;
-              scope.data.pois[name].occurrenceIds = oids; // = { pos: pos, rot: rot, scale: scale, hidden: hide, active: true, animated: false, sequenceToLoad: seq2load, occurrenceIds:oids, metadata:resp.modelMetadata  }
             }
             
             if (focal) scope.setFocus(name, scope.data.pois[name]);
@@ -1747,6 +1852,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             debugLog(`addPVS failed to add new model: ${JSON.stringify(err)}`);
           });
         }
+        
         scope.showPOIs = function () {
           for (const name in scope.data.pois) {
             var me = scope.data.pois[name];
@@ -1782,7 +1888,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               me.deactivated = true;
             }
           }
-          scope.focusField = undefined;
+          scope.focusField = scope.data.focus = [];
+          scope.focusField.current = 0; 
         }
         scope.deactivateAll = function () {
           // remove all POIs  
@@ -1800,13 +1907,15 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           
           //and remove any references
           scope.setPreviewList("");
-          scope.focusField = undefined;
+          scope.focusField = scope.data.focus = [];
+          scope.focusField.current = 0; 
           
           // deallocate any event listeners we registered ($on, addEventListener etc.)              
           scope.data.events.forEach(function(evtfn) {
             evtfn();
           });
-
+              
+          scope.$parent.$applyAsync();    
         }
         scope.animatePOIs = function (start) {
           for (const name in scope.data.pois) {
@@ -2290,7 +2399,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             //$scope.view.wdg.alternative.visible = false;
 
             scope.deactivatePOIs();
-
+            
+            // set default viewpoint (if there is one)
+            scope.setFocus(a.title, a.viewpoint);
+            
             var isAnimated = false;
 
             if (a.subjects != undefined) a.subjects.forEach(function (sub) {
@@ -2304,10 +2416,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 if (res.mimeType == "application/vnd.ptc.pvz" || res.mimeType == "model/gltf-binary") {
 
                   var src = scope.data.anchor + (res.composition == "partset" ? res.modelUrl : res.url);
-                  scope.addNamedPOI(assetId, src, res.translation, genrotation(res.normal), 1, true, undefined, (res.composition == "partset" ? res.sceneName : undefined), occurrenceIds, true, scope.data.hiliteshade);
+                  scope.addNamedPOI(assetId, src, res.translation, genrotation(res.normal), 1, true, undefined, (res.composition == "partset" ? (sub.sceneName || res.sceneName || a.animation) : a.animation), occurrenceIds, true, scope.data.hiliteshade);
                   isAnimated = isAnimated || scope.data.pois[assetId].sequenceToLoad != undefined;
                 }
-                if (res.mimeType == "application/vnd.ptc.pvi") {
+                if (res.mimeType == "application/vnd.ptc.pvi" || res.mimeType == "application/vnd.ptc.animation.pvi") {
                   if (scope.data.pois[assetId] == undefined) scope.data.pois[res.id] = {};
                   scope.data.pois[assetId].sequenceToLoad = res.content.animationName;
                   isAnimated = true;
@@ -2334,10 +2446,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             // like subjects, we can have 0 or more annotations
             //
             if (a.annotations != undefined) a.annotations.forEach(function (me) {
+              var sub = me.ann;
               var res = me.asset.resources[0];
               var occurrenceIds = (res.occurrenceIds == undefined) ? me.occurrenceIds : res.occurrenceIds;
-              var src = scope.data.anchor + res.modelUrl;
-              scope.addNamedPOI(me.id, src, undefined, undefined, 1, true, undefined, (res.composition == "partset" ? res.sceneName : undefined), occurrenceIds, false, scope.data.annotateshade);
+              var src = scope.data.anchor + res.modelUrl;                                                             //should it be action/sub/res or sub/res/action?
+              scope.addNamedPOI(me.id, src, undefined, undefined, 1, true, undefined, (res.composition == "partset" ? (sub.sceneName || res.sceneName || a.animation) : a.animation), occurrenceIds, false, scope.data.annotateshade);
               isAnimated = isAnimated || scope.data.pois[me.id].sequenceToLoad != undefined;
             })
             
@@ -2352,7 +2465,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 var res = me.asset.resources[0];
                 var occurrenceIds = (res.occurrenceIds == undefined) ? me.occurrenceIds : res.occurrenceIds;
                 var src = scope.data.anchor + me.asset.resources[0].modelUrl;
-                scope.addNamedPOI(me.id, src, undefined, undefined, 1, false, undefined, (res.composition == "partset" ? res.sceneName : undefined), occurrenceIds, false, scope.data.toolshade);
+                scope.addNamedPOI(me.id, src, undefined, undefined, 1, false, undefined, (res.composition == "partset" ? (res.sceneName || a.animation) : a.animation), occurrenceIds, false, scope.data.toolshade);
                 isAnimated = isAnimated || scope.data.pois[me.id].sequenceToLoad != undefined;
               }
 
@@ -2618,13 +2731,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             if (this.id != undefined)
               twx.app.fn.triggerDataService('PTC.InspectionAccelerator.Imp.Manager', 'stopWorkTask', {
                 'workstationID': $scope.app.params.workstationID,
-                'workTaskID': $scope.app.params.Workorder.workinstructionID.toString(),
+                'workTaskID': $scope.app.params.Workorder.workorderkinstructionID.toString(),
                 'serialNumber': $scope.app.params.Workorder.serialnumber,
                 //                                                                                             'summary': JSON.stringify(this.submission),
                 'reason': reason
               });
             else {
-              $scope.$emit("stopWorkTask.serviceInvokeComplete");
+              scope.$parent.$emit("stopWorkTask.serviceInvokeComplete");
             }
           }
 
@@ -3023,7 +3136,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 else
                   reject({
                     event: 'remoteStepValidationRejected',
-                    reason: 'Because of some issue with ' + step.id
+                    reason: 'Step ' + step.id + ' was rejected by remote StepValidator'
                   });
 
                 // unregister
@@ -3071,7 +3184,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 else
                   reject({
                     event: 'remoteProcValidationRejected',
-                    reason: 'Because of something to do with ' + proc.id
+                    reason: 'Procedure ' + proc.id + ' was rejected by remote ProcValidator'
                   });
 
                 // unregister
