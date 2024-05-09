@@ -572,10 +572,10 @@ function sxslHelper(renderer, anchor) {
     this.getStepList = (includeDone) => {
 
       // an item is executable if it has no pre-requisites OR all pre-reqs are maked as done
-      function canExec(statement, statements) {
+      function canExec(statement, statements, execlist) {
         var can = true;
-        if (statement.prereq != undefined) statement.prereq.forEach(function (req) {
-          if (statements[req].status != "done")
+        if (execlist != undefined && statement.prereq != undefined) statement.prereq.forEach(function (req) {
+          if (execlist[req] != undefined && execlist[req].statement.status != "done")
             can = false;
         });
         return can;
@@ -583,6 +583,7 @@ function sxslHelper(renderer, anchor) {
 
       var steplist = [];
       var p = this.proc;
+      var me = this;
       p.statements.forEach(function (statement, idx) {
 
         // can be useful, later...
@@ -594,7 +595,7 @@ function sxslHelper(renderer, anchor) {
           for (var stp = 0; stp < p.steps.length; stp++) {
 
             // only add it if we can jump to and execute it
-            if (statement.stepId == p.steps[stp].id && canExec(statement, p.statements)) {
+            if (statement.stepId == p.steps[stp].id && canExec(statement, p.statements, me.execlist)) {
 
               var title = p.steps[stp].title ? p.steps[stp].title.resources[0].text : statement.stepId;
               steplist.push({
@@ -842,13 +843,13 @@ function sxslHelper(renderer, anchor) {
     //
     this.nextStatement = function (jumpRef) {
 
-      function goodToGo(statement, statements) {
+      function goodToGo(statement, statements, execlist) {
         var goodtogo = true;
         var next = statement;
 
         // check each prerequisite to see if it has already been completed
-        if (statement.prereq != undefined) statement.prereq.forEach(function (idx) {
-          if (statements[idx].status != "done")
+        if (execlist != undefined && statement.prereq != undefined) statement.prereq.forEach(function (idx) {
+          if (execlist[idx] != undefined && execlist[idx].statement.status != "done")
             goodtogo = false;
         });
         if (!goodtogo)
@@ -885,7 +886,7 @@ function sxslHelper(renderer, anchor) {
 
       // can we execute this one yet?
       if (next != undefined)
-        next = goodToGo(next, me.proc.statements);
+        next = goodToGo(next, me.proc.statements, me.execlist);
 
       if (next == undefined || next.status == "done") {
 
@@ -928,6 +929,12 @@ function sxslHelper(renderer, anchor) {
         me.context = me.proc.contexts != undefined ? me.proc.contexts : me.context;
         me.statementcount = me.proc.statements.length;
         if (me.statementcount > 0) {
+          me.execlist = {};
+          me.proc.statements.forEach(function(s,i) {
+            if (s.id != undefined) {
+              me.execlist[s.id] = {statement:s, index:i };
+            }
+          })                                     
           loaded(me);
         }
         else
@@ -952,6 +959,12 @@ function sxslHelper(renderer, anchor) {
         me.context = me.proc.contexts != undefined ? me.proc.contexts : me.context;
         me.statementcount = me.proc.statements.length;
         if (me.statementcount > 0) {
+          me.execlist = {};
+          me.proc.statements.forEach(function(s,i) {
+            if (s.id != undefined) {
+              me.execlist[s.id] = {statement:s, index:i };
+            }
+          })                                     
           loaded(me);
         }
         else
