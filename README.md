@@ -155,11 +155,11 @@ TBC
 ## Navigation
 There are two widgets in this category
 
-###Navigator
+### Navigator
 Note : depricated : Vuforia Studio product now includes this capability in the form of the wayfinder widget.
 
 
-###Zones of Interest (**new**)
+### Zones of Interest (**new**)
 The Zones of interest widget provies a mechanism to declare one or more zones (these are cylindrical is shape) and 
 position these in your space.  When then user navigates the scene and crossed into or exits a zone, the widget will 
 output appropriate events (Arrived, Departed) that allows your experince to react to the user proximity.  The value 
@@ -168,13 +168,13 @@ property reflects the title/if of the zone that is being crossed.
 Similar to the navigator widget, you can declare/bind an array zones and the control will manage them for you.  You can also create/mark new zones on demand.
 This data can be in table form - perhaps the result of a thingworx service call - or you can set the value from javascript.
 
-  `$scope.view.wdg.zones.zoidata = [ 
-                                         {     name: "zone 1",   // title/name/id of zone - this will be reported in events 
-                                           position: "0,0,0",    // defined as a string of xyz coordinates 
-                                              color: [1,0,0],    // optional information to define/override color of POI indicator 
-                                             cutoff: 2           // optional; defines the radius of this specific zone
-                                         }
-                                       ];` 
+  `$scope.view.wdg.zones.zoidata = [ \
+        {         name: "zone 1",   // title/name/id of zone - this will be reported in events \
+              position: "0,0,0",    // defined as a string of xyz coordinates \
+                 color: [1,0,0],    // optional information to define/override color of POI indicator \
+                cutoff: 2           // optional; defines the radius of this specific zone \
+        }
+   ];` 
 
 Use the Show/Hide services to show/hide the visual aids that can help users see the zones.  The Mark service can be called to add a new Zone - it will be created 
 with the center positioned at the current location of the user.  This new zone will be added to the zoidata list.
