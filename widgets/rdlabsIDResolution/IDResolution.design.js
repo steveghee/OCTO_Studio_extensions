@@ -49,8 +49,8 @@ function twxIDResolution() {
       angularModules: ['idresolution-ng']
     },
 
-    designTemplate: function () {
-      return '<div class="idResolutionWidget">{{me.field}}</div>';
+    designTemplate: function (data, html) {
+      return html`<div class="idResolutionWidget">${this.me.field}</div>`;
     },
 
     runtimeTemplate: function (props) {

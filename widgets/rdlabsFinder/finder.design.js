@@ -134,9 +134,11 @@ function twxFinder() {
       angularModules: ['finder-ng']
     },
 
-
-    designTemplate: function () {
-      return '<div class="finderWidget">Finder<p>Op: {{me.op}}</div>';
+    designTemplate: function (data, html) {
+      return html`<div class="finderWidget">
+        Finder
+        <p>Op: ${this.me.op}</p>
+      </div>`;
     },
 
     runtimeTemplate: function (props) {

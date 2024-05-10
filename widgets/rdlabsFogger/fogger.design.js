@@ -47,7 +47,7 @@ function twxFogger() {
       },
     ],
 
-    designTemplate: function () {
+    designTemplate: function (data, html) {
       return '<div class="foggerWidget">fog</div>';
     },
 

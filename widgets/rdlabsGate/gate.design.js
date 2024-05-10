@@ -99,9 +99,8 @@ function twxGate() {
       angularModules: ['gate-ng']
     },
 
-
-    designTemplate: function () {
-      return '<div class="gateWidget">Gate: {{me.op}}</div>';
+    designTemplate: function (data, html) {
+      return html`<div class="gateWidget">Gate: ${this.me.op}</div>`;
     },
 
     runtimeTemplate: function (props) {

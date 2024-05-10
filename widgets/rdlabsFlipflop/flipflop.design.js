@@ -77,8 +77,11 @@ function twxFlipflop() {
       angularModules: ['flipflop-ng']
     },
 
-    designTemplate: function () {
-      return '<div class="flipflopWidget">Flip Flop<p>Toggle: {{me.toggle}}</div>';
+    designTemplate: function (data, html) {
+      return html`<div class="flipflopWidget">
+        Flip Flop
+        <p>Toggle: ${this.me.toggle}</p>
+      </div>`;
     },
 
     runtimeTemplate: function (props) {

@@ -47,8 +47,11 @@ function twxABSwitch() {
       angularModules: ['abswitch-ng']
     },
 
-    designTemplate: function () {
-      return '<div class="abswitchWidget">ABSwitch<p>Polarity:{{me.polarity?"A":"B"}}</div>';
+    designTemplate: function (data, html) {
+      return html`<div class="abswitchWidget">
+        ABSwitch
+        <p>Polarity:${this.me.polarity ? "A" : "B"}</p>
+      </div>`;
     },
 
     runtimeTemplate: function (props) {

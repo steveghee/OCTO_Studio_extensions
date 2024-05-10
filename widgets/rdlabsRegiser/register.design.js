@@ -61,7 +61,7 @@ function twxRegister() {
       angularModules: ['latch-ng']
     },
 
-    designTemplate: function () {
+    designTemplate: function (data, html) {
       return '<div class="registerWidget">Register</div>';
     },
 

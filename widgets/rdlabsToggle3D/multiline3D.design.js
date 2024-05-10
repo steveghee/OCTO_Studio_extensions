@@ -136,9 +136,28 @@ function twxMultiLineLabel3D() {
       
     },
 
-    designTemplate: function () {
+    designTemplate: function (data, html) {
       //return '<twx-container-content></twx-container-content>';
-      return '<twx-dt-image id="{{me.widgetId}}" src="/extensions/images/3D Multiline Label.png" opacity="1" hidden="false" width="{{me.width}}" height="{{me.height}}" sx="1" sy="1" sz="1" x="{{me.x}}" y="{{me.y}}" z="{{me.z}}" rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" billboard="{{me.billboard}}" occlude="{{me.occlude}}" decal="{{me.decal}}"></twx-dt-image>';
+      return html`<twx-dt-image
+        id="${this.me.widgetId}"
+        src="/extensions/images/3D Multiline Label.png"
+        opacity="1"
+        hidden="false"
+        width="${this.me.width}"
+        height="${this.me.height}"
+        sx="1"
+        sy="1"
+        sz="1"
+        x="${this.me.x}"
+        y="${this.me.y}"
+        z="${this.me.z}"
+        rx="${this.me.rx}"
+        ry="${this.me.ry}"
+        rz="${this.me.rz}"
+        billboard="${this.me.billboard}"
+        occlude="${this.me.occlude}"
+        decal="${this.me.decal}"
+      ></twx-dt-image>`;
     },
 
     runtimeTemplate: function (props) {

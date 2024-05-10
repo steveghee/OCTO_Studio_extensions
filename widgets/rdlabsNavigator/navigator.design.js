@@ -244,8 +244,21 @@ function twxNavigator() {
     },
 
 
-    designTemplate: function () {
-      return '<twx-dt-model id="#widgetId#" src="../extensions/images/navipad.pvz" opacity="1" hidden="false" scale="{{me.scale}}" x="{{me.x}}" y="{{me.y}}" z="{{me.z}}" rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" decal="{{me.decal}}" ></twx-dt-model>';
+    designTemplate: function (data, html) {
+      return html`<twx-dt-model
+        id="#widgetId#"
+        src="../extensions/images/navipad.pvz"
+        opacity="1"
+        hidden="false"
+        scale="${this.me.scale}"
+        x="${this.me.x}"
+        y="${this.me.y}"
+        z="${this.me.z}"
+        rx="${this.me.rx}"
+        ry="${this.me.ry}"
+        rz="${this.me.rz}"
+        decal="${this.me.decal}"
+      ></twx-dt-model>`;
     },
 
     runtimeTemplate: function (props, twxWidgetEl, fullOriginalDoc, $, projectSettings) {

@@ -56,8 +56,11 @@ function twxIncrementer() {
       },
     ],
 
-    designTemplate: function () {
-      return '<div class="incrementerWidget">Incrementer<p>Quotient: {{me.quotient}}</div>';
+    designTemplate: function (data, html) {
+      return html`<div class="incrementerWidget">
+        Incrementer
+        <p>Quotient: ${this.me.quotient}</p>
+      </div>`;
     },
 
     dependencies: {

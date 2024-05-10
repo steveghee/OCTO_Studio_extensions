@@ -63,7 +63,7 @@ function twxBillboard() {
       angularModules: ['billboard-ng']
     },
 
-    designTemplate: function () {
+    designTemplate: function (data, html) {
       return '<div class="billboardWidget"></div>';
     },
 

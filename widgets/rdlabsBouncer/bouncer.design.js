@@ -121,8 +121,11 @@ function twxBouncer() {
       angularModules: ['bouncer-ng']
     },
 
-    designTemplate: function () {
-      return '<div class="bouncerWidget">Oscillator<p>Wave: {{me.wave}}</div>';
+    designTemplate: function (data, html) {
+      return html`<div class="bouncerWidget">
+        Oscillator
+        <p>Wave: ${this.me.wave}</p>
+      </div>`;
     },
 
     runtimeTemplate: function (props) {

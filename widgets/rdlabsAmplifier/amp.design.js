@@ -43,9 +43,11 @@ function twxAmp() {
       angularModules: ['amp-ng']
     },
 
-
-    designTemplate: function () {
-      return '<div class="ampWidget">Amp<p>Gain: {{me.gain}}</div>';
+    designTemplate: function (data, html) {
+      return html`<div class="ampWidget">
+        Amp
+        <p>Gain: ${me.gain}</p>
+      </div>`;
     },
 
     runtimeTemplate: function (props) {

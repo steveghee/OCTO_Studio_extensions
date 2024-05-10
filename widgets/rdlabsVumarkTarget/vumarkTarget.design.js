@@ -142,9 +142,28 @@
          files: ['extensions/images/**']
        },
 
-     designTemplate: function (props) {
-                        return designTemplate;
-                     },
+      designTemplate: function (props, html) {
+        // create a design template - this is a 3D image (can be dragged etc.)
+        return html`<twx-dt-image
+          id="#widgetId#"
+          src="${this.me.url}"
+          width=${this.me.size}
+          pivot="7"
+          opacity="1"
+          hidden="false"
+          sx="1"
+          sy="1"
+          sz="1"
+          x="0"
+          y="0"
+          z="0"
+          rx="-90"
+          ry="0"
+          rz="0"
+          decal="false"
+          shader="desaturatedgl"
+        ></twx-dt-image>`;
+      },
 
     runtimeTemplate: function (props) {
                        var tmpl = template.replace("#widgetId#", props.widgetId);

@@ -103,9 +103,6 @@
     // and create the template
     var template = Twx3dCommon.buildRuntimeTemplate("twx-dt-target", props, true);
     
-    // create a design template - this is a 3D image (can be dragged etc.)
-    var designTemplate = '<twx-dt-model id="#widgetId#-mask" src="{{me.maskurl}}" phantom="true" opacity="0.5" hidden="false" sx="1" sy="1" sz="1" x="{{me.x}}" y="{{me.y}}" z="{{me.z}}" rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" occlude="true"></twx-dt-model>';
-
     var retObj = {
         
          elementTag: "octothreesixty-dt-target",
@@ -156,9 +153,28 @@
          files: ['extensions/images/**']
        },
 
-     designTemplate: function (props) {
-                        return designTemplate;
-                     },
+      designTemplate: function (props, html) {
+        // create a design template - this is a 3D image (can be dragged etc.)
+        return html`<twx-dt-model
+          id="#widgetId#"
+          src="${this.me.maskurl}"
+          opacity="1"
+          hidden="false"
+          sx="1"
+          sy="1"
+          sz="1"
+          x="${this.me.x}"
+          y="${this.me.y}"
+          z="${this.me.z}"
+          rx="${this.me.rx}"
+          ry="${this.me.ry}"
+          rz="${this.me.rz}"
+          occlude="true"
+          decal="false"
+          shader=""
+        ></twx-dt-model>`;
+      },
+
 
     runtimeTemplate: function (props) {
                        var tmpl = template.replace("#widgetId#", props.widgetId);

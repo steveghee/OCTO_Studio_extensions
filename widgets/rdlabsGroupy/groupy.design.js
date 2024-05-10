@@ -106,8 +106,7 @@ function twxGroupy() {
       angularModules: ['groupy-ng']
     },
 
-
-    designTemplate: function () {
+    designTemplate: function (data, html) {
       return '<div class="groupyWidget">Groupy</div>';
     },
 

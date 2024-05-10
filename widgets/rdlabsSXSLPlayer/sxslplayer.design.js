@@ -250,8 +250,7 @@ function twxSxslplayer() {
       angularModules: ['sxslplayer-ng']
     },
 
-
-    designTemplate: function () {
+    designTemplate: function (data, html) {
       return '<div class="sxslPlayerWidget"></div>';
     },
 

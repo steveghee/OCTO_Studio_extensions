@@ -252,11 +252,35 @@ function twxList3D() {
       files         : ['js/list3D-ng.js', 'images/**','js/widget3dUtils.js', 'js/toggle3D-ng.js'],
       angularModules: ['list3D-ng','toggle3D-ng']
     },
-  
-    designTemplate: function () {
+
+    designTemplate: function (data, html) {
       // if we use an image, we can at least position and size (width/height) correctly. Unfortunately we lose any 3d depth cues
-      return '<twx-dt-image id="#widgetId#" src="/extensions/images/3D Image Button.png" opacity="1" hidden="false" width="{{me.width}}" height="{{me.height}}" sx="1" sy="1" sz="1" x="{{me.x}}" y="{{me.y}}" z="{{me.z}}" rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" billboard="{{me.billboard}}" occlude="{{me.occlude}}" decal="{{me.decal}}" shader="{{me.shader}}" istracked="{{me.istracked}}" trackingindicator="{{me.trackingIndicator}}" stationary="{{me.stationary}}" pivot="4"></twx-dt-image>';
-      
+      return html`<twx-dt-image
+        id="#widgetId#"
+        src="/extensions/images/3D Image Button.png"
+        opacity="1"
+        hidden="false"
+        width="${this.me.width}"
+        height="${this.me.height}"
+        sx="1"
+        sy="1"
+        sz="1"
+        x="${this.me.x}"
+        y="${this.me.y}"
+        z="${this.me.z}"
+        rx="${this.me.rx}"
+        ry="${this.me.ry}"
+        rz="${this.me.rz}"
+        billboard="${this.me.billboard}"
+        occlude="${this.me.occlude}"
+        decal="${this.me.decal}"
+        shader="${this.me.shader}"
+        istracked="${this.me.istracked}"
+        trackingindicator="${this.me.trackingIndicator}"
+        stationary="${this.me.stationary}"
+        pivot="4"
+      ></twx-dt-image>`;
+
       // if we add a model, we cannot scale it correcty
       //return '<twx-dt-model id="#widgetId#" src="/extensions/images/toggleButton3D.pvz" opacity="1" hidden="false" scale="{{me.scale}}" x="{{me.x}}" y="{{me.y}}" z="{{me.z}}" rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" decal="{{me.decal}}" shader="{{me.shader}}""></twx-dt-model>';
       

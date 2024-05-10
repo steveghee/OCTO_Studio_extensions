@@ -75,7 +75,7 @@ function twxLighttube() {
       angularModules: ['lighttube-ng']
     }
     ,
-    designTemplate: function () {
+     designTemplate: function (data, html) {
       return ' <twx-dt-image> ';
     }
     ,

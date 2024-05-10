@@ -62,7 +62,7 @@ function twxLocator() {
 
   services: [],
 
-    designTemplate: function () {
+    designTemplate: function (data, html) {
       return '<div class="locatorWidget"></div>';
     },
 

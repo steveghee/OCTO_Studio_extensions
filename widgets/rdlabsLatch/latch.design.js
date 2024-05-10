@@ -70,7 +70,7 @@ function twxLatch() {
       angularModules: ['latch-ng']
     },
 
-    designTemplate: function () {
+    designTemplate: function (data, html) {
       return '<div class="latchWidget">Latch</div>';
     },
 

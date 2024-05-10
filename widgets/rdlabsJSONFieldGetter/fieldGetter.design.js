@@ -41,8 +41,8 @@ function twxFieldGetter() {
       angularModules: ['fieldgetter-ng']
     },
 
-    designTemplate: function () {
-      return '<div class="fieldGetterWidget">{{me.field}}</div>';
+    designTemplate: function (data, html) {
+      return html`<div class="fieldGetterWidget">${this.me.field}</div>`;
     },
 
     runtimeTemplate: function (props) {

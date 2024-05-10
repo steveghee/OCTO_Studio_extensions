@@ -198,9 +198,23 @@ function twxTethered() {
       angularModules: ['tethered-ng']
     },
 
-
-    designTemplate: function () {
-      return '<twx-dt-model id="#widgetId#" src="/extensions/images/holoPlate.pvz" opacity="1" hidden="false" scale="{{me.scale}}" x="{{me.x}}" y="{{me.y}}" z="{{me.z}}" rx="{{me.rx}}" ry="{{me.ry}}" rz="{{me.rz}}" decal="{{me.decal}}" shader="{{me.shader}}""></twx-dt-model><div class="tetheredWidget"></div>';
+    designTemplate: function (data, html) {
+      return html`<twx-dt-model
+          id="#widgetId#"
+          src="/extensions/images/holoPlate.pvz"
+          opacity="1"
+          hidden="false"
+          scale="${this.me.scale}"
+          x="${this.me.x}"
+          y="${this.me.y}"
+          z="${this.me.z}"
+          rx="${this.me.rx}"
+          ry="${this.me.ry}"
+          rz="${this.me.rz}"
+          decal="${this.me.decal}"
+          shader="${this.me.shader}"
+        ></twx-dt-model>
+        <div class="tetheredWidget"></div>`;
     },
 
     runtimeTemplate: function (props, twxWidgetEl, fullOriginalDoc, $, projectSettings) {

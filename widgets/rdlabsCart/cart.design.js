@@ -68,7 +68,7 @@ function octoCart() {
       }
     ],
 
-    designTemplate: function () {
+    designTemplate: function (data, html) {
       return '<div class="cartWidget"></div>';
     },
 

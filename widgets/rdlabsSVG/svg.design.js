@@ -42,8 +42,13 @@ function twxSvg() {
 
     ],
 
-    designTemplate: function () {
-      return '<object id="#widgetId#" type="image/svg+xml" data="{{me.src}}" class="{{me.class}}"></object>';
+    designTemplate: function (data, html) {
+      return html`<object
+        id="#widgetId#"
+        type="image/svg+xml"
+        data="${this.me.src}"
+        class="${this.me.class}"
+      ></object>`;
     },
 
     runtimeTemplate: function (props) {

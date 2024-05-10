@@ -95,7 +95,7 @@ function twxMapper() {
       }
     ],
 
-    designTemplate: function () {
+    designTemplate: function (data, html) {
       return '<div class="mapperWidget"></div>';
     },
 

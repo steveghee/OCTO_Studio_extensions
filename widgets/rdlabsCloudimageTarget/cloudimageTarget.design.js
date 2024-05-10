@@ -147,7 +147,7 @@
        },
 
      designTemplate: function (props) {
-                        return designTemplate.replace('size="{{me.width}}"',
+                        return designTemplate.replace('size="${this.me.width}"',
                                                       'src="/extensions/images/placeholder_user_defined.svg" opacity="1" hidden="false" width="{{me.width}}" height="{{me.width/2}}" sx="1" sy="1" sz="1"');
                      },
 

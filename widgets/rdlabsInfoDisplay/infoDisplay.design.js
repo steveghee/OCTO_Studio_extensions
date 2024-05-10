@@ -79,7 +79,7 @@ function twxInfoDisplay() {
     },
 
 
-    designTemplate: function () {
+    designTemplate: function (data, html) {
       return '';
     },
 

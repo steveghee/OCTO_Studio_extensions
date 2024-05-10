@@ -56,7 +56,7 @@ function twxMetaGetta() {
       },
     ],
 
-    designTemplate: function () {
+    designTemplate: function (data, html) {
       return '<div class="metaGettaWidget"></div>';
     },
 

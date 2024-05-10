@@ -111,7 +111,7 @@ function twxTracer() {
       },
     ],
 
-    designTemplate: function () {
+    designTemplate: function (data, html) {
       return '<div class="TracerWidget">tracer</div>';
     },
 

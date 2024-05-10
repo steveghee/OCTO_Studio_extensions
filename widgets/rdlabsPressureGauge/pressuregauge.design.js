@@ -129,7 +129,7 @@ function twxPressureGauge() {
       angularModules: ['pressuregauge-ng']
     },
 
-    designTemplate: function () {
+     designTemplate: function (data, html) {
       return ' <twx-dt-image> ';
     },
 
