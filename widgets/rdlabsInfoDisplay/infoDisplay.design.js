@@ -6,6 +6,10 @@ function twxInfoDisplay() {
     
     category : 'ar',
     groups   : ['OCTO'],
+    isVisibleInPalette: function(scope) {
+      let builderSettings = scope.$root.builderSettings || {};
+      return !!builderSettings.octo; //WIP
+    },
     
     properties: [
       {
