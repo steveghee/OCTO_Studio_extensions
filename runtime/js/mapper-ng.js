@@ -97,8 +97,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         };
         var tolist = function(ids,cb,rd) {
           if (ids != undefined && ids.length > 0) ids.forEach(function(id) {
-            var nodeId = id.model+'-'+id.path;                                                    
-            cb(nodeId,rd);
+            //make sure we're hitting a model that has been defined / loaded                                                  
+            let base = scope.$parent.view.wdg[id.model];
+            if (base != undefined && base.src != undefined && base.src.length > 0) { //has a model been loaded? 
+              var nodeId = id.model+'-'+id.path;                                                    
+              cb(nodeId,rd);
+            }
           });
         };
 
