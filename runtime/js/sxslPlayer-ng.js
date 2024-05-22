@@ -671,7 +671,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           }
 
           var photoSuccess = function (pngBase64String) {
-            var proof = 'data:image/png;base64,' + pngBase64String;
+            var proof = twx.app.isPreview() ? '**encoded photo here**' : 'data:image/png;base64,' + pngBase64String;
             collectedProof.push(proof);
 
             if (collectedProof.length == numberToCollect) {
@@ -690,8 +690,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
           scope.captureProofPhoto = function () {
             hideProof();
-            var params = { withAugmentation: true, imageWidth: 640, imageHeight: 480 };
+            
             //  params = { dataURL:bool, withAugmentation: bool, imgFormat: string, imgWidth: number, imgHeight:number} 
+            var params = twx.app.isPreview() ? { withAugmentation: true, imageWidth: 160, imageHeight: 210 }
+                                             : { withAugmentation: true, imageWidth: 640, imageHeight: 480 };
             scope.renderer.takeScreenshot(params, photoSuccess, photoCancel);
           }
 
@@ -2075,12 +2077,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
             var cameraTool = function (callback) {
               var cb = callback;
-              var params = { withAugmentation: true, imageWidth: 640, imageHeight: 480 };
               //  params = { dataURL:bool, withAugmentation: bool, imgFormat: string, imgWidth: number, imgHeight:number} 
+              var params = twx.app.isPreview() ? { withAugmentation: true, imageWidth: 160, imageHeight: 210 }
+                                             : { withAugmentation: true, imageWidth: 640, imageHeight: 480 };
+  
               return function () {
                 return new Promise((next, reject) => {
                   scope.renderer.takeScreenshot(params, function (pngBase64String) {
-                    var proof = 'data:image/png;base64,' + pngBase64String;
+                    var proof =  twx.app.isPreview() ? '**encoded photo here**' : 'data:image/png;base64,' + pngBase64String;
                     var res = cb(proof);
                     if (res != undefined)
                       next(res);
