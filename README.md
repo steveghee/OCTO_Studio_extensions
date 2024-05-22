@@ -1,24 +1,33 @@
 # OCTO_Studio_extensions
 A list of extensions for the Vuforia Studio platform
 
-Pleasse note : these are provided as example only. Whilst I do my utmost to keep them working, these are purely examples of 'useful' 
+Please note : these are provided as example only. Whilst I do my utmost to keep them working, these are purely examples of 'useful' 
 tools, capabiliites etc. that the user might find valuable in building an experience using Vuforia Studio.  
 They are provided free of charge, and can be used, adapted, altered freely, but they are completely unsupported.
 
-These include
+
+
+The OCTO widget library includes widgets for
 * low-level (TML) support for new Vuforia Engine features e.g. Area and Trained model targets
 * 3d UI widgets for the hololens e.g. buttons, toggles, tethered backplate
 * 3d assistance tools e,g 'pinger' (attract attention), navigator, markup
 * non-graphical logic elements e.g. AND/OR gates, flipflops, latches
 
+
 ## Installation
 
 Download the entire folder structure and unpack into the Vuforia/Studio installation/Extensions
 directory.  Stop and restart Studio. The extensions widgets will now appear in the various control pallete locations.
+
+Note: this revision includes changes for the new Studio UI framework that was released with Studio 9.20 (may 2024). 
+For prior Studio releases, please checkout the tag 'studio_pre_920'.
+
+`git checkout studtio_pre_920`
  
+
 ## Details
 
-The extension can be broken down into 4 main catagories
+The extension can be broken down into 7 main catagories
 
 1. Targets
 2. Inputs
@@ -31,43 +40,45 @@ The extension can be broken down into 4 main catagories
 Lets look at each in turn.
 
 ## Targets
-### Dynamic Target (new)
+### Paremetric (Dynamic) Target (new)
 
-Work In Progress
-
-The Parametric Target widget can be used to bind external target references e.g. targets that are created and stored in the Experience Service repository or a Thingworx file repository.
-These target dat/xml and guide view sets can be referenced as url, and this widget will load them.
+The Parametric Target widget can be used to bind external target references e.g. targets that are created and stored in the Experience Service repository 
+or a Thingworx file repository. These target dat/xml and guide view sets can be referenced as url, and this widget will load them.
 
 Suggestions for using this widget
 1. prepare your external targets in suitable repositories
-2. know the type of target - the url you provide will define the target type
-For example, a model target is defined as "vuforia-model:///path to target/tartname?id=targetid".  You must fill in the parmaters correctly
-A spatial target is simply "spatial://"
+2. know the type of target - the url you provide will define the target type.
+For example, a model target is defined as "vuforia-model:///path to target/targetname?id=targetid".  You must fill in the parmaters correctly.
+Image targets are "vuforia-image://".  Area targets, well I am sure you can work it out.  A spatial target is simply "spatial://"
 
-To make your experience dynamic, you wlil pass the target information to the experience at launch - you can do this by passing application parameters in the launch url
-these parameters can be formed using services such as the Identity Resolution Service (IRS) - part of the Experience Server - or you can form the url yourself e.g. using a QR code.
+To make your experience "paramteric", you will pass the target information to the experience at launch - you can 
+do this by passing application parameters in the launch url these parameters can be formed using services such as the Identity Resolution 
+Service (IRS) - part of the Experience Server - or you can form the url yourself e.g. using a QR code.  The Studio Help Center includes examples that 
+show how to build scalable 'parameter-driven' experiences.
 
-Bind your application parameter to the 'dataset' and 'guide' parameters of the dynamic target widget.  These paameters, when supplied at runtime, will then supply the values needed to load the target.
-You can also (optionally) bind a pvz (3d model) as the occluder geometry, if this makes sense for your taget. An occluder will mask any virtual augmentatoin that might appear behind a physical item in the scene.
+Bind your application parameter to the 'dataset' and 'guide' parameters of the dynamic target widget.  These paameters, when supplied at runtime, will 
+then supply the values needed to load the target.  You can also (optionally) bind a pvz (3d model) as the occluder geometry, if this makes sense for your 
+target. An occluder will mask any virtual augmentation that might appear behind a physical item in the scene. 
 
-An mention abve, this widget is still work in progress, so there's a few issues to be ironed out still.  Basic testing shows that spatial, image and model targets all work.
-
+Use this widget when you want to create a sclable experience that will run with any data set - you do not include the data inthe app resources folder, but instead reference 
+data that might be held in some other data repository e.g. the Experience Server or a Thingworx file repo.
 
 
 ### 360 Model targets
 
 aka Trained or Adnvanced Model targets, this is a new class of model target which can be trained (using Vuforia Engine services) to be able to recognise and
-snap to a model target from any angle.  This if course differs to the standard model target where there is a specific perspective (otten indicated via a helpful 'guide view'). With Trained / 360 models targets, 
-recognition can be 'trained' to occur from a broad range of angles, all the way up to 360 around the target item.
+snap to a model target from any angle.  This if course differs to the standard model target where there is a specific perspective (otten indicated via a helpful 
+'guide view'). With Trained / 360 models targets, recognition can be 'trained' to occur from a broad range of angles, all the way up to 360 around the target item.
 
-Training of the target is not included in this extension. Instead, the user should use their Vuforia Engine account to download the new Model Target Generator application, and view the documentation on the Engine website in order
-to familiarise themselves with the User Interface and functionality of this tool.  
+Training of the target is not included in this extension. Instead, the user should use their Vuforia Engine account to download the new Model Target Generator application, and 
+view the documentation on the Engine website in order to familiarise themselves with the User Interface and functionality of this tool.  
 
 In principal, inclusion of a trained model target into Vuforia Studio is simple.
 
 1. create trained model target using Vuforia Engine target generator application. This will generate two files, <filename>.dat and <filename.xml> based on whatever name you gave in the target generator app.
 2. copy these two files (.dat and .xml) into the app/resources/Uploaded folder in Studio. You can use the 'add resource' button, but be sure to add the two files
-  * note that clicking 'add resource' from the widget 'target' field will only select and copy the selected (dat) file, so will not copy the xml file.  This is a know problem, Instead, bring both files over to the resources folder first
+  * note that clicking 'add resource' from the widget 'target' field will only select and copy the selected (dat) file, so will not copy the xml file.  This is a known problem, Instead, bring both 
+  files over to the resources folder first
   * if you have created a suitable guide view to help your user identify the product, you can also copy that png file over to the experience
 3. If your target was created from a pvz file, also copy that file into the resources/Uploaded folder.  It should be given the same <filename> as the target e.g. <filename>.pvz
 4. add the 360 target widget into you experience.  
@@ -117,7 +128,7 @@ WIP
 ## Metadata 
 
 ### Locator (** new **)
-The Locator widget can be linked to the output of Finder. The output of locator is a matching list if location points that match the items in the find results list.  
+The Locator widget can be linked to the output of Finder. The output of locator is a matching list of location points that match the items in the find results list.  
 This list could be bound to the input of the wayfinder, allow the user to locate items spatially.
 
 ### Finder
