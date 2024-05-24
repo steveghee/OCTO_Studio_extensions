@@ -892,7 +892,35 @@ function Vector4() {
         var d2   = ((l10*l10)*(l21*l21)-(n1*n1))/(l21*l21);
         return { t:t, d:Math.sqrt(d2) };
     }
-  
+    
+    // create planar equation ABCD from point and rotation
+    this.SetABCD = function(x,y,z,rx,ry,rz,deg) {
+      var m = new Matrix4().RotateFromEuler(rx,ry,rz,deg).Translate(x,y,z);
+      var n = new Vector4().Set3a(m.m[2]);
+      var D = - (n.X()*x + n.Y()*y + n.Z()*z);
+      this.Set4(n.X(),n.Y(),n.Z(),D);                            
+      return this;
+    }
+    
+    // raytrace this plane (ABCD) from starting point x0 and direction x1
+    this.Planetrace = function(x0,x1) {
+      var Pn = this.XYZ();
+      var D  = this.W();
+      var Rd = x1.Normalize(); 
+      var Ro = x0;
+      var vd = - Pn.DotP(Rd);
+        
+      // plane and ray are parallel?
+      if (Math.abs(vd) < 0.0000000001 ) {
+        return { t:undefined }
+      }
+      // compute intersetion point
+      var vo = Pn.DotP(Ro) + D;
+      var t = vo / vd;
+      var p = Ro.Add(Rd.Scale(t));
+      return { t:t, p:p };
+    }
+    
     this.Transform = function(b) {
         var dst = new Vector4().Set4(
                 ((this.v[0] * b.m[0][0]) + (this.v[1] * b.m[1][0]) + (this.v[2] * b.m[2][0]) + (this.v[3] * b.m[3][0])),
@@ -1119,7 +1147,7 @@ function Bbox() {
     
     this.Corners = function(cb) {
         if (this.corners === undefined) {
-            var dst = new Object();
+            var dst = {};
             dst["ltf"] = new Vector4().Set3(this.min[0],this.max[1], this.max[2]);
             dst["lbf"] = new Vector4().Set3(this.min[0],this.min[1], this.max[2]);
             dst["ltk"] = new Vector4().Set3(this.min[0],this.max[1], this.min[2]);
