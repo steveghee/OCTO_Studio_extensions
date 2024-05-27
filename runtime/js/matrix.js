@@ -634,75 +634,6 @@ function MatrixS(p0,p1,p2,light) {
     this.makeShadow(p0,p1,p2,light);
 }
 
-function Plane() {
-    this.v = [0, 0, 0, 0];
-    this.m = undefined;
-    this.n = undefined;
-    this.w = undefined;
-    this.h = undefined;
-    
-    this.SetSize = function(w,h) {
-      this.w = w;
-      this.h = h;
-    }
-    
-    this.SetABCD = function(x,y,z,rx,ry,rz,deg) {
-      this.m = new Matrix4().RotateFromEuler(rx,ry,rz,deg).Translate(x,y,z);
-      var n = new Vector4().Set3a(this.m.m[2]);
-      var D = - (n.X()*x + n.Y()*y + n.Z()*z);
-      this.Set4(n.X(), n.Y(), n.Z(), D);                            
-      return this;
-    }
-    
-    this.X = function() { return this.v[0] }
-    this.Y = function() { return this.v[1] }
-    this.Z = function() { return this.v[2] }
-    this.D = function() { return this.v[3] }
-    this.M = function() { return this.m }
-    this.I = function() { return this.m.Clone().Invert() }
-    this.XYZ = function() { return new Vector4().Set3(this.X(),this.Y(),this.Z()) };
-
-    this.Set4 = function (x, y, z, w) {
-      this.v[0] = x;
-      this.v[1] = y;
-      this.v[2] = z;
-      this.v[3] = w;
-      return this;
-    }
-  
-    // raytrace this plane (ABCD) from starting point x0 and direction x1
-    this.Raytrace = function(x0,x1) {
-      var Pn = this.XYZ();
-      var Rd = x1.Normalize(); 
-      var Ro = x0;
-      var vd = - Pn.DotP(Rd);
-        
-      // plane and ray are parallel?
-      if (Math.abs(vd) < 0.0000000001 ) {
-        return { t:undefined }
-      }
-      
-      // compute intersection point
-      var vo = Pn.DotP(Ro) + this.D();
-      var t = vo / vd;
-      var p = Ro.Add(Rd.Scale(t));
-      return { t:t, p:p };
-    }
-    
-    this.IsPointInBounds = function(p) {
-        
-      if (this.w == undefined || this.h == undefined) 
-        return false;
-        
-      var s = p.Transform(this.I());
-      var dh = Math.abs(s.Y()) - this.h / 2;
-      var dw = Math.abs(s.X()) - this.w / 2;
-      var inbounds = (dh < 0 && dw <0);
-      
-      return inbounds;
-    }
-
-}
 
 function Vector4() {
     this.v = [0, 0, 0, 1];
@@ -960,6 +891,34 @@ function Vector4() {
         var l10 = n10.Length();
         var d2   = ((l10*l10)*(l21*l21)-(n1*n1))/(l21*l21);
         return { t:t, d:Math.sqrt(d2) };
+    }
+    
+    // create planar equation ABCD from point and rotation
+    this.SetABCD = function(x,y,z,rx,ry,rz,deg) {
+      var m = new Matrix4().RotateFromEuler(rx,ry,rz,deg).Translate(x,y,z);
+      var n = new Vector4().Set3a(m.m[2]);
+      var D = - (n.X()*x + n.Y()*y + n.Z()*z);
+      this.Set4(n.X(),n.Y(),n.Z(),D);                            
+      return this;
+    }
+    
+    // raytrace this plane (ABCD) from starting point x0 and direction x1
+    this.Planetrace = function(x0,x1) {
+      var Pn = this.XYZ();
+      var D  = this.W();
+      var Rd = x1.Normalize(); 
+      var Ro = x0;
+      var vd = - Pn.DotP(Rd);
+        
+      // plane and ray are parallel?
+      if (Math.abs(vd) < 0.0000000001 ) {
+        return { t:undefined }
+      }
+      // compute intersetion point
+      var vo = Pn.DotP(Ro) + D;
+      var t = vo / vd;
+      var p = Ro.Add(Rd.Scale(t));
+      return { t:t, p:p };
     }
     
     this.Transform = function(b) {
