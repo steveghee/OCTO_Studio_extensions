@@ -757,7 +757,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           t4.className = 'viewer-container';
 
         }
-        var showReview = function (src, desc, isVideo) {
+        var showReview = function (src, desc, type) {
           const t1 = document.querySelector('div.sxsl-instruction-container');
           t1.className = 'sxsl-instruction-container-hide';
           const t2 = document.querySelector('div#sxsl-instruction-max');
@@ -766,20 +766,40 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           t3.className = 'sxsl-preview-hide';
           const t4 = document.querySelector('div#viewer-container');
           t4.className = 'viewer-container';
-          if (isVideo) {
-            const t5 = document.querySelector('video#viewVideo');
-            t5.firstChild.src = src;
-            t5.className = 'sxsl-viewer-image';
+          switch(type) {
+            case 'video/mp4' : 
+              const t5v = document.querySelector('video#viewVideo');
+              t5v.firstChild.src = src;
+              t5v.className = 'sxsl-viewer-image';
 
-            const t6 = document.querySelector('img#viewImage');
-            t6.className = 'sxsl-preview-hide';
-          } else {
-            const t5 = document.querySelector('img#viewImage');
-            t5.src = src;
-            t5.className = 'sxsl-viewer-image';
+              const t6vi = document.querySelector('img#viewImage');
+              t6vi.className = 'sxsl-preview-hide';
+              const t6vd = document.querySelector('embed#viewPdf');
+              t6vd.className = 'sxsl-preview-hide';
+              break;
+            case 'image/jpeg' :
+            case 'image/png' :
+              const t5i = document.querySelector('img#viewImage');
+              t5i.src = src;
+              t5i.className = 'sxsl-viewer-image';
 
-            const t6 = document.querySelector('video#viewVideo');
-            t6.className = 'sxsl-preview-hide';
+              const t6iv = document.querySelector('video#viewVideo');
+              t6iv.className = 'sxsl-preview-hide';
+              const t6id = document.querySelector('embed#viewPdf');
+              t6id.className = 'sxsl-preview-hide';
+              break;
+            case 'application/pdf' :
+              const t5d = document.querySelector('embed#viewPdf');
+              t5d.src = src;
+              t5d.className = 'sxsl-viewer-image';
+
+              const t6di = document.querySelector('img#viewImage');
+              t6di.className = 'sxsl-preview-hide';
+              const t6dv = document.querySelector('video#viewVideo');
+              t6dv.className = 'sxsl-preview-hide';
+              break;
+            default:
+              break;  
           }
           if (desc != undefined) {
             const t7 = document.querySelector('div#viewinfo');
@@ -1439,7 +1459,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               </div>\
               <div id='viewerList' class='sxsl-viewer-view'>\
                 <img id='viewImage' class='sxsl-preview-hide'/>\
-                <video id='viewVideo' class='sxsl-preview-hide' autoplay><source src='' type='video/mp4' ></video>\
+                <video id='viewVideo' class='sxsl-preview-hide' controls><source src='' type='video/mp4'></video>\
+                <embed id='viewPdf' class='sxsl-preview-hide' type='application/pdf'/>\
               </div>\
             </div>"
           scope.referenceViewerWindow.id = 'viewer-container';
@@ -1988,7 +2009,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             function processListAsHTML(list) {
               var inner = "";
               list.forEach(function (ref) {
-                inner = inner + ref;
+                inner = inner + ref.html;
               });
               return inner;
             }
@@ -2022,14 +2043,19 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
                   case "video/mp4":
                     buckets.video.push(ref);
-                    mergedBucket.push(`<video class="sxsl-preview-show" title="${ref.desc}"><source src="${ref.url}"/></video>`);
+                    mergedBucket.push({type:ref.mime, html:`<video class="sxsl-preview-show" title="${ref.desc}"><source src="${ref.url}" type="${ref.mime}"/></video>`});
                     break;
 
+                  case "application/pdf":
+                    buckets.image.push(ref);
+                    mergedBucket.push({type:ref.mime, html:`<img src="${ref.thumb != undefined ? ref.thumb : ref.url}" longdesc="${ref.url}" title="${ref.desc}" class="sxsl-preview-show"/>`});
+                    break;
+                    
                   case "image/jpeg":
                   case "image/png":
                   case "image/gif":
                     buckets.image.push(ref);
-                    mergedBucket.push(`<img src="${ref.thumb != undefined ? ref.thumb : ref.url}" longdesc="${ref.url}" title="${ref.desc}" class="sxsl-preview-show"/>`);
+                    mergedBucket.push({type:ref.mime, html:`<img src="${ref.thumb != undefined ? ref.thumb : ref.url}" longdesc="${ref.url}" title="${ref.desc}" class="sxsl-preview-show"/>`});                    
                     break;
 
                   //handle others e.g. docs etc.
@@ -2049,15 +2075,16 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
                 for (var i = 0; i < collection.length; i++) {
                   var c = collection[i];
-
+                  var o = mergedBucket[i];
                   var tag = c.tagName != undefined ? c.tagName : "";
-                  var src = tag == 'VIDEO' ? c.firstChild.src : c.longDesc;
+                  var src = tag == 'VIDEO' ? c.firstChild.src : 
+                            tag == 'IMG' ? c.longDesc : c.src;
                   var desc = c.title;
-                  c.addEventListener("click", (function (i, src, tag) {
+                  c.addEventListener("click", (function (type, src, desc) {
                     return function () {
-                      showReview(src, desc, tag == 'VIDEO');
+                      showReview(src, desc, type);
                     }
-                  })(i, src, tag));
+                  })(o.type, src, desc));
                 }
 
               } else {
