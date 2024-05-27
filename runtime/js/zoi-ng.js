@@ -244,7 +244,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                      
           scope.data.disabled = (scope.disabledField != undefined && scope.disabledField === 'true') ? true :false ;
           
-          //one off operation to fluh disable down
+          //one off operation to flush disable down
+          if (scope.data.helper === undefined) return;
           scope.data.helper.Enabled(!scope.data.disabled);
           executezois();
         });

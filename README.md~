@@ -5,6 +5,8 @@ Pleasse note : these are provided as example only. Whilst I do my utmost to keep
 tools, capabiliites etc. that the user might find valuable in building an experience using Vuforia Studio.  
 They are provided free of charge, and can be used, adapted, altered freely, but they are completely unsupported.
 
+Also note: this revision includes changes for the new Studio UI framework that was released with Studio 9.20 (may 2024). For prior Studio releases, please checkout the tag 'studio_pre_920'.
+
 These include
 * low-level (TML) support for new Vuforia Engine features e.g. Area and Trained model targets
 * 3d UI widgets for the hololens e.g. buttons, toggles, tethered backplate
@@ -22,10 +24,11 @@ The extension can be broken down into 4 main catagories
 
 1. Targets
 2. Inputs
-3. Containers
-4. Navigation
-5. Step by Step Instructions (new)
-6. Misc 
+3. Metadata
+4. Containers
+5. Navigation
+6. Step by Step Instructions (** new **)
+7. Misc 
 
 Lets look at each in turn.
 
@@ -34,19 +37,20 @@ Lets look at each in turn.
 
 Work In Progress
 
-The dynamic target widget can be used to bind external target references e.g. targets that are created and stored in the Experience Service repository or a Thingworx file repository.
+The Parametric Target widget can be used to bind external target references e.g. targets that are created and stored in the Experience Service repository or a Thingworx file repository.
 These target dat/xml and guide view sets can be referenced as url, and this widget will load them.
 
 Suggestions for using this widget
 1. prepare your external targets in suitable repositories
 2. know the type of target - the url you provide will define the target type
-for example, a model target is defined as "vuforia-model:///path to target/tartname?id=targetid".  You must fill in the parmaters correctly
-a spatial target is simplly "spatial://"
+For example, a model target is defined as "vuforia-model:///path to target/tartname?id=targetid".  You must fill in the parmaters correctly
+A spatial target is simply "spatial://"
 
 To make your experience dynamic, you wlil pass the target information to the experience at launch - you can do this by passing application parameters in the launch url
 these parameters can be formed using services such as the Identity Resolution Service (IRS) - part of the Experience Server - or you can form the url yourself e.g. using a QR code.
 
 Bind your application parameter to the 'dataset' and 'guide' parameters of the dynamic target widget.  These paameters, when supplied at runtime, will then supply the values needed to load the target.
+You can also (optionally) bind a pvz (3d model) as the occluder geometry, if this makes sense for your taget. An occluder will mask any virtual augmentatoin that might appear behind a physical item in the scene.
 
 An mention abve, this widget is still work in progress, so there's a few issues to be ironed out still.  Basic testing shows that spatial, image and model targets all work.
 
@@ -78,18 +82,22 @@ Note the 3d pvz model is displayed as 'occluding' as this should help the author
 around the target, and understand what the user will/not see when viewing from 
 various perspectives.  
 
-Note also : The 3d occluding model is (currently) not included in the runtime display. 
+You can also (optionally) bind a pvz (3d model) as the occluder geometry, if this makes sense for your taget. An occluder will mask any virtual augmentatoin that might appear behind a physical item in the scene.
 
 Finally, the widget is in fact a generic target that will support any model target, so you can use standard and advanced/360 targets with this widget.  You don't have to use advanced/360 targets.
 
 ### Area targets
-Note : depricated : product now includes this target type
+Note : deprecated : product now includes this target type
 
 ### Cloud Image Targets
-depricated: product now includes this target type
+Reference your Vuforia cloudimage targets from your experience.  You supply your Vuforia cloud keys to this widget, and it will
+communicate with the Cloud Server and establish tracking when any of your cloud image targets are recognised. The tracking feedback event will included
+information on the target ID and any metadata associated.
 
 ### Custom Vumarks
-depricated: product now includes this target type
+Handle custom vumarks by including you vumark target data and xml files.  Operationally these work exactly the same
+as Thingmarks (which are PTC vumarks). When a custom vumark is identified, you will receive trackingacquired message which will include the 
+vumark ID that is being tracked.
 
 ## Inputs
 UI elements such as Hololens2-ready UI controls.
@@ -109,6 +117,11 @@ widget will quantize the value for example steps=5 will divide the control into 
 WIP
 
 ## Metadata 
+
+### Locator (** new **)
+The Locator widget can be linked to the output of Finder. The output of locator is a matching list if location points that match the items in the find results list.  
+This list could be bound to the input of the wayfinder, allow the user to locate items spatially.
+
 ### Finder
 Provides real-time metadata shearch within specified model ID.
 ou can supply the property name, the search value, and the operation to use e.g. "cost" "greater than" "20".  The property name, values, and the operand can be data driven via binding.
@@ -133,48 +146,75 @@ all the properties/value associated with the selected item.
 
 Next, using "fields to include", you can set a list (comma separated, no spaces) of properties that are to be included in the output. Use this to filter down to the properties you need.
 
+### Cart
+The cart can be used to hold on to items that have been identified (found via the finder, clicked via the metagetta) - it operates like a shopping cart.
+Bind the output from the Finder to the Cart. Use the Add service to add found items (you can bind to a list control to select specific items). Use the remove service to remove selected items. Reset will clear the cart.
+The items output is an info table that can be passed to other widget or thingworx service. 
+
 ## Containers
 TBC
 
 ## Navigation
 There are two widgets in this category
 
-###Navigator
-Note : depricated : product now includes this capability in the form of the wayfinder
+### Navigator
+Note : depricated : Vuforia Studio product now includes this capability in the form of the wayfinder widget.
 
 
-###Zones of Interest (**new**)
-The Zones of interest widget provies a mechanism to declare one or more zones (these are cylindrical is shape) and position these in 
-your space.  When then user navigates the scene and crossed into or exist a zone, the widget will output appropriate events that allows your experince to react to the user proximity.
+### Zones of Interest (**new**)
+The Zones of interest widget provies a mechanism to declare one or more zones (these are cylindrical is shape) and 
+position these in your space.  When then user navigates the scene and crossed into or exits a zone, the widget will 
+output appropriate events (Arrived, Departed) that allows your experince to react to the user proximity.  The value 
+property reflects the title/if of the zone that is being crossed. 
 
 Similar to the navigator widget, you can declare/bind an array zones and the control will manage them for you.  You can also create/mark new zones on demand.
 This data can be in table form - perhaps the result of a thingworx service call - or you can set the value from javascript.
 
-  `$scope.view.wdg.zones.zoidata = [ 
-                                         { position: "0,0,0",    // defined as a string of xyz coordinates 
-                                              color: [1,0,0],    // optional information to define/override color of POI indicator 
-                                             cutoff: 2           // optional; defines the radius of this specific zone
-                                         }
-                                       ];` 
+  `$scope.view.wdg.zones.zoidata = [ \
+        {         name: "zone 1",   // title/name/id of zone - this will be reported in events \
+              position: "0,0,0",    // defined as a string of xyz coordinates \
+                 color: [1,0,0],    // optional information to define/override color of POI indicator \
+                cutoff: 2           // optional; defines the radius of this specific zone \
+        }
+   ];` 
 
-This section TO BE COMPLETED
+Use the Show/Hide services to show/hide the visual aids that can help users see the zones.  The Mark service can be called to add a new Zone - it will be created 
+with the center positioned at the current location of the user.  This new zone will be added to the zoidata list.
 
 ## Step by Step Instructions (aka SXSL)
 
-(Important note : this is an early alpha version of this widget : testing has been limited so far to landscape ipad devices, so any other device/display format may look wrong - it will get fixed over time. Right now the focus is functionality)
+(Important note : this is an early alpha version of this widget : testing has been limited so far to landscape ipad devices, so any other device/display format may 
+look wrong - it will get fixed over time. Right now the focus is functionality)
 
-sxsl is a language (implemented as a json data format) for defining step-by-step instructions.  
+sxsl is a language (implemented as a json data format) for defining step-by-step instructions, which are defined as a series of human-centric 'actions' e.g. check this, tighten that etc..  
 Sxsl content can be output from Creo Illustrate, or created in tools such as Expert Capture. The format is designed to be very simple, allowing sxsl content to be
 generated using simple tools such as Python or node.js, taking content (assets, resources etc.) from any instruction source.
 
 The sxsl widget provides a convenient player, including built-in UI, which will execute this sxsl language and will deliver AR-enabled instructions.
 
-The src property should be set to point to a valid sxsl defintion/file (json format).  If bound to a URL, the widget will fetch the content.  It is assumed that the associated 2d/3d resources, including any 
-associated tracking targets, are included in the same relative location as the the sxsl json.  This file could be local (in the experience) or could be situated on a remote data service e.g. the Experience Service, Thingworx or elsewhere.  Src is a URL that points to this resource. You can also bind this property to an inline serialised (JSON serialised string) representation of the sxsl structure - if detected the widget will interpret the sxsl directly (it does not need to load a file). 
+The src property should be set to point to a valid sxsl defintion/file (json format).  If bound to a URL, the widget will fetch the content.  It is assumed that the 
+associated 2d/3d resources, including any associated tracking targets, are included in the same relative location as the the sxsl json.  This file could be local (in 
+the experience) or could be situated on a remote data service e.g. the Experience Service, Thingworx or elsewhere.  Src is a URL that points to this resource. You can 
+also bind this property to an inline serialised (JSON serialised string) representation of the sxsl structure - if detected the widget will interpret the sxsl directly 
+(it does not need to load a file). An optional (hidden) 'Content Location' field is provided for cases where you might have sxsl content which includes file 
+references from another location; the "content location" property can be a string which describes the base file path/url to the data, in the form "server:path/to/data/".  Note the / on the end 
+is important. 
 
 The sxsl2 specification can be found here (TODO: link to be provided)
 
 The widget will display the instruction control UI, including any 2d (image, video) references.  
+Click the 'next' (arrow) button to advance through the actions.
+
+Step List property holds a reference to the list of valid steps that can be visited. You can bind this to a list/repeater widget, and clck on an item to jump to that step.
+Tools Required property holds a reference to a list of any tools that are required to execute this procedure. 
+The tool name, info and (optional) image are included. This is for reference purposes only i.e. this list is non=interactive.
+Consumables is similar - this is an information-only field that will list any items that are required to be consued (used) during this step/action.
+
+With a valid sxsl specified, the "Ready" flag will apear true, and when the player is running (executing actions) the Active flag is set to true. You can use these to control other features of your experience UI.
+Eexcution of the player can be interrupted, for example to pause or to halt a procedure, by triggering the Pause or Halt services; both expect a Reason Code to be set to explain the reason behind the interruption.
+
+All execution is logged to the Status field, with an event being triggered for each change - this field could, for example, be bound to a thingworx Service where the real-time status could be logged.
+
 
 ### properties
 The steplist property provides an infotable which lists all the available steps - you can display this in a list/repeater to view and select/jump to specific steps. Only valid next steps are presented.
@@ -192,7 +232,10 @@ TBC
 
 ## Misc
 
-### Image markup (** new **)
+If coumpound is set to true, s single composition location (box) which encompasses all N input items, is created.
+If false, each item in the input list is mapped to center point if the item
+
+### Image markup
 The markup widget can be used to provide in-situ markup (pen,text, shapes) over an 
 image e.g. a photo collected from the camera widget.  Connect the image_url output from the camera to the image_url input of the markup; connect the picture taken even from the camera to the start markup service of the markup widget. When you take a picture, the markup editor
 will open and you can draw on the image. Click ok to generate a new image - you can route this to thingworx or similar.

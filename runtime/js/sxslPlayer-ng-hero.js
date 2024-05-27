@@ -18,15 +18,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         physicalField: '@',
         resourceField: '@',
         reasoncodeField: '@',
-        includeField: '@',
         anchorField: '@',
         holoField: '@',
-        hiliteshadeField: '@',
-        annotateshadeField: '@',
-        toolshadeField: '@',
         canrunField: '=',
         runningField: '=',
-        executingField: '=',
         clockField: '=',
         trackingField: '=',
         statusField: '=',
@@ -56,66 +51,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           isProcessThingAvailable: false,
           isToolThingAvailable: false,
           heroWidget: undefined,
-          pois: {},
-          ask: undefined,
-          debug: undefined,
-          focus: [],
-          hiliteshade: "sxsl_proximityHilitegl",
-          annotateshade: "sxsl_coloredHilitegl;r f 0; g f 1;b f 1",
-          toolshade: "sxsl_coloredHilitegl;r f 1; g f 1;b f 0",
+          pois: [],
           events:[]
         };
 
         scope.renderer = $window.cordova ? vuforia : $injector.get('threeJsTmlRenderer');
-        
-        // two issues to be resolved - firstly, PTC.Structure is missing the foromData() interface, so here we shim one in.
-        // secondly, PTC,Metadata.fromData() appears to not be filling in the important PropertyCache, so it never finds
-        // any properties even after setting from a valid data source.  The latter is a bug that has been reported.
-        //
-        if (PTC.Structure) {
-          PTC.Structure.fromData = function(id, data) {
-            return new Promise(function (resolve, reject) {
-              PTC.Metadata.fromData(id,data).then(
-                (metadata) => {
-                  const struct = new PTC.Structure(id);
-                  struct.metadata = metadata;
-                  metadata._setPropertyCache(id, data); // bug in Metadata.fromData not setting up the property cache.  
-                  resolve(struct);
-                },
-                (error) => {
-                  reject(error);
-                }
-              )
-            });
-          }
-        }
         scope.helper = new sxslHelper(scope.renderer, scope.data.anchor);
         scope.canrunField = false;
         scope.runningField = false;
-        scope.executingField = false;
-        
-        scope.data.debuglog = "";
-        var debugLog = function() {
-          var debug = scope.$parent.view.wdg.debug;
-          if (debug != undefined) {
-            var line = "";
-            for (var i = 0; i < arguments.length; i++) {
-              line = line + " " + arguments[i];
-            }
-            scope.data.debuglog = scope.data.debuglog + "\n" + line;
-            debug.text = scope.data.debuglog;
-          }
-          else console.log(arguments);
-        }
-        
-        var registerRootEvent = function(evt,fn) {
-          scope.data.events.push(scope.$root.$on(evt,fn));
-          //scope.$root.$on(evt,fn);
-        }
-        var registerParentEvent = function(evt,fn) {
-          scope.data.events.push(scope.$parent.$on(evt,fn));
-          //scope.$parent.$on(evt,fn);
-        }
 
         var startSxslPlayer = function () {
 
@@ -132,30 +75,36 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             emit: function (evt, arg) { return scope.$parent.$emit(evt, arg) }
           };
           
+          //are we working with external here object?  note that today this
+          //has a fixed name (sxslhero)
+          scope.data.heroWidget = scope.$parent.view.wdg.sxslhero;
+          if (scope.data.heroWidget != undefined) {
+            listenToExternalContext("sxslhero");
+            
+            //hide things, initially
+            //scope.renderer.setProperties("sxslhero-/", { hidden: true, shader: "sxsl_proximityHilitegl", occlude: false, phantom: false, decal: false });
+          }
+
           scope.logger = new scope.data.logger();
           scope.player = new scope.helper.sxsl2Player(eventHandler, scope.helper, scope.procValidator, scope.stepValidator)
             .fromData(scope.data.sxsl)
             .then((proc) => {
                   
+              scope.data.events = [];
               var registerEvent = function(evt,fn) {
-//                scope.data.events.push(proc.events.on(evt,fn));
-                scope.$parent.$on(evt,fn);
+                scope.data.events.push(proc.events.on(evt,fn));
               }
-            
-
-              debugLog('loaded', proc.getStepList().length, 'steps');
+          
+              console.log('loaded', proc.getStepList().length, 'steps');
               scope.canrunField = true;
               scope.runningField = true;
-              scope.executingField = false;
-              
               scope.toollistField = proc.getToolList();
               scope.consumablesField = proc.getConsumables();              
               // time to wake up the UI
               maximise();
-
+              
               registerEvent('procStart', function (evt, proc) {
-                var titleString = (proc.title || "" ) + (proc.versionInfo != undefined ? (" (" + proc.versionInfo + ") ") : "") + (proc.published != undefined ? ("Last published: " + proc.published.toUTCString()) : "")
-                scope.setHeadLabel(titleString);
+                scope.setHeadLabel(proc.title);
                 scope.steplistField = proc.getStepList();
 
                 scope.logger.push({
@@ -163,14 +112,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   event: "procstart",
                   time: Date.now()
                 });
-                debugLog('<<<<<<<<<<<<<<<<<<<<<<<\nstarting proc', proc.id, proc.intro);
+                console.log('<<<<<<<<<<<<<<<<<<<<<<<\nstarting proc', proc.id, proc.intro);
               });
 
               registerEvent('stepStart', function (evt, step) {
-                debugLog('+++++++++++++++++++++++\nstarting step', step.id, step.title);
+                console.log('+++++++++++++++++++++++\nstarting step', step.id, step.title);
                 scope.setHeadLabel(step.title);
                 scope.setStepLabel(proc.sti + " OF " + proc.statementcount);
-                scope.executingField = true;
 
                 scope.startStepTimeClock(step, scope.ticker, scope);
 
@@ -194,15 +142,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               });
 
               registerEvent('procEnd', function (evt, procedure) {
-                debugLog('ending proc', procedure.id + '\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
+                console.log('ending proc', procedure.id + '\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
 
                 scope.setHeadLabel(procedure.title);
                 scope.canrunField = false;
                 scope.runningField = false;
-                scope.executingField = false;
-                scope.focusField = scope.data.focus = [];
-                scope.focusField.current = 0; 
-                
+
                 scope.logger.push({
                   id: procedure.id,
                   event: "procend",
@@ -210,7 +155,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 });
                     
                 if (procedure.consumed != undefined) 
-                  debugLog('in total, we consumed', procedure.consumed);     
+                  console.log('in total, we consumed', procedure.consumed);     
                     
                 //and signal termination    
                 scope.$parent.$emit("finished");
@@ -219,7 +164,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               registerEvent('stepEnd', function (evt, step) {
                 scope.stopStepTimeClock(step);
                 hidepassfail();
-                scope.executingField = false;
 
                 //update the list
                 scope.steplistField = proc.getStepList();
@@ -233,13 +177,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 });
                     
                 if (step.ref.consumed != undefined) 
-                  debugLog('for this step, we consumed',step.ref.consumed);     
+                  console.log('for this step, we consumed',step.ref.consumed);     
                     
-                debugLog('completing step', step.id + '\n---------------------------', step.outro);
+                console.log('completing step', step.id + '\n---------------------------', step.outro);
               });
 
               registerEvent('procPause', function (evt, reason) {
-                debugLog('proc pause');
+                console.log('proc pause');
                 scope.logger.push({
                   id: reason.step.id,
                   event: reason.event,
@@ -249,7 +193,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               });
 
               registerEvent('procResume', function (evt, reason) {
-                debugLog('proc resume');
+                console.log('proc resume');
                 scope.logger.push({
                   id: reason.step.id,
                   event: reason.event,
@@ -257,19 +201,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 });
                 maximise();
               });
-                  
-              registerParentEvent('procHalt', function(evt, reason) {
-                console.log('parent event for procHalt');
-              });
-                      
+
               registerEvent('procHalt', function (evt, reason) {
-                debugLog('halting proc\n============================');
+                console.log('halting proc\n============================');
 
                 //stop the clock    
                 if (reason.step) scope.stopStepTimeClock(reason.step);
                 scope.canrunField = false;
                 scope.runningField = false;
-                scope.executingField = false;
 
                 scope.logger.push({
                   id: reason.step != undefined ? reason.step.id : "",
@@ -287,12 +226,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               });
 
               registerEvent('stepProofPending', function (evt, proof) {
-                debugLog('step proof pending - please provide ', proof.length, 'items');
+                console.log('step proof pending - please provide ', proof.length, 'items');
                 $timeout(function () { collectProof(proof); }, 10);
               });
 
               registerEvent('stepProofDelivered', function (evt, proof) {
-                debugLog('step proof delivered');
+                console.log('step proof delivered');
                 scope.logger.push({
                   id: proof.step.id,
                   event: proof.event,
@@ -302,12 +241,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               });
 
               registerEvent('actionInputPending', function (evt, input) {
-                debugLog('action input pending', input.type);
+                console.log('action input pending', input.type);
                 scope.advanceWindow.className = 'sxsl-button sxsl-button-round sxsl-icon-nav-right';
               });
 
               registerEvent('actionInputDelivered', function (evt, input) {
-                debugLog('action input delivered');
+                console.log('action input delivered');
                 hideCapture();
                 scope.logger.push({
                   id: input.step.id,
@@ -318,7 +257,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               });
 
               registerEvent('stepCompletionPending', function (evt, step) {
-                debugLog('step completion pending');
+                console.log('step completion pending');
                 scope.stopStepTimeClock(step);
 
                 var ack = step.ack;
@@ -343,18 +282,15 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               });
 
               registerEvent('actionStart', function (evt, action) {
-                debugLog('action Start');
+                console.log('action Start');
                 scope.toollistField    = proc.getToolList(action.id);
                 scope.consumablesField = proc.getConsumables(action.id);
                 hideCapture();
-                
-                if (scope.data.context.model != undefined)  // start (or stop) any scene-based override
-                  scope.animateNamedPOI('context', action.sceneName, scope.data.context);
               });
 
               registerEvent('actionEnd', function (evt, action) {
 
-                debugLog('completing action', action.type);
+                console.log('completing action', action.type);
                 
                 scope.toollistField    = [];
                 scope.consumablesField = [];
@@ -382,11 +318,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               });
 
               registerEvent('actionBypass', function (evt, action) {
-                debugLog('skipping action', action.type);
+                console.log('skipping action', action.type);
               });
 
               registerEvent('stepBypass', function (evt, step) {
-                debugLog('step bypass');
+                console.log('step bypass');
                 hidepassfail();
                 scope.stopStepTimeClock(step);
 
@@ -403,7 +339,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
               proc.start()
                 .then(intro => {
-                  debugLog('intro', intro);
+                  console.log('intro', intro);
 
                   if (scope.thumbnail) {
                     scope.thumbnail.src = proc.thumbnail;
@@ -431,7 +367,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                         scope.setFeedbackLabel(e);
 
                         //invalid input / content
-                        debugLog('invalid input content', e);
+                        console.log('invalid input content', e);
                         return false;
                       })
                   };
@@ -444,7 +380,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                         scope.next('@');
                       })
                       .catch(e => {
-                        debugLog(e.msg);
+                        console.log(e.msg);
                       })
                   };
 
@@ -470,7 +406,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                         scope.canrunField = false;
                       })
                       .catch(e => {
-                        debugLog(e);
+                        console.log(e);
                       });
                   };
 
@@ -478,9 +414,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                     proc.pause(reason)
                       .then((state) => {
 
-                        // stop the timer (if it is running)
-                        if (scope.stopStepTimeClock != undefined)
-                          scope.stopStepTimeClock(state.step);
+                        // stop the timer
+                        scope.stopStepTimeClock(state.step);
                         scope.runningField = false;
                       })
                   };
@@ -494,14 +429,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                         //
 
                         if (a.type == undefined)
-                          debugLog('no action');
+                          console.log('no action');
                         else
                           scope.actions.find(a.type)
                             .then((act) => {
                               scope.inputValidator = act(a);
                             })
                             .catch((err) => {
-                              debugLog(err);
+                              console.log(err);
                             });
 
 
@@ -514,8 +449,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                             scope.actions.end(conclusion);
 
                             // TODO : let thingworx know? 
-                            scope.statusField = scope.logger.sanitise();
-                            //debugLog('results:', JSON.stringify(scope.logger.results, null, ' '));
+                            //                                                scope.statusField = scope.logger.sanitise();
+                            console.log('results:', JSON.stringify(scope.logger.results, null, ' '));
                           })
                           .catch(e => {
 
@@ -523,24 +458,24 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                             var abortmsg = "Procedure failed<p>" + e.reason;
                             scope.actions.end(abortmsg);
 
-                            scope.$parent.$emit('procHalt', { event: e.event, reason: abortmsg });
+                            proc.events.emit('procHalt', { event: e.event, reason: abortmsg });
                           })
                         else if (e.cmd == 'ack') {
                           // we are waiting for user input      
-                          debugLog(e.msg);
+                          console.log(e.msg);
                           return;
                         }
                         else if (e.cmd == 'proof') {
                           // we are waiting for user input - proof of condition required      
-                          debugLog(e.msg);
+                          console.log(e.msg);
                           return;
                         }
                         else if (e.cmd == 'input') {
                           // we are waiting for user input      
-                          debugLog(e.msg);
+                          console.log(e.msg);
                           return;
                         } else {
-                          debugLog(e.msg);
+                          console.log(e.msg);
 
                           proc.halt(e.msg) // this should fire procHalt event
                             .then(() => {
@@ -571,7 +506,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
                 })
                 .catch(e => {
-                  debugLog('proc error' + e);
+                  console.log('proc error' + e);
                 });
             });
         };
@@ -580,14 +515,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           var active = scope.canrunField && scope.runningField;
           var sleepy = scope.canrunField && !scope.runningField;
           if (!scope.data.disabled) {
-            debugLog('physical', scope.data.physical);
+            console.log('physical', scope.data.physical);
             scope.steplistField = scope.data.steplist;
 
             if (sleepy)
               scope.resume(true);
 
           } else {
-            debugLog('disabled');
+            console.log('disabled');
             scope.trackingField = false;
             scope.steplistField = undefined;
 
@@ -601,18 +536,18 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         };
 
         var halt = function () {
-          debugLog('halting for reason', scope.data.reasonCode);
+          console.log('halting for reason', scope.data.reasonCode);
           scope.data.disabled = true;
           scope.halt({ event: 'halt', reason: scope.data.reasonCode });
         }
         var pause = function () {
-          debugLog('pausing for reason', scope.data.reasonCode);
+          console.log('pausing for reason', scope.data.reasonCode);
           scope.data.disabled = true;
           scope.pause({ event: 'halt', reason: scope.data.reasonCode });
           executesxslPlayer();
         }
         var next = function () {
-          debugLog('moving to next action');
+          console.log('moving to next action');
           if (scope.canrunField == true) {
             if (scope.runningField == true && scope.next)
               scope.next();
@@ -625,12 +560,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
         //detail capture (inputs)
         var capturePhoto = function () {
-          debugLog('grabbing input photo');
+          console.log('grabbing input photo');
           scope.input();
         }
         var selectedCaptureEnum = function () {
           var value = scope.captureEnumWindow.value;
-          debugLog('user selected', value);
+          console.log('user selected', value);
           scope.input();
         }
 
@@ -650,7 +585,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           let numberToCollect = required.length;
 
           //call camera to get proof
-          debugLog('step proof pending - need to collect ', required.length, 'items');
+          console.log('step proof pending - need to collect ', required.length, 'items');
 
           var gatherProof = function () {
             showProof();
@@ -671,7 +606,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           }
 
           var photoSuccess = function (pngBase64String) {
-            var proof = twx.app.isPreview() ? '**encoded photo here**' : 'data:image/png;base64,' + pngBase64String;
+            var proof = 'data:image/png;base64,' + pngBase64String;
             collectedProof.push(proof);
 
             if (collectedProof.length == numberToCollect) {
@@ -690,10 +625,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
           scope.captureProofPhoto = function () {
             hideProof();
-            
+            var params = { withAugmentation: true, imageWidth: 640, imageHeight: 480 };
             //  params = { dataURL:bool, withAugmentation: bool, imgFormat: string, imgWidth: number, imgHeight:number} 
-            var params = twx.app.isPreview() ? { withAugmentation: true, imageWidth: 160, imageHeight: 210 }
-                                             : { withAugmentation: true, imageWidth: 640, imageHeight: 480 };
             scope.renderer.takeScreenshot(params, photoSuccess, photoCancel);
           }
 
@@ -704,7 +637,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         }
         var selectedErrorCode = function () {
           var value = scope.errorcodelistWindow.value;
-          //debugLog('you clicked',value);
+          //console.log('you clicked',value);
 
           if (value != undefined) {
 
@@ -757,7 +690,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           t4.className = 'viewer-container';
 
         }
-        var showReview = function (src, desc, type) {
+        var showReview = function (src, desc, isVideo) {
           const t1 = document.querySelector('div.sxsl-instruction-container');
           t1.className = 'sxsl-instruction-container-hide';
           const t2 = document.querySelector('div#sxsl-instruction-max');
@@ -766,40 +699,20 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           t3.className = 'sxsl-preview-hide';
           const t4 = document.querySelector('div#viewer-container');
           t4.className = 'viewer-container';
-          switch(type) {
-            case 'video/mp4' : 
-              const t5v = document.querySelector('video#viewVideo');
-              t5v.firstChild.src = src;
-              t5v.className = 'sxsl-viewer-image';
+          if (isVideo) {
+            const t5 = document.querySelector('video#viewVideo');
+            t5.firstChild.src = src;
+            t5.className = 'sxsl-viewer-image';
 
-              const t6vi = document.querySelector('img#viewImage');
-              t6vi.className = 'sxsl-preview-hide';
-              const t6vd = document.querySelector('embed#viewPdf');
-              t6vd.className = 'sxsl-preview-hide';
-              break;
-            case 'image/jpeg' :
-            case 'image/png' :
-              const t5i = document.querySelector('img#viewImage');
-              t5i.src = src;
-              t5i.className = 'sxsl-viewer-image';
+            const t6 = document.querySelector('img#viewImage');
+            t6.className = 'sxsl-preview-hide';
+          } else {
+            const t5 = document.querySelector('img#viewImage');
+            t5.src = src;
+            t5.className = 'sxsl-viewer-image';
 
-              const t6iv = document.querySelector('video#viewVideo');
-              t6iv.className = 'sxsl-preview-hide';
-              const t6id = document.querySelector('embed#viewPdf');
-              t6id.className = 'sxsl-preview-hide';
-              break;
-            case 'application/pdf' :
-              const t5d = document.querySelector('embed#viewPdf');
-              t5d.src = src;
-              t5d.className = 'sxsl-viewer-image';
-
-              const t6di = document.querySelector('img#viewImage');
-              t6di.className = 'sxsl-preview-hide';
-              const t6dv = document.querySelector('video#viewVideo');
-              t6dv.className = 'sxsl-preview-hide';
-              break;
-            default:
-              break;  
+            const t6 = document.querySelector('video#viewVideo');
+            t6.className = 'sxsl-preview-hide';
           }
           if (desc != undefined) {
             const t7 = document.querySelector('div#viewinfo');
@@ -933,7 +846,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           },
             (err) => {
               // something went wrong
-              debugLog(`addPVS failed to add new model: ${JSON.stringify(err)}`);
+              console.log(`addPVS failed to add new model: ${JSON.stringify(err)}`);
               if (fail != undefined)
                 fail(err);
             });
@@ -960,7 +873,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   contextual.mime = model.mimeType;
                   contextual.scale = model.scale != undefined ? model.scale : 1;
                   contextual.tag = tag;
-                  debugLog("using", tag);
+                  console.log("using", tag);
                   break;
                 case "occlusion":
                   if (contextual.tag === undefined || contextual.tag != "full") {
@@ -969,7 +882,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                     contextual.mime = model.mimeType;
                     contextual.tag = tag;
                   }
-                  debugLog("using", tag);
+                  console.log("using", tag);
                   break;
                 case "heroes":
                   contextual.hero = cscope.data.anchor + model.url;
@@ -1026,7 +939,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   var urlidx = tgt.lastIndexOf('.dat');
                   target = target + tgt.substring(0, urlidx) + '?id=' + tracker.content.targetName;
 
-                  if (true) { //contextual.target.mimeType != "application/vnd.ptc.tracker.advancedmodeltracker") {
+                  if (contextual.target.mimeType != "application/vnd.ptc.tracker.advancedmodeltracker") {
                     contextual.target.mimeType = tracker.mimeType;
                     contextual.target.target = target;
                     contextual.target.position = tracker.content.offset != undefined && tracker.content.offset.translation != undefined 
@@ -1095,23 +1008,62 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
                 },
                   (err) => {
-                    debugLog('addMarker failed');
+                    console.log('addMarker failed');
                   })
               },
                 (err) => {
-                  debugLog('addTracker failed');
+                  console.log('addTracker failed');
                 })
             },
               (err) => {
-                debugLog('loadTrackerDef failed');
+                console.log('loadTrackerDef failed');
               });
           }
           return contextual;
         }
         
+        //this function listens to external changes on the special 'sxslhero' widget which can be used to expose the subject
+        //should the user want to do locator/waypointing. this is NOT ideal - the best usecase
+        //would be the metadata working at the tml node level, not requiring the Angular widgets
+        //
+        function listenToExternalContext(context) {
+          //listen to tml events on the widget - note the depth of the listener here!!  
+          scope.data.events.push(scope.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$on('modelLoaded',function(evt,mdl) {
+            if (mdl==context) {                
+                
+              // model loaded, lets see if there's a seuqence to load (listener below)
+              scope.data.heroWidget.sequence = scope.data.heroWidget.sequenceToLoad; 
+              
+              //and work out if there are any specific items called out to view, or just the entire asseet
+              var focusField = [];
+              
+              //undo any previous speecific highlights
+              if (scope.data.heroWidget.occurrenceIds != undefined) {
+                var isDigital = !(scope.data.context.target.mimeType != "application/vnd.ptc.tracker.spatialtracker" || scope.data.physical);
+                scope.renderer.setProperties(context+"-/", { forceHidden: false, hidden:true, shader: isDigital ? "sxsl_desaturatedgl" : "sxsl_screendoorgl", occlude: false, phantom: false, decal: false });
+                scope.data.heroWidget.occurrenceIds.forEach(function(id) {
+                  scope.renderer.setProperties(context+"-"+id, { forceHidden:false, hidden:false, shader: "sxsl_proximityHilitegl", occlude: false, phantom: false, decal: false });
+                  focusField.push({model:context, path:id});
+                });
+              } else {
+                scope.renderer.setProperties(context+"-/", { forceHidden: false, hidden:false, shader: "sxsl_proximityHilitegl", occlude: false, phantom: false, decal: false });
+                focusField.push({model:context, path:'/'});
+              }
+              //tell the experience about the subject items (for waypointing etc.)
+              scope.focusField = focusField;
+              scope.$parent.$applyAsync();
+            }
+          }));
+
+          //wait for the sequence to load
+          scope.data.events.push(scope.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$on('sequenceloaded',function(evt,tgt,type,seq) {
+            scope.renderer.setProperties(context+"-/", { hidden: false, shader: "sxsl_proximityHilitegl", occlude: false, phantom: false, decal: false });
+          }));
+        }
+        
         //
         //todo : we should only be doing this IF we are responsible for the tracking
-        registerRootEvent('trackingacquired', function (event, args) {
+        scope.$root.$on('trackingacquired', function (event, args) {
           var targetGuideDiv = document.querySelector("div.targetGuide");
           if (targetGuideDiv) {
             var pscope = scope.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent;
@@ -1122,7 +1074,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           scope.trackingField = true;
         });
 
-        registerRootEvent('trackinglost', function (event, args) {
+        scope.$root.$on('trackinglost', function (event, args) {
           var targetGuideDiv = document.querySelector("div.targetGuide");
           if (targetGuideDiv) {
             var pscope = scope.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent;
@@ -1209,7 +1161,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 }
               })
               .error(function (data, status, headers, config) {
-                debugLog(status);
+                console.log(status);
               });
           } else if (scope.data.src != undefined && scope.data.src.length > 0) {
               
@@ -1252,15 +1204,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
         });
 
-        scope.$watchGroup(['physicalField', 'disabledField', 'holoField', 'loggingField', 'includeField', 'hiliteshadeField', 'annotateshadeField'], function () {
+        scope.$watchGroup(['physicalField', 'disabledField', 'holoField', 'loggingField'], function () {
           scope.data.physical = (scope.physicalField != undefined && scope.physicalField === 'true') ? true : false;
           scope.data.disabled = (scope.disabledField != undefined && scope.disabledField === 'true') ? true : false;
           scope.data.isHolo = (scope.holoField != undefined && scope.holoField == 'true') ? true : false;
           scope.data.loggingEnabled = (scope.loggingField != undefined && scope.loggingField == 'true') ? true : false;
-          scope.data.ask = (scope.includeField != undefined && scope.includeField.length > 0) ? scope.includeField.split(',') : undefined;
-          scope.data.hiliteshade = (scope.hiliteshadeField != undefined && scope.hiliteshadeField.length > 0) ? scope.hiliteshadeField : "sxsl_proximityHilitegl";
-          scope.data.annotateshade = (scope.annotateshadeField != undefined && scope.annotateshadeField.length > 0) ? scope.annotateshadeField : "sxsl_coloredHilitegl;r f 0;g f 1;b f 1";
-          scope.data.toolshade = (scope.toolshadeField != undefined && scope.toolshadeField.length > 0) ? scope.toolshadeField : "sxsl_coloredHilitegl;r f 1;g f 1;b f 0";
+          //executesxslPlayer();
         });
             
         // if there is a SUBSET of data defined, lets watch to see if that list changes    
@@ -1273,11 +1222,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               if (scope.canrunField && scope.runningField &&
                   //and if we can, then do we have a valid jump point?
                   parsed != undefined && parsed.length == 1 && parsed[0].status != 'done') {
-                debugLog('being directed to move to', value);
+                console.log('being directed to move to', value);
                 scope.next('j', parsed[0].idx);
               } else {
                 //TODO; we should probably emit some event here saying we're not able to do what was asked
-                debugLog('ignoring', value);
+                console.log('ignoring', value);
               }
             }
           });
@@ -1386,7 +1335,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           scope.feedbackLabel = document.querySelector('div#captureFeedback');
 
           scope.setHeadLabel = function (text) {
-            scope.headLabel.innerHTML = text || "";
+            scope.headLabel.innerHTML = text;
           }
           scope.setInstLabel = function (text) {
             scope.instLabel.innerHTML = text;
@@ -1422,7 +1371,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           const btnack = document.querySelector('input#acknowledge');
           btnack.addEventListener('change', function () {
             var val = btnack.checked;                      
-            debugLog('verify=',val);
+            console.log('verify=',val);
             if (val) scope.next('y');
             btnack.checked = false;
           });
@@ -1459,8 +1408,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               </div>\
               <div id='viewerList' class='sxsl-viewer-view'>\
                 <img id='viewImage' class='sxsl-preview-hide'/>\
-                <video id='viewVideo' class='sxsl-preview-hide' controls><source src='' type='video/mp4'></video>\
-                <embed id='viewPdf' class='sxsl-preview-hide' type='application/pdf'/>\
+                <video id='viewVideo' class='sxsl-preview-hide' autoplay><source src='' type='video/mp4' ></video>\
               </div>\
             </div>"
           scope.referenceViewerWindow.id = 'viewer-container';
@@ -1524,16 +1472,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           }
         };
         var datasink = function (text) {
-          debugLog('swallowing this text :', text);
+          console.log('swallowing this text :', text);
         }
         scope.setHeadLabel = datasink;
         scope.setInstLabel = datasink;
         scope.setStepLabel = datasink;
         scope.setPreviewList = datasink;
 
-        registerRootEvent("$ionicView.afterEnter", function (event, info) {
-          debugLog('entering view',info.title);
-
+        scope.$root.$on("$ionicView.afterEnter", function (event) {
           if (!scope.data.isHolo) {
             createInstructionPanelHTML();
             createReferencePreviewHTML();
@@ -1542,18 +1488,16 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
             startSxslPlayer();
           } else {
-              
             //TODO : creaate holographic UI
+
             //for now...
 
           }
         });
-            
-        registerRootEvent("$ionicView.beforeLeave", function (event,info) {
+        scope.$root.$on("$ionicView.beforeLeave", function (event) {
           // clean up
-          debugLog('leaving view',info.title);
+
         });
-          
 
         //
         // example showing how to add a shape
@@ -1574,20 +1518,20 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           var rot = new Matrix4().Set3V(rg, up, gz).ToPosEuler(true).rot;
           return rot.v;
         }
-            
+
         // add them as we need them - a better version might use a re-usable pool of shapes but let's keep 
         // it simple for now
         scope.$parent.$on('stepcompleted', function (event, target, unused, data) {
-          //debugLog('stepcomplete for',target,data);
+          //console.log('stepcomplete for',target,data);
           var me = scope.data.pois[target];
 
           if (me.animated) {
 
             var currentStep = me.seqplayer.getCurrentStep();
 
-            //debugLog('on step',currentStep);
+            //console.log('on step',currentStep);
             if (currentStep > me.seqplayer.getTotalSteps()) {
-              //debugLog('resetting...');  
+              //console.log('resetting...');  
               me.seqplayer.reset(function () {
                 $timeout(me.seqplayer.playSequence, 100);
               });
@@ -1595,198 +1539,15 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               $timeout(me.seqplayer.playSequence, 100);
           }
         });
-            
-        // output a record of the current subjects (focus items) - this includes location information for
-        // use with, for example, the wayfinder.  The user can also ask for additional metadata, the first item being used as the label
-        // for the currently selected item
-        //
-        scope.setFocus = function(name, me) {
-          if (name != undefined && me != undefined && me.occurrenceIds != undefined) {
-            PTC.Structure.fromData(name, me.metadata).then( (structure) => {  
-                                                           
-              me.occurrenceIds.forEach(function(id) {
-                var loc = undefined;         
-                var ask = undefined;
-                                                          
-                try {
-                  var p = { x:me.pos.X(), y:me.pos.Y(), z:me.pos.Z() };
-                  var o = { x:me.rot.X(), y:me.rot.Y(), z:me.rot.Z() };  
-                  var bbox = structure.getBounds(id).transform(p, o, 1);
-                  loc = bbox.center;
-                  
-                  ask = (scope.data.ask != undefined) ? structure.metadata.get(id, scope.data.ask) : undefined;
-                  if (ask != undefined) ask = ask.map( (v,i) => { return { name:scope.data.ask[i], value:v }; } );
-                } 
-                catch (err) { 
-                  debugLog('no bounds for',id);
-                }
-                scope.data.focus.push( { model: name, 
-                                    path: id, 
-                                position: loc, 
-                                    gaze: {x:0,y:0,z:0}, 
-                                      up: {x:0,y:1,z:0},
-                                metadata: ask,
-                                   label: ask != undefined ? ask[0].value : undefined,
-                             _isSelected: false });
-              });
 
-              scope.focusField = scope.data.focus;     
-              scope.focusField.current = 0;
-              
-            });
+        scope.addNamedPOI = function (name, shape, pos, rot, scale, hide, context, seq, oid) {
 
-          } else if (me != undefined && me.translation != undefined) {
-              
-            // get the orientation matrix
-            var q = new Quat().Set4a(me.rotation);
-            var m = new Matrix4().RotateFromQuaternion(q);
-            scope.data.focus = [
-                                 { model: name, 
-                                    path: undefined, 
-                                position: {x: me.translation[0], y: me.translation[1], z: me.translation[2]}, 
-                                    gaze: {x: -m.m[2][0], y: -m.m[2][1], z: -m.m[2][2]}, 
-                                      up: {x:  m.m[1][0], y:  m.m[1][1], z:  m.m[1][2]},
-                                metadata: undefined,
-                                   label: undefined,
-                             _isSelected: false }];
-          
-            scope.focusField = scope.data.focus;     
-            scope.focusField.current = 0;
-
-          } else
-            scope.focusField = scope.data.focus = [];
-            scope.focusField.current = 0;
-        }
-        
-        // listen for pick events - if the items picked is one our (current) focus items, lets make 
-        // it the 'selected' item - this has the effect of redirecting the wayfinder ribbon and also (potentially) displaying
-        // any associated metadata
-        //
-        scope.$root.$on('userpick', function(evt, src, type, evtdata) { 
-          var id = (type == 'twx-dt-model' && evtdata != undefined) ? JSON.parse(evtdata).occurrence : undefined;
-          if (id != undefined && scope.focusField != undefined) {
-            scope.focusField.forEach( (v,i) => {
-              v._isSelected = (id == v.path);
-              if (v._isSelected == true) {
-                scope.focusField.current = i;
-              }
-            });
-          }
-        });
-            
-        scope.animateNamedPOI = function(name, aniname, context) {
-           
-          var named = scope.data.pois[name];
-          if (named != undefined && !named.loaded) {
-            named.sequenceToLoad = aniname;
-            named.loadcontext = context;  
-            console.log('animate pending - waiting for model',name,'to load');
-            return; //wait for it to load
-          }
-          
-          //lookup the actual sequence filename  
-          var seq2load = undefined;
-          if (aniname != undefined && scope.data.pois[name].sequenceList != undefined && scope.data.pois[name].sequenceList.length > 0) {
-            scope.data.pois[name].sequenceList.forEach(function(fig) {
-              if (fig.name == aniname) seq2load = fig.filename;
-            });
-                
-            if(seq2load == undefined) {
-              console.log('unable to load animation',aniname,'for model',name);
-            }
-          }
-          
-          if (seq2load != undefined) {   
-              
-            if (named.seqplayer == undefined) 
-              named.seqplayer = VF_ANG.NativeSequencerHelper(name, VF_ANG.nativeEventHandler, scope.renderer);
-
-            scope.data.pois[name].seqplayer.loadSequence(seq2load, 1, function () {
-              debugLog('sequence loaded', seq2load,'for',name);
-              scope.data.pois[name].sequenceToLoad = undefined;
-              scope.data.pois[name].animated = true;
-
-              scope.data.pois[name].seqplayer.playSequence();
-              
-              $timeout(function() {
-                if (context != undefined) {
-                  var isDigital = !(context.target.mimeType != "application/vnd.ptc.tracker.spatialtracker" || scope.data.physical);
-                  scope.renderer.setProperties(name, { forceHidden:false, 
-                                             hidden: false, 
-                                             shader: isDigital ? "sxsl_desaturatedgl" : "sxsl_screendoorgl", 
-                                             occlude: !isDigital, 
-                                             phantom: isDigital, 
-                                             opacity: isDigital ? 0.35 : 1, 
-                                             decal: false 
-                                         });
-                  for(key in scope.data.pois[name].metadata) {
-                      scope.renderer.setProperties(name+'-'+key, {
-                                             phantom: isDigital, 
-                                             opacity: isDigital ? 0.35 : 1
-                                         });
-                  
-                  }
-                  scope.$parent.$applyAsync();
-                }
-              },1);
-              
-              
-              scope.$parent.$applyAsync();
-              
-            }, function (failed) {
-              debugLog('failed to load sequence for', name, failed);
-              scope.data.pois[name].sequenceToLoad = undefined;
-              scope.data.pois[name].animated = false;
-            });
-          } else {
-            console.log('unloading animation for',name);
-            scope.data.pois[name].seqplayer.unloadSequence();
-            scope.data.pois[name].sequenceToLoad = undefined;
-            scope.data.pois[name].animated = false;
-          }
-        };
-        
-        // we must wait for the item to actually load to get some of the data
-        //
-        scope.$root.$on('loaded3DObj',function(event, model) {
-          let name = model.name;
-          console.log('3d obj',name,'loaded');
-          
-          var named = scope.data.pois[name];
-          if (named != undefined && named.loaded == false) {
-            named.loaded = true;  
-            
-            var seq2load = named.sequenceToLoad;
-            var oids     = named.occurrenceIds;
-            var shader   = named.shader;
-            
-            if (seq2load != undefined && oids == undefined) {
-              $timeout(function () {
-                scope.animateNamedPOI(name, seq2load, named.loadcontext);           
-              }, 100);
-            } else if (oids != undefined) {
-              oids.forEach(function(oid) {
-                debugLog('showing occurrence',oid,'for',name);               
-                scope.renderer.setProperties(name+'-'+oid, { hidden: false, shader: shader, occlude: false, phantom: false, decal: false });
-              });
-            } else {
-              debugLog('showing full model for', name);               
-              oids = ['/'];
-              scope.renderer.setProperties(name+'-/', { hidden: false, shader: shader, occlude: false, phantom: false, decal: false });
-            }
-          }
-        });
-
-        scope.addNamedPOI = function (name, shape, pos, rot, scale, hide, context, seq, oid, focal, shader) {
-            
           //does this item exist already - are we reusing it
           if (scope.data.pois[name] != undefined) {
 
-            //debugLog('reusing POI', name);
+            console.log('reusing', name);
             var me = scope.data.pois[name];
-            
-            this.renderer.setProperties(name, { forceHidden: false });
-            
+
             //it must be the occurrences that have change - 
             //undo the old ones
             if (me.occurrenceIds != undefined) {
@@ -1795,46 +1556,41 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   scope.renderer.setProperties(name+"-"+id, { hidden: true });                                                            
               });
             }
-            
             //add the new ones
             if (oid != undefined) {
               oid.forEach(function(id) {
-                scope.renderer.setProperties(name+"-"+id, { hidden: false, shader: shader});                                                            
+                scope.renderer.setProperties(name+"-"+id, { hidden: false, shader: "sxsl_proximityHilitegl"});                                                            
               });
               me.occurrenceIds = oid;    
             } else {
-              scope.renderer.setProperties(name+"-/", { hidden: false, shader: shader});                        
+              scope.renderer.setProperties(name+"-/", { hidden: false, shader: "sxsl_proximityHilitegl"});                        
               me.occurrenceIds = ['/'];    
             }
 
             me.hidden = false;
             me.active = true;
             me.deactivated = false;
-            
-            if (seq != undefined && oid == undefined) {
-                
-              scope.animateNamedPOI(name, seq, context);  
-          
+            if (me.animated) {
+
+              var currentStep = me.seqplayer.getCurrentStep();
+
+              //console.log('on step',currentStep);
+              if (currentStep > me.seqplayer.getTotalSteps()) {
+                //console.log('resetting...');  
+                me.seqplayer.reset(function () {
+                  $timeout(me.seqplayer.playSequence, 100);
+                });
+              } else
+                $timeout(me.seqplayer.playSequence, 100);
             }
-            
-            if (focal) scope.setFocus(name, me);
-            scope.$parent.$applyAsync();
-    
+
             return;
           }
 
           // otherwise, create a new one
-          //
-          scope.data.pois[name] = { active: false, sequenceToLoad: seq, occurrenceIds: oid, loaded: false, shader: shader };
-          
-          debugLog('loading',shape,'for poi',name);
-          scope.renderer.addPVS(scope.data.context.target.tracker, name, shape, undefined, undefined, (resp) => {
-                                
-            debugLog('shape node loaded for',name);                    
-            scope.data.pois[name].metadata = resp.modelMetadata;
-            scope.data.pois[name].sequenceList = resp.sequenceList;
-            scope.data.pois[name].loaded = true;
-            
+          scope.data.pois[name] = { active: false, sequenceToLoad: seq, occurrenceIds: oid };
+          scope.renderer.addPVS(scope.data.context.target.tracker, name, shape, undefined, undefined, () => {
+
             // we added the model, so set the location
             var locn = new Matrix4();
             if (rot != undefined) locn.RotateFromEuler(rot[0], rot[1], rot[2], true);
@@ -1843,39 +1599,61 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               //locn.RotateFromEuler(-90,0,0,true);
               locn.RotateFromQuaternion(scope.data.context.target.rotation);
             var tr = locn.ToPosEuler(true);
-            
-            scope.data.pois[name].pos = tr.pos;
-            scope.data.pois[name].rot = tr.rot;
             scope.renderer.setTranslation(name, tr.pos.X(), tr.pos.Y(), tr.pos.Z());
             scope.renderer.setRotation(name, tr.rot.X(), tr.rot.Y(), tr.rot.Z());
             scope.renderer.setScale(name, scale, scale, scale);
             
             if (context != undefined) {
               var isDigital = !(context.target.mimeType != "application/vnd.ptc.tracker.spatialtracker" || scope.data.physical);
-              scope.renderer.setProperties(name, { forceHidden:false, hidden: hide, shader: isDigital ? "sxsl_desaturatedgl" : "sxsl_screendoorgl", occlude: !isDigital, phantom: isDigital, opacity: isDigital ? 0.35 : 1, decal: false });
-              
-              //we may use this in subsequent actions to set specific state
-              scope.data.pois[name].seqplayer = VF_ANG.NativeSequencerHelper(name, VF_ANG.nativeEventHandler, scope.renderer);
-              
-              debugLog('context loaded');
+              scope.renderer.setProperties(name, { hidden: hide, shader: isDigital ? "sxsl_desaturatedgl" : "sxsl_screendoorgl", occlude: !isDigital, phantom: isDigital, opacity: isDigital ? 0.35 : 1, decal: false });
             } else {
-              scope.renderer.setProperties(name, { forceHidden:false, hidden: hide, shader: shader, occlude: false, phantom: false, decal: false });
-              debugLog('asset loaded for',name);  
-              
+              scope.renderer.setProperties(name, { hidden: hide, shader: "sxsl_proximityHilitegl", occlude: false, phantom: false, decal: false });
+
+              var seq2load = scope.data.pois[name].sequenceToLoad;
+              var oids = scope.data.pois[name].occurrenceIds;
+              if (seq2load != undefined) {
+                $timeout(function () {
+                  scope.data.pois[name].seqplayer = VF_ANG.NativeSequencerHelper(name, VF_ANG.nativeEventHandler, scope.renderer);
+                  scope.data.pois[name].seqplayer.loadSequence(seq2load, 1, function () {
+                    console.log('sequence loaded', seq2load);
+                    scope.data.pois[name].sequenceToLoad = undefined;
+                    scope.data.pois[name].animated = true;
+
+                    scope.data.pois[name].seqplayer.playSequence();
+
+                  }, function (failed) {
+                    console.log('failed to load', failed);
+                    scope.data.pois[name].sequenceToLoad = undefined;
+                    scope.data.pois[name].animated = false;
+                  });
+                }, 10);
+              } else if (oids != undefined) {
+                oids.forEach(function(oid) {
+                  scope.renderer.setProperties(name+'-'+oid, { hidden: false, shader: "sxsl_proximityHilitegl", occlude: false, phantom: false, decal: false });
+                });
+              } else {
+                oids = ['/'];
+                scope.renderer.setProperties(name+'-/', { hidden: false, shader: "sxsl_proximityHilitegl", occlude: false, phantom: false, decal: false });
+              }
+
               // we can use this later...
-              scope.data.pois[name].active = true;
+              scope.data.pois[name] = { pos: pos, rot: rot, scale: scale, hidden: hide, active: true, animated: false, sequenceToLoad: seq2load, occurrenceIds:oids  }
             }
             
-            if (focal) scope.setFocus(name, scope.data.pois[name]);
-            
-            scope.$parent.$applyAsync();
+            if (scope.data.pois[name].occurrenceIds != undefined) {
+              var focusField = [];
+              scope.data.pois[name].occurrenceIds.forEach(function(id) {
+                focusField.push({model:name, path:id});
+              });
+              scope.focusField = focusField;     
+            }
+
           },
           (err) => {
             // something went wrong
-            debugLog(`addPVS failed to add new model: ${JSON.stringify(err)}`);
+            console.log(`addPVS failed to add new model: ${JSON.stringify(err)}`);
           });
         }
-        
         scope.showPOIs = function () {
           for (const name in scope.data.pois) {
             var me = scope.data.pois[name];
@@ -1884,6 +1662,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               me.hidden = false;
             }
           }
+          
+          //show sxsl_proximityHiliteglhero
+          if (scope.data.heroWidget) {
+            scope.data.heroWidget.visible = true;
+            this.renderer.setProperties("sxslhero-/", { forceHidden: false });
+            scope.$parent.$applyAsync();
+          }
         }
         scope.hidePOIs = function () {
           //
@@ -1891,10 +1676,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             var me = scope.data.pois[name];
             if (me.deactivated != undefined && me.deactivated == true) {
               this.renderer.setProperties(name, { forceHidden: true });
+
               if (me.animated == true) {
                 me.animated = false;
                 scope.renderer.loadPVI({ modelID: name, url: "" }, function () {
-                  debugLog('sequence unloaded ok');
+                  console.log('sequence unloaded ok');
                 });
               }
               me.active = false;
@@ -1911,8 +1697,16 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               me.deactivated = true;
             }
           }
-          scope.focusField = scope.data.focus = [];
-          scope.focusField.current = 0; 
+          if (scope.data.heroWidget) {
+            //hide sxslhero  
+            if (scope.data.heroWidget.occurrenceIds) scope.data.heroWidget.occurrenceIds.forEach(function(id) {
+              scope.renderer.setProperties("sxslhero-"+id, { hidden: true, shader: undefined });                                                            
+            });
+            scope.data.heroWidget.visible = false;
+            scope.renderer.setProperties("sxslhero-/", { forceHidden: true });
+            scope.$parent.$applyAsync();
+          }
+          scope.focusField = undefined;
         }
         scope.deactivateAll = function () {
           // remove all POIs  
@@ -1922,23 +1716,28 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             scope.data.pois[name].active = false;
             if (scope.data.pois[name].animated) {
               scope.renderer.loadPVI({ modelID: name, url: "" }, function () {
-                debugLog('sequence unloaded ok');
+                console.log('sequence unloaded ok');
                 scope.data.pois[name].animated = false;
               });
             }
           }
           
+          if (scope.data.heroWidget) {
+            //hide sxslhero  
+            scope.data.heroWidget.visible = false;
+            this.renderer.setProperties("sxslhero-/", { forceHidden: true });
+            scope.$parent.$applyAsync();
+          }
+          
           //and remove any references
           scope.setPreviewList("");
-          scope.focusField = scope.data.focus = [];
-          scope.focusField.current = 0; 
+          scope.focusField = undefined;
           
           // deallocate any event listeners we registered ($on, addEventListener etc.)              
           scope.data.events.forEach(function(evtfn) {
             evtfn();
           });
-              
-          scope.$parent.$applyAsync();    
+
         }
         scope.animatePOIs = function (start) {
           for (const name in scope.data.pois) {
@@ -1953,7 +1752,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             } else if (me.active && start && !me.animated && me.sequenceToLoad != undefined) {
 
               // load and then start sequence
-              debugLog('TODO: load sequence', me.sequenceToLoad);
+              console.log('TODO: load sequence', me.sequenceToLoad);
               //note that load is async so the final me.animated should be set once the sequence has fully loaded  
             }
           }
@@ -2009,7 +1808,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             function processListAsHTML(list) {
               var inner = "";
               list.forEach(function (ref) {
-                inner = inner + ref.html;
+                inner = inner + ref;
               });
               return inner;
             }
@@ -2043,19 +1842,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
                   case "video/mp4":
                     buckets.video.push(ref);
-                    mergedBucket.push({type:ref.mime, html:`<video class="sxsl-preview-show" title="${ref.desc}"><source src="${ref.url}" type="${ref.mime}"/></video>`});
+                    mergedBucket.push(`<video class="sxsl-preview-show" title="${ref.desc}"><source src="${ref.url}"/></video>`);
                     break;
 
-                  case "application/pdf":
-                    buckets.image.push(ref);
-                    mergedBucket.push({type:ref.mime, html:`<img src="${ref.thumb != undefined ? ref.thumb : ref.url}" longdesc="${ref.url}" title="${ref.desc}" class="sxsl-preview-show"/>`});
-                    break;
-                    
                   case "image/jpeg":
                   case "image/png":
                   case "image/gif":
                     buckets.image.push(ref);
-                    mergedBucket.push({type:ref.mime, html:`<img src="${ref.thumb != undefined ? ref.thumb : ref.url}" longdesc="${ref.url}" title="${ref.desc}" class="sxsl-preview-show"/>`});
+                    mergedBucket.push(`<img src="${ref.thumb != undefined ? ref.thumb : ref.url}" longdesc="${ref.url}" title="${ref.desc}" class="sxsl-preview-show"/>`);
                     break;
 
                   //handle others e.g. docs etc.
@@ -2075,16 +1869,15 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
                 for (var i = 0; i < collection.length; i++) {
                   var c = collection[i];
-                  var o = mergedBucket[i];
+
                   var tag = c.tagName != undefined ? c.tagName : "";
-                  var src = tag == 'VIDEO' ? c.firstChild.src : 
-                            tag == 'IMG' ? c.longDesc : c.src;
+                  var src = tag == 'VIDEO' ? c.firstChild.src : c.longDesc;
                   var desc = c.title;
-                  c.addEventListener("click", (function (type, src, desc) {
+                  c.addEventListener("click", (function (i, src, tag) {
                     return function () {
-                      showReview(src, desc, type);
+                      showReview(src, desc, tag == 'VIDEO');
                     }
-                  })(o.type, src, desc));
+                  })(i, src, tag));
                 }
 
               } else {
@@ -2104,14 +1897,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
             var cameraTool = function (callback) {
               var cb = callback;
+              var params = { withAugmentation: true, imageWidth: 640, imageHeight: 480 };
               //  params = { dataURL:bool, withAugmentation: bool, imgFormat: string, imgWidth: number, imgHeight:number} 
-              var params = twx.app.isPreview() ? { withAugmentation: true, imageWidth: 160, imageHeight: 210 }
-                                             : { withAugmentation: true, imageWidth: 640, imageHeight: 480 };
-  
               return function () {
                 return new Promise((next, reject) => {
                   scope.renderer.takeScreenshot(params, function (pngBase64String) {
-                    var proof =  twx.app.isPreview() ? '**encoded photo here**' : 'data:image/png;base64,' + pngBase64String;
+                    var proof = 'data:image/png;base64,' + pngBase64String;
                     var res = cb(proof);
                     if (res != undefined)
                       next(res);
@@ -2162,7 +1953,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
                       scope.twxToolSet(tools[0].name, tools[0].infoToCollect)
                         .then(() => {
-                          debugLog('tool ready')
+                          console.log('tool ready')
                           scope.twxToolArm(tools[0].name, true)
                             .then((armed) => {
 
@@ -2174,31 +1965,31 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
                                 scope.twxToolArm(tools[0].name, false)
                                   .then(() => {
-                                    debugLog('tool disarmed', tools[0].name);
+                                    console.log('tool disarmed', tools[0].name);
                                   })
                                   // what happens if it fails
                                   .catch(e => {
-                                    debugLog('Tool disarm failed<p>' + e.reason)
+                                    console.log('Tool disarm failed<p>' + e.reason)
                                   })
 
                               }
 
                             })
                             .catch(e => {
-                              debugLog('tool arm failed')
+                              console.log('tool arm failed')
                               scope.setFeedbackLabel('Failed to arm ' + tools[0].name + '<p>' + e.reason);
                               scope.inputValidator = callback;
                             })
                         })
                         .catch(e => {
-                          debugLog('tool set failed')
+                          console.log('tool set failed')
                           scope.setFeedbackLabel('Failed to initialise ' + tools[0].name + '<p>' + e.reason);
                           scope.inputValidator = callback;
                         })
 
                     })
                     .catch(e => {
-                      debugLog('tool connect failed')
+                      console.log('tool connect failed')
                       scope.setFeedbackLabel('Failed to connect to ' + tools[0].name + '<p>' + e.reason);
                       scope.inputValidator = callback;
                     })
@@ -2207,7 +1998,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               }
 
               scope.inputToolActivate = function (resp) {
-                debugLog(resp);
+                console.log(resp);
                 target.value = resp.eventData[0].actual;
                 callback()
                   .then(validated => {
@@ -2215,7 +2006,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                     scope.pushInput(validated)
                   })
                   .catch(err => {
-                    debugLog(err);
+                    console.log(err);
                   })
               };
 
@@ -2225,7 +2016,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   scope.twxToolActivate(tools[0].name)
                     .then((resp) => {
                       target.value = resp.actual;
-                      debugLog('tool delivered', resp);
+                      console.log('tool delivered', resp);
                       callback()
                         .then(res => {
                           next(res);
@@ -2275,7 +2066,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               return findInputTool(input, src, function () {
                 return new Promise((next, reject) => {
                   var t = src.value;
-                  debugLog('test', t, 'against', pattern);
+                  console.log('test', t, 'against', pattern);
                   var valid = t.match(pattern) != null;
                   src.className = 'sxsl-capture-text' + (valid == false ? ' sxsl-capture-error' : '');
                   if (valid)
@@ -2308,7 +2099,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               return findInputTool(input, src, function () {
                 return new Promise((next, reject) => {
                   var t = src.value;
-                  debugLog('test', t, 'against min', min, 'max', max);
+                  console.log('test', t, 'against min', min, 'max', max);
                   var fv = parseFloat(t);
 
                   var valid = (min != undefined ? min <= fv : true) && (max != undefined ? max >= fv : true);
@@ -2357,7 +2148,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               return function () {
                 return new Promise((next, reject) => {
                   var t = src.value;
-                  debugLog('submitting', t);
+                  console.log('submitting', t);
                   var resp = t;
                   next({ response: resp, type: input.type, time: Date.now() });
                 });
@@ -2402,7 +2193,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           }
 
           this.generic = (a) => {
-            //debugLog(a)
+            //console.log(a)
 
             // a step described as one or more actions; we can have optional introduction and conclusion too, so to render out 
             // a step/action, we will show the intro, each action  as it is consumed, and the outro. For multi-action steps, we show the
@@ -2423,17 +2214,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             //TODO : push the html generation piece down into the setter
             scope.setInstLabel(pdesc + "<span style='color:black;font-size:100%'>" + odesc + "</span>");
 
-            // unpack the action subject(s) - also look for associated animations
-            // which subject type (resource) can i view - 3d or 2d
+            //unpack the action subject(s) - also look for associated animations
+            //which subject type (resource) can i view - 3d or 2d
 
             //TODO: how do we deal with alternative representations e.g 2d vs 3d
             //$scope.view.wdg.alternative.visible = false;
 
             scope.deactivatePOIs();
-            
-            // set default viewpoint (if there is one)
-            scope.setFocus(a.title, a.viewpoint);
-            
+
             var isAnimated = false;
 
             if (a.subjects != undefined) a.subjects.forEach(function (sub) {
@@ -2447,10 +2235,68 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 if (res.mimeType == "application/vnd.ptc.pvz" || res.mimeType == "model/gltf-binary") {
 
                   var src = scope.data.anchor + (res.composition == "partset" ? res.modelUrl : res.url);
-                  scope.addNamedPOI(assetId, src, res.translation, genrotation(res.normal), 1, true, undefined, (res.composition == "partset" ? (sub.sceneName || res.sceneName || a.animation) : a.animation), occurrenceIds, true, scope.data.hiliteshade);
-                  isAnimated = isAnimated || scope.data.pois[assetId].sequenceToLoad != undefined;
+                  
+                  // one monster hack here; runtime metadata only works for angular-represented Model widgets, meaning we can't get
+                  // metadata for tml model loads.  Ideally we want a fix or a ay around that, but for now we can leverage the fact that
+                  // we can get the experience designer to create a 'special' model that we can use from inside the sxsl player. This only works for single-asset subjects (though you can specify more than one part via occurrence id inside that asset)
+                  //
+                  if (scope.data.heroWidget != undefined) {  
+                    var name="sxslhero";
+                    scope.data.heroWidget.visible = true;
+                    
+                    //has the source changed?
+                    if (scope.data.heroWidget.src == undefined || scope.data.heroWidget.src != src) {
+                      scope.data.heroWidget.src = src;
+                      
+                      var rot = genrotation(res.normal);
+                      var locn = new Matrix4();
+                      if (rot != undefined) locn.RotateFromEuler(rot[0], rot[1], rot[2], true);
+                      if (res.translation != undefined) locn.Translate(res.translation[0], res.translation[1], res.translation[2]);
+                      //post-rotate the enture word is this is a z=up tracker in a spatial context
+                      if (scope.data.context != undefined && scope.data.context.target.mimeType == "application/vnd.ptc.tracker.spatialtracker" && scope.data.context.target.rotation != undefined) 
+                        locn.RotateFromQuaternion(scope.data.context.target.rotation);
+                      var tr = locn.ToPosEuler(true);
+                      scope.data.heroWidget.x  = tr.pos.X();
+                      scope.data.heroWidget.y  = tr.pos.Y();
+                      scope.data.heroWidget.z  = tr.pos.Z();
+                      scope.data.heroWidget.rx = tr.rot.X();
+                      scope.data.heroWidget.ry = tr.rot.Y();
+                      scope.data.heroWidget.rz = tr.rot.Z();
+                      
+                      // this is speculative - ideally the sxsl wil tell us there is a specific pvi linked to this step
+                      scope.data.heroWidget.sequenceToLoad = (res.composition == "partset" ? res.sceneName : undefined); //"Figure 1");
+                      isAnimated = isAnimated || scope.data.heroWidget.sequenceToLoad != undefined;
+                    } else {
+                      //it must be the occurrences that have change - 
+                      //undo the old ones
+                      var isDigital = !(scope.data.context.target.mimeType != "application/vnd.ptc.tracker.spatialtracker" || scope.data.physical);
+                      var focusField=[];
+                      scope.renderer.setProperties(name+"-/", { forceHidden:false, hidden:true, shader: isDigital ? "sxsl_desaturatedgl" : "sxsl_screendoorgl" });
+                      if (scope.data.heroWidget.occurrenceIds) scope.data.heroWidget.occurrenceIds.forEach(function(id) {
+                        if (occurrenceIds!= undefined && occurrenceIds.includes(id))                                          
+                           scope.renderer.setProperties(name+"-"+id, { hidden: true, shader: "" });                                                            
+                      });
+                      //add the new ones
+                      if (occurrenceIds != undefined) {
+                        occurrenceIds.forEach(function(id) {
+                          scope.renderer.setProperties(name+"-"+id, { hidden: false, shader: "sxsl_proximityHilitegl"});
+                          focusField.push({model:name, path:id});                    
+                        });
+                      } else {
+                        scope.renderer.setProperties(name+"-/", { forceHidden:false, hidden: false, shader: "sxsl_proximityHilitegl", occlude: false, phantom: false, decal: false});                                                            
+                        focusField.push({model:name, path:'/'});
+                      }
+                      scope.focusField = focusField;
+                    }
+                    // does the asset specify the subjects 
+                    scope.data.heroWidget.occurrenceIds = occurrenceIds;
+                    scope.$parent.$applyAsync();
+                  } else {
+                    scope.addNamedPOI(assetId, src, res.translation, genrotation(res.normal), 1, true, undefined, (res.composition == "partset" ? res.sceneName : undefined), occurrenceIds); //"Figure 1");
+                    isAnimated = isAnimated || scope.data.pois[assetId].sequenceToLoad != undefined;
+                  }
                 }
-                if (res.mimeType == "application/vnd.ptc.pvi" || res.mimeType == "application/vnd.ptc.animation.pvi") {
+                if (res.mimeType == "application/vnd.ptc.pvi") {
                   if (scope.data.pois[assetId] == undefined) scope.data.pois[res.id] = {};
                   scope.data.pois[assetId].sequenceToLoad = res.content.animationName;
                   isAnimated = true;
@@ -2464,7 +2310,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   //$scope.view.wdg.alternative.visible = true;
                 }
                 else if (res.mimeType == "application/vnd.ptc.poi") {
-                  scope.addNamedPOI(res.id, 'extensions/images/diamond.pvz', res.translation, genrotation(res.normal), 0.1, false, undefined, undefined, undefined, true, scope.data.hiliteshade);
+                  scope.addNamedPOI(res.id, 'extensions/images/diamond.pvz', res.translation, genrotation(res.normal), 0.1, false);
                 }
                 else if (res.mimeType == "application/vnd.ptc.partref") {
                   //TODO : how do we deal with gltf node referencing; thingview doesnt support it  
@@ -2474,29 +2320,23 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               })
             })
 
-            // like subjects, we can have 0 or more annotations
-            //
-            if (a.annotations != undefined) a.annotations.forEach(function (me) {
-              var sub = me.ann;
-              var res = me.asset.resources[0];
-              var occurrenceIds = (res.occurrenceIds == undefined) ? me.occurrenceIds : res.occurrenceIds;
-              var src = scope.data.anchor + res.modelUrl;                                                             //should it be action/sub/res or sub/res/action?
-              scope.addNamedPOI(me.id, src, undefined, undefined, 1, true, undefined, (res.composition == "partset" ? (sub.sceneName || res.sceneName || a.animation) : a.animation), occurrenceIds, false, scope.data.annotateshade);
+            if (a.annotations != undefined) {
+              var me = a.annotations[0];
+              var src = scope.data.anchor + me.asset.resources[0].modelUrl;
+              scope.addNamedPOI(me.id, src, undefined, undefined, 1, false);
+              scope.data.pois[me.id].sequenceToLoad = me.asset.resources[0].sceneName;
               isAnimated = isAnimated || scope.data.pois[me.id].sequenceToLoad != undefined;
-            })
-            
-            // right now we only support 0 or 1 tool - per action
-            //
+            }
+
             if (a.tools != undefined) {
-                
               // does the tool have any animation defined?
               // note technically we should do this PER tool - in general, we'll assume one tool per action, for this POC at least
               if (a.tools[0] != undefined && a.tools[0].asset != undefined) {
+
                 var me = a.tools[0];
-                var res = me.asset.resources[0];
-                var occurrenceIds = (res.occurrenceIds == undefined) ? me.occurrenceIds : res.occurrenceIds;
                 var src = scope.data.anchor + me.asset.resources[0].modelUrl;
-                scope.addNamedPOI(me.id, src, undefined, undefined, 1, false, undefined, (res.composition == "partset" ? (res.sceneName || a.animation) : a.animation), occurrenceIds, false, scope.data.toolshade);
+                scope.addNamedPOI(me.id, src, undefined, undefined, 1, false);
+                scope.data.pois[me.id].sequenceToLoad = me.asset.resources[0].sceneName;
                 isAnimated = isAnimated || scope.data.pois[me.id].sequenceToLoad != undefined;
               }
 
@@ -2534,7 +2374,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           //find toolshe named action handler
           this.find = (actname) => new Promise((resolve, reject) => {
 
-            debugLog('...finding', actname, '...');
+            console.log('...finding', actname, '...');
 
             var action = this.registry[actname];
             if (action != undefined && action.handler != undefined)
@@ -2588,8 +2428,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         //
         // TODO : should this be integral to the player, or separate widget?
 
-        scope.$parent.$on('statusUpdateComplete', function (evt) {
-          debugLog('incremental sent ok');
+        var sepsic = scope.$parent.$on('statusUpdateComplete', function (evt) {
+          console.log('incremental sent ok');
           scope.logger.sending = undefined;
 
           if (scope.logger.async == undefined) scope.logger.async = $timeout(function (a) {
@@ -2671,7 +2511,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               var nextMessage = me.pending.splice(0, 1);
               me.sending = nextMessage[0];
 
-              debugLog('incremental sending', JSON.stringify(me.sending));
+              console.log('incremental sending', JSON.stringify(me.sending));
 
               me.incrementing = true;
 
@@ -2706,7 +2546,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             this.results.push(data);
 
             // we need to queue these up as they take time to process...
-            debugLog('pending incremental', JSON.stringify(data));
+            console.log('pending incremental', JSON.stringify(data));
 
             // kick the async "sender" off...
             if (this.incrementing == false && this.async == undefined) this.async = $timeout(function (a) {
@@ -2757,18 +2597,18 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             // 3. a central Manager wihch route the results 
 
             //Triggers a Service on a Manager Thing that expects the procID and the result and internally hands it over to the correct procedure. is overwritable so that it works with CWC SOWI and others
-            debugLog('stopping : sending', JSON.stringify(this.submission));
+            console.log('stopping : sending', JSON.stringify(this.submission));
 
             if (this.id != undefined)
               twx.app.fn.triggerDataService('PTC.InspectionAccelerator.Imp.Manager', 'stopWorkTask', {
                 'workstationID': $scope.app.params.workstationID,
-                'workTaskID': $scope.app.params.Workorder.workorderkinstructionID.toString(),
+                'workTaskID': $scope.app.params.Workorder.workinstructionID.toString(),
                 'serialNumber': $scope.app.params.Workorder.serialnumber,
                 //                                                                                             'summary': JSON.stringify(this.submission),
                 'reason': reason
               });
             else {
-              scope.$parent.$emit("stopWorkTask.serviceInvokeComplete");
+              $scope.$emit("stopWorkTask.serviceInvokeComplete");
             }
           }
 
@@ -2784,7 +2624,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         // step.ref i.e. the statement (steps in theory can can be reused).
         //
         scope.ticker = function (t, v) {
-          //debugLog('time',t);
+          //console.log('time',t);
           var tock = t / 1000;
           var limit = v != undefined ? v : undefined;
           var overrun = limit != undefined ? tock > limit : false;
@@ -2795,14 +2635,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           }];
         };
 
-        scope.startStepTimeClock = function (step, callback, lscope) {
-          var me = lscope;
+        scope.startStepTimeClock = function (step, callback, scope) {
+          var me = scope;
           function clock(step, callback) {
             return $interval((function (step, callback) {
               var s = step;
               var cb = callback;
               s.ref.clock.start = Date.now();
-              debugLog('starting timer for step', step.id);
+              console.log('starting timer for step', step.id);
 
               // total elapsed time = saved elapsed + ongoing runtime
               return function () {
@@ -2828,7 +2668,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               step.ref.clock.elapsedTime += (Date.now() - step.ref.clock.start);
               $interval.cancel(step.ref.clock.timer);
               step.ref.clock.timer = undefined;
-              debugLog('stopping timer for step', step.id);
+              console.log('stopping timer for step', step.id);
             }
           }
 
@@ -2857,21 +2697,21 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         // list for the serviceinvokecomplete event. Ideally we should get back a list of valid services
         // but for now lsts get back the boolean 
         //
-        registerParentEvent('initialiseTools.serviceInvokeComplete', function (evt) {
+        scope.$parent.$on('initialiseTools.serviceInvokeComplete', function (evt) {
 
           scope.data.isToolThingAvailable = scope.$parent.app.mdl['toolThing'].svc['initialiseTools'].data[0].result;
 
           //if we get success, this is where we shoud register the other services.                
           if (scope.data.isToolThingAvailable) {
 
-            registerParentEvent('toolConnect.serviceInvokeComplete', function (evt) {
+            scope.$parent.$on('toolConnect.serviceInvokeComplete', function (evt) {
               if (scope.toolConnectResponse != undefined) {
                 var valid = scope.$parent.app.mdl['toolThing'].svc['toolConnect'].data[0].result;
                 scope.toolConnectResponse(valid);
               }
             });
 
-            registerParentEvent('toolConnect.serviceFailure', function (evt) {
+            scope.$parent.$on('toolConnect.serviceFailure', function (evt) {
               if (scope.toolConnectResponse != undefined) {
                 scope.toolConnectResponse(false);
               }
@@ -2920,13 +2760,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             // settings values are passed as raw json object - the Thing on the other side is assumed to be
             // a building block implementation so it can do whatever specialist stuff it needs to with the json
             //
-            registerParentEvent('toolSet.serviceInvokeComplete', function (evt) {
+            scope.$parent.$on('toolSet.serviceInvokeComplete', function (evt) {
               if (scope.toolSetResponse != undefined) {
                 var valid = scope.$parent.app.mdl['toolThing'].svc['toolSet'].data[0].result;
                 scope.toolSetResponse(valid);
               }
             });
-            registerParentEvent('toolSet.serviceFailure', function (evt) {
+            scope.$parent.$on('toolSet.serviceFailure', function (evt) {
               if (scope.toolSetResponse != undefined) {
                 scope.toolSetResponse(false);
               }
@@ -2967,13 +2807,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             //
             // now (dis)arm the tool (turn it on/off, prepare it...)
             //
-            registerParentEvent('toolArm.serviceInvokeComplete', function (evt) {
+            scope.$parent.$on('toolArm.serviceInvokeComplete', function (evt) {
               if (scope.toolArmResponse != undefined) {
                 var armedok = scope.$parent.app.mdl['toolThing'].svc['toolArm'].data[0].result;
                 scope.toolArmResponse(armedok);
               }
             });
-            registerParentEvent('toolSet.serviceFailure', function (evt) {
+            scope.$parent.$on('toolSet.serviceFailure', function (evt) {
               if (scope.toolArmResponse != undefined) {
                 scope.toolArmResponse(false);
               }
@@ -3012,13 +2852,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             //
             // finally, activate it
             //
-            registerParentEvent('toolActivate.serviceInvokeComplete', function (evt) {
+            scope.$parent.$on('toolActivate.serviceInvokeComplete', function (evt) {
               if (scope.toolActivateResponse != undefined) {
                 var response = scope.$parent.app.mdl['toolThing'].svc['toolActivate'].data;
                 scope.toolActivateResponse(response);
               }
             });
-            registerParentEvent('toolActivate.serviceFailure', function (evt) {
+            scope.$parent.$on('toolActivate.serviceFailure', function (evt) {
               if (scope.toolActivateResponse != undefined) {
                 scope.toolActivateResponse(false);
               }
@@ -3027,7 +2867,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             // this event below is a secondary event handler that is registered to a direct push event that thingworx
             // can send us - if the user activates the tool without us having to ask them. 
             scope.onToolActivated = function (evt) {
-              debugLog(evt);
+              console.log(evt);
               scope.inputToolActivate(evt);
             }
 
@@ -3134,20 +2974,20 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         //
         // is remote validation configured?
         //
-        registerParentEvent('initialiseProcess.serviceInvokeComplete', function (evt) {
+        scope.$parent.$on('initialiseProcess.serviceInvokeComplete', function (evt) {
 
           scope.data.isProcessThingAvailable = scope.$parent.app.mdl['processThing'].svc['initialiseProcess'].data[0].result;
 
           if (scope.data.isProcessThingAvailable) {
             // lets now register the other services
 
-            registerParentEvent('validateStep.serviceInvokeComplete', function (evt) {
+            scope.$parent.$on('validateStep.serviceInvokeComplete', function (evt) {
               if (scope.sxslStepValidated != undefined) {
                 var valid = scope.$parent.app.mdl['processThing'].svc['validateStep'].data[0].result;
                 scope.sxslStepValidated(valid);
               }
             });
-            registerParentEvent('validateStep.serviceFailure', function (evt) {
+            scope.$parent.$on('validateStep.serviceFailure', function (evt) {
               if (scope.sxslStepValidated != undefined) {
                 scope.sxslStepValidated(false);
               }
@@ -3167,7 +3007,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 else
                   reject({
                     event: 'remoteStepValidationRejected',
-                    reason: 'Step ' + step.id + ' was rejected by remote StepValidator'
+                    reason: 'Because of some issue with ' + step.id
                   });
 
                 // unregister
@@ -3188,13 +3028,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
             });
 
-            registerParentEvent('validateProc.serviceInvokeComplete', function (evt) {
+            scope.$parent.$on('validateProc.serviceInvokeComplete', function (evt) {
               if (scope.sxslProcValidated != undefined) {
                 var valid = scope.$parent.app.mdl['processThing'].svc['validateProc'].data[0].result;
                 scope.sxslProcValidated(valid);
               }
             });
-            registerParentEvent('validateProc.serviceFailure', function (evt) {
+            scope.$parent.$on('validateProc.serviceFailure', function (evt) {
               if (scope.sxslProcValidated != undefined) {
                 scope.sxslProcValidated(false);
               }
@@ -3215,7 +3055,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 else
                   reject({
                     event: 'remoteProcValidationRejected',
-                    reason: 'Procedure ' + proc.id + ' was rejected by remote ProcValidator'
+                    reason: 'Because of something to do with ' + proc.id
                   });
 
                 // unregister
