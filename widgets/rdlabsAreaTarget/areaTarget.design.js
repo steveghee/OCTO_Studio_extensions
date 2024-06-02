@@ -50,9 +50,9 @@
            label: 'Space scan',
         datatype: 'resource_url',
   resource_image: true,
- allowedPatterns: ['.glb'],
+ allowedPatterns: ['.pvz'],
        isVisible: false,
-           tFrag: 'guide-src="" space-src="{{me.url}}"',
+           tFrag: 'guide-src="" space-src="${this.me.url}"',
        sortOrder: 2
         };
         
@@ -107,7 +107,7 @@
     var template = Twx3dCommon.buildRuntimeTemplate("twx-dt-target", props, true);
     
     // create a design template - this is a 3D image (can be dragged etc.)
-    var designTemplate = '<twx-dt-model id="#widgetId#" src="{{me.url}}" opacity="1" hidden="false" sx="1" sy="1" sz="1" x="0" y="0" z="0" rx="0" ry="0" rz="0" shader="desaturatedgl"></twx-dt-model>';
+    var designTemplate = '<twx-dt-model id="#widgetId#" src="${this.me.url}" opacity="1" hidden="false" sx="1" sy="1" sz="1" x="0" y="0" z="0" rx="0" ry="0" rz="0" shader="desaturatedgl"></twx-dt-model>';
 
     var retObj = {
         
@@ -158,7 +158,7 @@
 
       designTemplate: function (props) {
         // create a design template - this is a 3D image (can be dragged etc.)
-        return html`<twx-dt-model
+        return `<twx-dt-model
           id="#widgetId#"
           src="${this.me.url}"
           opacity="1"

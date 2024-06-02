@@ -46,7 +46,7 @@ function twxAmp() {
     designTemplate: function (data, html) {
       return html`<div class="ampWidget">
         Amp
-        <p>Gain: ${me.gain}</p>
+        <p>Gain: ${this.me.gain}</p>
       </div>`;
     },
 
