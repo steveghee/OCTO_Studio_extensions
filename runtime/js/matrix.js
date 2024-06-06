@@ -700,13 +700,39 @@ function Plane() {
         return false;
         
       var s = p.Transform(this.I());
+        
+      //assumes image is centered at 0,0  
       var dh = Math.abs(s.Y()) - this.h / 2;
       var dw = Math.abs(s.X()) - this.w / 2;
       var inbounds = (dh < 0 && dw <0);
       
       return inbounds;
     }
+    
+    this.Quantize = function(p,u,v) {
+        
+      function isEven(n) {
+        return n % 2 == 0;
+      }
+      // returns a position that is centered on a grid of u,v blocks that
+      // are mapped to the plane
 
+      if (this.w == undefined || this.h == undefined) 
+        return false;
+        
+      var dw = this.w / u;
+      var dh = this.h / v;
+      
+      //transform into the space of the plane
+      var s = p.Transform(this.I());
+      var t = new Vector4().Set3(isEven(u)?0.5:0, isEven(v)?0.5:0, 0);
+      var nx = t.X() + Math.floor(s.X()/ dw); 
+      var ny = t.Y() + Math.floor(s.Y()/ dh);
+      
+      //and transform back out into 3d space
+      var q = new Vector4().Set3(nx*dw, ny*dh, 0).Transform(this.m);
+      return q;
+    }
 }
 
 function Vector4() {
