@@ -52,7 +52,7 @@
   resource_image: true,
  allowedPatterns: ['.pvz'],
        isVisible: false,
-           tFrag: 'guide-src="" space-src="${this.me.url}"',
+           tFrag: 'guide-src="" space-src="{{me.url}}"',
        sortOrder: 2
         };
         
