@@ -537,7 +537,7 @@ function sxslHelper(renderer, anchor) {
     }
     
     // 
-    // scan all steps and actions for any subject(hero) references
+    // scanan all steps and actions for any subject(hero) references
     // we will return these in the form {model:name, path:idpath, label:id}
     //
     this.getSubjects = (aid) => {
@@ -685,6 +685,8 @@ function sxslHelper(renderer, anchor) {
                 case 'PassFail':
                   if ((me.step.ack.reasonType === undefined || me.step.ack.reasonType === "Generic"))
                     keyreq = ['p', 'f'];
+                  else if (me.step.ack.reasonType === "Text")
+                    keyreq = ['p', 'f'];
                   else {
 
                     // add p=pass      
@@ -750,7 +752,7 @@ function sxslHelper(renderer, anchor) {
             me.events.emit('stepCompletionPending', me.step);
           }
 
-          // unless we're bypassing this, mark the step as complete
+          // unless we're bypassing this mark the step as complete
           if (jumpRef == undefined)
             me.step.ref.status = "done";
         

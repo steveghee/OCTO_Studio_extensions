@@ -365,7 +365,11 @@
   display:inline-flex;
 }
 .sxsl-passfailverify-hide {
-  display:none;
+  display:none !important;
+}
+.sxsl-input-failtext {
+  padding: 20px  !important;
+  border-radius: 8px;
 }
 .sxsl-thumbnail-show {
   display:inline;

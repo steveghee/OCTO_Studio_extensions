@@ -333,6 +333,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                       break;
                     case "PassFail":
                       if (ack.reasonType == "Code") showpasserrorcode();
+                      else if (ack.reasonType == "Text") showpassfailtext();
                       else showpassfail();
                       break;
                     default:
@@ -417,23 +418,30 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   scope.input = function () {
 
                     //run the validator we were given (by the action)  
-                    scope.inputValidator()
-                      .then((validated) => {
+                    if (scope.inputValidator != undefined) {
+                      scope.inputValidator()
+                        .then((validated) => {
 
-                        scope.setFeedbackLabel('Confirmed. Press (>) to proceed');
+                          scope.setFeedbackLabel('Confirmed. Press (>) to proceed');
 
-                        //we have valid content, so we can enable the next button    
-                        scope.advanceWindow.className = 'sxsl-button sxsl-button-round sxsl-blue-bb sxsl-icon-nav-right';
-                        return scope.pushInput(validated);
+                          //we have valid content, so we can enable the next button    
+                          scope.advanceWindow.className = 'sxsl-button sxsl-button-round sxsl-blue-bb sxsl-icon-nav-right';
+                          return scope.pushInput(validated);
+                        })
+                        .catch(e => {
+
+                          scope.setFeedbackLabel(e);
+
+                          //invalid input / content
+                          debugLog('invalid input content', e);
+                          return false;
                       })
-                      .catch(e => {
-
-                        scope.setFeedbackLabel(e);
-
-                        //invalid input / content
-                        debugLog('invalid input content', e);
-                        return false;
-                      })
+                    } else {
+                        // this must be an input at the step/proc level
+                        const input = document.querySelector('input#textfail');
+                        var text = input != undefined ? input.value : undefined;
+                        proc.step.ack.text = text != undefined && text.length > 0 ? text : undefined;
+                    }
                   };
 
                   scope.proof = function (proof) {
@@ -874,6 +882,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           t5.className = 'sxsl-passfailverify-hide';
           const t6 = document.querySelector('button#fail');
           t6.className = 'sxsl-button sxsl-button-fail';
+          const t7 = document.querySelector('div#failtextdiv');
+          t7.className = 'sxsl-passfailverify-hide';
         }
         var showpasserrorcode = function () {
           const t1 = document.querySelector('div#passfail');
@@ -888,6 +898,28 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           t5.className = 'sxsl-select sxsl-button-fail';
           const t6 = document.querySelector('button#fail');
           t6.className = 'sxsl-passfailverify-hide';
+          const t7 = document.querySelector('input#textfail');
+          t7.className = 'sxsl-passfailverify-hide';
+          const t8 = document.querySelector('button#textfail');
+          t8.className = 'sxsl-passfailverify-hide';
+        }
+        var showpassfailtext = function () {
+          const t1 = document.querySelector('div#passfail');
+          t1.className = 'sxsl-passfailverify-show';
+          const t2 = document.querySelector('div#verify');
+          t2.className = 'sxsl-passfailverify-hide';
+          const t3 = document.querySelector('div#actions');
+          t3.className = 'sxsl-actions-show';
+          const t4 = document.querySelector('div#capture');
+          t4.className = 'sxsl-capture-hide';
+          const t5 = document.querySelector('div#errorcodes');
+          t5.className = 'sxsl-passfailverify-hide';
+          const t6 = document.querySelector('button#fail');
+          t6.className = 'sxsl-passfailverify-hide';
+          const t7 = document.querySelector('input#textfail');
+          t7.className = 'sxsl-input-failtext';
+          const t8 = document.querySelector('button#textfail');
+          t8.className = 'sxsl-button sxsl-button-fail';
         }
         var hidepassfail = function () {
           const t1 = document.querySelector('div#passfail');
@@ -898,6 +930,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           t3.className = 'sxsl-actions-hide';
           const t4 = document.querySelector('div#capture');
           t4.className = 'sxsl-capture-hide';
+          const t7 = document.querySelector('input#textfail');
+          t7.className = 'sxsl-passfailverify-hide';
+          const t8 = document.querySelector('button#textfail');
+          t8.className = 'sxsl-passfailverify-hide';
         }
         var showverify = function () {
           const t1 = document.querySelector('div#passfail');
@@ -1357,6 +1393,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                     <option class='sxsl-item' value='unkown'>TBD</option>\
                   </select>\
                 </div>\
+                <div style='left:24px;display:flex;'><input type='text' id='textfail' class='sxsl-input-failtext' placeholder='Reason for failure?'></input><button id='textfail' class='sxsl-button sxsl-button-fail' >Fail</button></div>\
                 <div id='failcode' style='left:24px;'><button id='fail' class='sxsl-button sxsl-button-fail' >Fail</button></div>\
                 <div style='right:24px;position:absolute;'><button id='pass' class='sxsl-button' >Pass</button></div>\
               </div>\
@@ -1418,6 +1455,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           const btnFail = document.querySelector('button#fail');
           btnFail.addEventListener('click', function () {
             scope.next('f');
+          });
+          const btnTextFail = document.querySelector('button#textfail');
+          btnTextFail.addEventListener('click', function () {
+            scope.next('f');
+          });
+          const btnTextInput = document.querySelector('input#textfail');
+          btnTextInput.addEventListener("change", function () {
+            scope.input();
           });
           const btnack = document.querySelector('input#acknowledge');
           btnack.addEventListener('change', function () {
