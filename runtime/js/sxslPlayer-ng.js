@@ -254,6 +254,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
               registerEvent('procResume', function (evt, reason) {
                 debugLog('proc resume');
+                scope.steplistField = proc.getStepList();
+
                 scope.logger.push({
                   statement: reason.step.ref.id,                
                   id: reason.step.id,
@@ -602,7 +604,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             scope.steplistField = scope.data.steplist;
 
             if (sleepy)
-              scope.resume(true);
+              scope.resume(false);
 
           } else {
             debugLog('disabled');
@@ -635,7 +637,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             if (scope.runningField == true && scope.next)
               scope.next();
             else
-              scope.resume(true);
+              scope.resume(false);
           }
           else
             minimise()
@@ -1343,7 +1345,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             };
             delegate.resume = function () {
               if (scope.canrunField == true)
-                scope.resume(true)
+                scope.resume(false)
             };
             delegate.ready = function () {
               $timeout(function () {

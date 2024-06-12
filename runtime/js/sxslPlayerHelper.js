@@ -401,9 +401,10 @@ function sxslHelper(renderer, anchor) {
     this.pause = (reason) => new Promise((next, reject) => {
 
       var pauseInfo = { event: reason.event, reason: reason.reason, step: this.step };
-      if (this.step != undefined)
+      if (this.step != undefined) {
+        this.step.ref.status = 'hold';
         this.events.emit('procPause', pauseInfo);
-
+      }
       next(pauseInfo);
     });
 
@@ -436,7 +437,8 @@ function sxslHelper(renderer, anchor) {
       //
       // end of special demo hack - remember to remove this code
       //
-
+      
+      this.step.ref.status = 'pending';
       var pauseInfo = { event: "resume", step: this.step };
       this.events.emit('procResume', pauseInfo);
 
