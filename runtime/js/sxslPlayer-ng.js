@@ -303,7 +303,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
               registerEvent('actionInputPending', function (evt, input) {
                 debugLog('action input pending', input.type);
-                scope.advanceWindow.className = 'sxsl-button sxsl-button-round sxsl-icon-nav-right';
+                if (!!input.required) 
+                  scope.advanceWindow.className = 'sxsl-button sxsl-button-round sxsl-icon-nav-right';
               });
 
               registerEvent('actionInputDelivered', function (evt, input) {
