@@ -569,7 +569,7 @@ function sxslHelper(renderer, anchor) {
     }
     
     this.applyPrerequisites = function (data) {
-      if (data == undefined)
+      if (data == undefined || data.length < 2)
         return;
             
       var prelist = JSON.parse(data);  
