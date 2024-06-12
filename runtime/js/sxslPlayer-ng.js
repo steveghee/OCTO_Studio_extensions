@@ -21,6 +21,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         includeField: '@',
         anchorField: '@',
         holoField: '@',
+        prerequisiteField: '@',
         hiliteshadeField: '@',
         annotateshadeField: '@',
         toolshadeField: '@',
@@ -142,7 +143,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 scope.$parent.$on(evt,fn);
               }
             
-
+              proc.applyPrerequisites(scope.data.prerequisites);
               debugLog('loaded', proc.getStepList().length, 'steps');
               scope.canrunField = true;
               scope.runningField = true;
@@ -175,6 +176,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 scope.startStepTimeClock(step, scope.ticker, scope);
 
                 scope.logger.push({
+                  statement: step.ref.id,                
                   id: step.id,
                   event: "stepstart",
                   time: Date.now()
@@ -225,6 +227,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 scope.steplistField = proc.getStepList();
 
                 scope.logger.push({
+                  statement: step.ref.id,                
                   id: step.id,
                   event: "stepend",
                   time: Date.now(),
@@ -241,6 +244,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               registerEvent('procPause', function (evt, reason) {
                 debugLog('proc pause');
                 scope.logger.push({
+                  statement: reason.step.ref.id,                
                   id: reason.step.id,
                   event: reason.event,
                   time: Date.now(),
@@ -251,6 +255,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               registerEvent('procResume', function (evt, reason) {
                 debugLog('proc resume');
                 scope.logger.push({
+                  statement: reason.step.ref.id,                
                   id: reason.step.id,
                   event: reason.event,
                   time: Date.now()
@@ -272,7 +277,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 scope.executingField = false;
 
                 scope.logger.push({
-                  id: reason.step != undefined ? reason.step.id : "",
+                  statement: reason.step != undefined ? reason.step.ref.id : undefined,                
+                  id: reason.step != undefined ? reason.step.id : undefined,
                   event: reason.event,
                   time: Date.now(),
                   ack: { response: reason.reason }
@@ -294,6 +300,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               registerEvent('stepProofDelivered', function (evt, proof) {
                 debugLog('step proof delivered');
                 scope.logger.push({
+                  statement: proof.step.ref.id,                
                   id: proof.step.id,
                   event: proof.event,
                   time: Date.now(),
@@ -311,6 +318,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 debugLog('action input delivered');
                 hideCapture();
                 scope.logger.push({
+                  statement: input.step.ref.id,                
                   id: input.step.id,
                   event: input.event,
                   time: Date.now(),
@@ -393,6 +401,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 scope.stopStepTimeClock(step);
 
                 scope.logger.push({
+                  statement: step.ref.id,                
                   id: step.id,
                   event: "bypass",
                   time: Date.now(),
@@ -1271,6 +1280,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
         });
 
+        scope.$watch('prerequisiteField', function () {
+          scope.data.prerequisites = scope.prerequisiteField;             
+        });
+    
         scope.$watch('reasoncodeField', function () {
           var newcode = (scope.reasoncodeField != undefined && scope.reasoncodeField.length > 0) ? JSON.parse(scope.reasoncodeField) : undefined;
           if (scope.runningField == true && newcode != undefined) {

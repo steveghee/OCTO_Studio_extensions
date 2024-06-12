@@ -566,6 +566,28 @@ function sxslHelper(renderer, anchor) {
       return subjects;    
     }
     
+    this.applyPrerequisites = function (data) {
+      if (data == undefined)
+        return;
+            
+      var prelist = JSON.parse(data);  
+      //otherwise iterate through the list matching id to statement id            
+      if (prelist != undefined && prelist.length > 0) {
+        prelist.forEach(function(s,i) {
+          for (var j=0; j<me.statementcount;j++) {                
+            if (me.proc.statements[j] != undefined && s.statementId != undefined && me.proc.statements[j].id == s.statementId) {
+              me.proc.statements[j].status = s.status;              
+              break;
+            }
+            if (me.proc.statements[j] != undefined && s.stepId != undefined && me.proc.statements[j].stepId == s.stepId) {
+              me.proc.statements[j].status = s.status;              
+              break;
+            }
+          }
+        })
+      }
+    };
+
     //
     // get a linked list of steps - we actually get the statements and the steps they refer to
     //
@@ -973,7 +995,7 @@ function sxslHelper(renderer, anchor) {
           error(data);
       });
     };
-  }
 
+  }
 
 }
