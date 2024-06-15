@@ -211,7 +211,7 @@ is important.
 
 The sxsl2 specification can be found here (TODO: link to be provided)
 
-The widget will display the instruction control UI, including any 2d (image, video) references.  
+The widget will display the instruction control UI, including any 2d (image, video, pdf) references.  
 Click the 'next' (arrow) button to advance through the actions.
 
 Step List property holds a reference to the list of valid steps that can be visited. You can bind this to a list/repeater widget, and clck on an item to jump to that step.
@@ -224,6 +224,8 @@ Eexcution of the player can be interrupted, for example to pause or to halt a pr
 
 All execution is logged to the Status field, with an event being triggered for each change - this field could, for example, be bound to a thingworx Service where the real-time status could be logged.
 
+Please note that, at this time, iPad landscape aspect is the only supported format in terms of UI control layout.  Other device resolutions and aspect rations may be added in the future.
+For nw, however, only iPad landscape is supported.
 
 ### properties
 The steplist property provides an infotable which lists all the available steps - you can display this in a list/repeater to view and select/jump to specific steps. Only valid next steps are presented.
