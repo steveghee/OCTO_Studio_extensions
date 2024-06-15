@@ -794,7 +794,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
               const t6vi = document.querySelector('img#viewImage');
               t6vi.className = 'sxsl-preview-hide';
-              const t6vd = document.querySelector('embed#viewPdf');
+              const t6vd = document.querySelector('div#viewPdf');
               t6vd.className = 'sxsl-preview-hide';
               break;
             case 'image/jpeg' :
@@ -805,12 +805,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
               const t6iv = document.querySelector('video#viewVideo');
               t6iv.className = 'sxsl-preview-hide';
-              const t6id = document.querySelector('embed#viewPdf');
+              const t6id = document.querySelector('div#viewPdf');
               t6id.className = 'sxsl-preview-hide';
               break;
             case 'application/pdf' :
-              const t5d = document.querySelector('embed#viewPdf');
-              t5d.src = src;
+              const t5d = document.querySelector('div#viewPdf');
+              t5d.childNodes[1].src = 'extensions/PDF/viewer.html?file=' + src;
               t5d.className = 'sxsl-viewer-image';
 
               const t6di = document.querySelector('img#viewImage');
@@ -1521,7 +1521,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               <div id='viewerList' class='sxsl-viewer-view'>\
                 <img id='viewImage' class='sxsl-preview-hide'/>\
                 <video id='viewVideo' class='sxsl-preview-hide' controls><source src='' type='video/mp4'></video>\
-                <embed id='viewPdf' class='sxsl-preview-hide' type='application/pdf'/>\
+                <div  id='viewPdf' style='overflow:hidden'> \
+                  <iframe src='extensions/PDF/viewer.html' style='width:800px; min-height: 100%; height:100%;' frameborder='0'></iframe> \
+                </div> \
               </div>\
             </div>"
           scope.referenceViewerWindow.id = 'viewer-container';

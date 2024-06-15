@@ -56,8 +56,6 @@
 
 }
 
-
-
 .button-bar {
   min-height: unset;
   min-width: 260px;
@@ -510,6 +508,11 @@ div::-webkit-scrollbar{
     height: 460px;
     display: block;
     margin: auto;
+    
+overflow: scroll;
+-webkit-box-pack: center;
+-webkit-box-align: center;
+display: -webkit-box;
 }
 .sxsl-viewer-panel {
   height: 100%;

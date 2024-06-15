@@ -256,7 +256,7 @@ function twxSxslplayer() {
     ],
     
     dependencies: {
-      files         : ['js/matrix.js', 'js/linq.js', 'js/sxslPlayerHelper.js', 'js/sxslPlayer-ng.js', 'images/diamond.pvz', 'Metadata.js', 'Structure.js'],
+      files         : ['js/matrix.js', 'js/linq.js', 'js/sxslPlayerHelper.js', 'js/sxslPlayer-ng.js', 'images/diamond.pvz', 'Metadata.js', 'Structure.js', 'PDF/**'],
       angularModules: ['sxslplayer-ng']
     },
 
