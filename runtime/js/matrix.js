@@ -691,15 +691,18 @@ function Plane() {
       var vo = Pn.DotP(Ro) + this.D();
       var t = vo / vd;
       var p = Ro.Add(Rd.Scale(t));
-      return { t:t, p:p };
+      if (this.IsPointInBounds(p))
+        return { t:t, p:p };
+      else 
+        return { t:undefined };
     }
     
     this.IsPointInBounds = function(p) {
         
       if (this.w == undefined || this.h == undefined) 
-        return false;
+        return true;
         
-      var s = p.Transform(this.I());
+      var s = p.Clone().Transform(this.I());
         
       //assumes image is centered at 0,0  
       var dh = Math.abs(s.Y()) - this.h / 2;
@@ -718,7 +721,7 @@ function Plane() {
       // are mapped to the plane
 
       if (this.w == undefined || this.h == undefined) 
-        return false;
+        return { p:p }; 
         
       var dw = this.w / u;
       var dh = this.h / v;
@@ -728,10 +731,18 @@ function Plane() {
       var t = new Vector4().Set3(isEven(u)?0.5:0, isEven(v)?0.5:0, 0);
       var nx = t.X() + Math.floor(s.X()/ dw); 
       var ny = t.Y() + Math.floor(s.Y()/ dh);
-      
+      var ix = Math.ceil(nx+u/2);
+      var iy = Math.ceil(ny+v/2);
       //and transform back out into 3d space
       var q = new Vector4().Set3(nx*dw, ny*dh, 0).Transform(this.m);
-      return q;
+      
+      //return quantised point and the index offset
+      return { p:q, ix:ix, iy:iy };
+    }
+    
+    // turn a point into a pose relative to the plane orientation
+    this.MakePose = function (p) {
+      return new Matrix4().SetM3(this.m).TranslateV(p.v);
     }
 }
 
