@@ -105,16 +105,19 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             }
             scope.data.debuglog = scope.data.debuglog + "\n" + line;
             debug.text = scope.data.debuglog;
+            scope.$parent.$applyAsync();
           }
           else console.log(arguments);
         }
         
         var registerRootEvent = function(evt,fn) {
-          scope.data.events.push(scope.$root.$on(evt,fn));
+          let er = scope.$root.$on(evt,fn);
+          scope.data.events.push(er); 
           //scope.$root.$on(evt,fn);
         }
         var registerParentEvent = function(evt,fn) {
-          scope.data.events.push(scope.$parent.$on(evt,fn));
+          let ep = scope.$parent.$on(evt,fn);
+          scope.data.events.push(ep); 
           //scope.$parent.$on(evt,fn);
         }
 
@@ -1159,7 +1162,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         
         //
         //todo : we should only be doing this IF we are responsible for the tracking
-        registerRootEvent('trackingacquired', function (event, args) {
+        scope.$root.$on('trackingacquired', function (event, args) {
           var targetGuideDiv = document.querySelector("div.targetGuide");
           if (targetGuideDiv) {
             var pscope = scope.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent;
@@ -1170,7 +1173,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           scope.trackingField = true;
         });
 
-        registerRootEvent('trackinglost', function (event, args) {
+        scope.$root.$on('trackinglost', function (event, args) {
           var targetGuideDiv = document.querySelector("div.targetGuide");
           if (targetGuideDiv) {
             var pscope = scope.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent;
@@ -1743,23 +1746,25 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           if (named != undefined && !named.loaded) {
             named.sequenceToLoad = aniname;
             named.loadcontext = context;  
-            console.log('animate pending - waiting for model',name,'to load');
+            debugLog('animate pending - waiting for model',name,'to load');
             return; //wait for it to load
           }
           
           //lookup the actual sequence filename  
           var seq2load = undefined;
+          debugLog('looking for animation name',aniname,'in',scope.data.pois[name].sequenceList);
           if (aniname != undefined && scope.data.pois[name].sequenceList != undefined && scope.data.pois[name].sequenceList.length > 0) {
             scope.data.pois[name].sequenceList.forEach(function(fig) {
               if (fig.name == aniname) seq2load = fig.filename;
             });
                 
             if(seq2load == undefined) {
-              console.log('unable to load animation',aniname,'for model',name);
+              debugLog('unable to load animation',aniname,'for model',name);
             }
           }
           
           if (seq2load != undefined) {   
+            debugLog('loading',seq2load,'for',name);
               
             if (named.seqplayer == undefined) 
               named.seqplayer = VF_ANG.NativeSequencerHelper(name, VF_ANG.nativeEventHandler, scope.renderer);
@@ -1802,7 +1807,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               scope.data.pois[name].animated = false;
             });
           } else {
-            console.log('unloading animation for',name);
+            debugLog('unloading animation for',name);
             scope.data.pois[name].seqplayer.unloadSequence();
             scope.data.pois[name].sequenceToLoad = undefined;
             scope.data.pois[name].animated = false;
@@ -1811,9 +1816,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         
         // we must wait for the item to actually load to get some of the data
         //
-        scope.$root.$on('loaded3DObj',function(event, model) {
-          let name = model.name;
-          console.log('3d obj',name,'loaded');
+        scope.$root.$on('modelLoaded',function(event, model) {
+          let name = model;
           
           var named = scope.data.pois[name];
           if (named != undefined && named.loaded == false) {
@@ -1822,6 +1826,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             var seq2load = named.sequenceToLoad;
             var oids     = named.occurrenceIds;
             var shader   = named.shader;
+            debugLog('3d obj seq',seq2load);
             
             if (seq2load != undefined && oids == undefined) {
               $timeout(function () {
@@ -1845,7 +1850,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           //does this item exist already - are we reusing it
           if (scope.data.pois[name] != undefined) {
 
-            //debugLog('reusing POI', name);
+            debugLog('reusing POI', name);
             var me = scope.data.pois[name];
             
             this.renderer.setProperties(name, { forceHidden: false });
@@ -1896,7 +1901,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             debugLog('shape node loaded for',name);                    
             scope.data.pois[name].metadata = resp.modelMetadata;
             scope.data.pois[name].sequenceList = resp.sequenceList;
-            scope.data.pois[name].loaded = true;
+            scope.data.pois[name].loaded = false;
             
             // we added the model, so set the location
             var locn = new Matrix4();
@@ -1927,6 +1932,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               
               // we can use this later...
               scope.data.pois[name].active = true;
+              $timeout(function() { 
+                scope.$emit('modelLoaded',name); 
+              }, 1000);
             }
             
             if (focal) scope.setFocus(name, scope.data.pois[name]);
