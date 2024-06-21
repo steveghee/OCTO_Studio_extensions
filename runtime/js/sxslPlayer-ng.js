@@ -2672,7 +2672,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             };
           }(scope.logger), 500);
         });
-
+        registerParentEvent('statusUpdate', function (evt,data) {
+          if (scope.logger.pull != undefined) scope.logger.pull(data);                              
+        });
+            
         scope.data.logger = function (procID) {
           this.id = procID;
           this.results = [];
@@ -2771,7 +2774,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           // and then queued up processing (pending list).  The results list also copi
           //
           this.push = function (data) {
-
+              scope.$parent.$emit("statusUpdate",data);
+          }
+          // we push the data to an event (so that the app can catch it if it wants
+          // and we then catch it here to process it
+          this.pull = function(data) {
             // schedule for submission to Thingworx
             this.pending.push(data);
 
@@ -2782,13 +2789,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             debugLog('pending incremental', JSON.stringify(data));
 
             // kick the async "sender" off...
-            if (this.incrementing == false && this.async == undefined) this.async = $timeout(function (a) {
-              var me = a;
-              return function () {
-                me.incremental(me);
-              };
+            if (this.incrementing == false && this.async == undefined) 
+              this.async = $timeout(function (a) {
+                var me = a;
+                return function () {
+                  me.incremental(me);
+                };
             }(this), 20);
-
           }
 
           //
