@@ -579,10 +579,12 @@ function sxslHelper(renderer, anchor) {
           for (var j=0; j<me.statementcount;j++) {                
             if (me.proc.statements[j] != undefined && s.statementId != undefined && me.proc.statements[j].id == s.statementId) {
               me.proc.statements[j].status = s.status;              
+              me.proc.statements[j].pass = s.pass;  
               break;
             }
             if (me.proc.statements[j] != undefined && s.stepId != undefined && me.proc.statements[j].stepId == s.stepId) {
               me.proc.statements[j].status = s.status;              
+              me.proc.statements[j].pass = s.pass;  
               break;
             }
           }
@@ -617,16 +619,21 @@ function sxslHelper(renderer, anchor) {
         if (done && includeDone != undefined && includeDone == false) {
         } else
           for (var stp = 0; stp < p.steps.length; stp++) {
-
+              
+            var step = p.steps[stp];
             // only add it if we can jump to and execute it
-            if (statement.stepId == p.steps[stp].id && canExec(statement, p.statements, me.execlist)) {
+            if (statement.stepId == step.id && canExec(statement, p.statements, me.execlist)) {
 
-              var title = p.steps[stp].title ? p.steps[stp].title.resources[0].text : statement.stepId;
+              var title = step.title ? step.title.resources[0].text : statement.stepId;
+              var done  = (statement.status == "done") || false;
+              var pass  = done ? statement.pass : undefined;
+              
               steplist.push({
                 idx: idx,
                 display: title,
                 status: statement.status,
-                done: (statement.status == "done") || false
+                pass: pass,
+                done: done
               });
               break;
             }
@@ -777,8 +784,10 @@ function sxslHelper(renderer, anchor) {
           }
 
           // unless we're bypassing this mark the step as complete
-          if (jumpRef == undefined)
+          if (jumpRef == undefined) {
             me.step.ref.status = "done";
+            me.step.ref.pass   = me.step.ack == undefined ? "Implied" : me.step.ack.type == "PassFail" ? me.step.ack.response == "p" ? "Passed" : "Failed" : "Confirmed";
+          }
         
           // is there any closeout required on the previous step?  
           // let folks know we've reached the end of the step

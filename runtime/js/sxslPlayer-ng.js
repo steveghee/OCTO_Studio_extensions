@@ -897,8 +897,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           t5.className = 'sxsl-passfailverify-hide';
           const t6 = document.querySelector('button#fail');
           t6.className = 'sxsl-button sxsl-button-fail';
-          const t7 = document.querySelector('div#failtextdiv');
+          const t7 = document.querySelector('input#textfail');
           t7.className = 'sxsl-passfailverify-hide';
+          const t8 = document.querySelector('button#textfail');
+          t8.className = 'sxsl-passfailverify-hide';
         }
         var showpasserrorcode = function () {
           const t1 = document.querySelector('div#passfail');

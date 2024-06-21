@@ -2,3 +2,5 @@
 *.js~
 *.scss~
 *.stackdump
+README.md~
+.gitignore~
