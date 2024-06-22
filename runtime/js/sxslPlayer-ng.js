@@ -257,6 +257,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
                 //update the list
                 scope.steplistField = proc.getStepList();
+                scope.$parent.$applyAsync();
               });
 
               registerEvent('procResume', function (evt, reason) {
