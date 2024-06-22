@@ -245,6 +245,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               });
 
               registerEvent('procPause', function (evt, reason) {
+
                 debugLog('proc pause');
                 scope.logger.push({
                   statement: reason.step.ref.id,                
@@ -253,9 +254,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   time: Date.now(),
                   ack: { response: reason.reason }
                 });
+
+                //update the list
+                scope.steplistField = proc.getStepList();
               });
 
               registerEvent('procResume', function (evt, reason) {
+
                 debugLog('proc resume');
                 scope.steplistField = proc.getStepList();
 
@@ -268,10 +273,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 maximise();
               });
                   
-              registerParentEvent('procHalt', function(evt, reason) {
-                console.log('parent event for procHalt');
-              });
-                      
               registerEvent('procHalt', function (evt, reason) {
                 debugLog('halting proc\n============================');
 
@@ -289,12 +290,16 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   ack: { response: reason.reason }
                 });
 
+                //update the list
+                scope.steplistField = proc.getStepList();
+                
                 //shut down the UI    
                 scope.deactivateAll();
                 minimise();
 
                 //and signal termination    
                 scope.$parent.$emit("terminated");
+                scope.$parent.$applyAsync();
               });
 
               registerEvent('stepProofPending', function (evt, proof) {

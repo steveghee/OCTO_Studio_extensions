@@ -384,6 +384,8 @@ function sxslHelper(renderer, anchor) {
     this.halt = (reason) => new Promise((next, reject) => {
 
       if (this.step != undefined) {
+        this.step.ref.status = 'halt';
+          
         var haltInfo = { event: reason.event, reason: reason.reason, step: this.step };
         this.events.emit('procHalt', haltInfo);
 
