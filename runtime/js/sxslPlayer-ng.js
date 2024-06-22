@@ -30,7 +30,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         executingField: '=',
         clockField: '=',
         trackingField: '=',
-        statusField: '=',
+        strictatusField: '=',
         steplistField: '=',
         toollistField: '=',
         consumablesField: '=',
@@ -2677,7 +2677,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             };
           }(scope.logger), 500);
         });
-        registerParentEvent('statusUpdate', function (evt,data) {
+        registerParentEvent('statusLogger', function (evt,data) {
           if (scope.logger.pull != undefined) scope.logger.pull(data);                              
         });
             
@@ -2779,7 +2779,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           // and then queued up processing (pending list).  The results list also copi
           //
           this.push = function (data) {
-              scope.$parent.$emit("statusUpdate",data);
+              scope.$parent.$emit("statusLogger",data);
           }
           // we push the data to an event (so that the app can catch it if it wants
           // and we then catch it here to process it
