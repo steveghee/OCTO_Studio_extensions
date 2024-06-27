@@ -137,6 +137,18 @@ function Matrix4() {
         return this;
     }
     
+    this.FromNormalAt = function(N,at) {
+        var up = new Vector4().Set3(0,1,0);
+        var gaze = N.Normalize();
+        if (Math.abs(up.DotP(gaze)) > 0.999) {
+          up = new Vector4().Set3(1,0,0); //choose a different axes
+        }
+        var xd   = up.Normalize().CrossP(gaze);
+        var nup  = gaze.CrossP(xd).Normalize(); // recalc up
+        var pose = new Matrix4().Set4V(xd,nup,gaze,at);
+        return pose;
+    }
+
     this.RotateFromQuaternion = function(q) {
         var x = q.x,
             y = q.y,
@@ -659,6 +671,20 @@ function Plane() {
       return this;
     }
     
+    this.FromPoints = function(points) {
+      //assume this is an array of Vectors
+      let AB = points[1].Clone().Sub(points[0]).Normalize();
+      let AC = points[2].Clone().Sub(points[0]).Normalize();
+      //let dp = AB.DotP(AC);
+      //if (Math.abs(dp) > 0.999999999) return undefined;
+      let N  = AC.CrossP(AB).Normalize();
+      //plane eq = Ax + By + Cz + D =0
+      //substiture a point to calculare D
+      let D = - N.Mul(points[0]);
+      this.SetABCD(N.X(),N.Y(),N.Z(),D);
+      return this;
+    }
+    
     this.X = function() { return this.v[0] }
     this.Y = function() { return this.v[1] }
     this.Z = function() { return this.v[2] }
@@ -673,6 +699,13 @@ function Plane() {
       this.v[2] = z;
       this.v[3] = w;
       return this;
+    }
+  
+    this.Distance = function(point) {
+        return (this.v[0] * point.v[0]) +  //Ax
+               (this.v[1] * point.v[1]) +  //By
+               (this.v[2] * point.v[2]) +  //Cz
+                this.v[3];                //D
     }
   
     // raytrace this plane (ABCD) from starting point x0 and direction x1
@@ -811,6 +844,13 @@ function Vector4() {
         return this;
     }
     
+    this.Set3a = function (a) {
+        this.v[0] = a[0];
+        this.v[1] = a[1];
+        this.v[2] = a[2];
+        return this;
+    }
+    
     this.Set4a = function (a) {
         this.v[0] = a[0];
         this.v[1] = a[1];
@@ -941,6 +981,13 @@ function Vector4() {
         	(this.v[1] - v2.v[1]),
         	(this.v[2] - v2.v[2]));        
         return sub;
+    }
+    
+    this.Mul = function (v2) {
+        var prod = (this.v[0] * v2.v[0]) + 
+        	   (this.v[1] * v2.v[1]) +
+        	   (this.v[2] * v2.v[2]) ;        
+        return prod;
     }
     
     this.Scale = function (s) {
@@ -1126,6 +1173,37 @@ function Bbox() {
         }
         return this;
     }
+    
+    //we technically only need 3 points to check planarity
+    this.voxes = [];
+    this.plane = undefined;
+    this.IsPlanar = function(vox) {
+      let newv = vox.Clone();
+      //keep a record of the first three (or should it be th elast three?)  
+      if (this.voxes.length < 3) {
+          this.voxes.push(newv);
+          if (this.voxes.length < 3) return false ; // we dont know yet
+      }
+      if (this.voxes.length == 3)  {
+        //test planarity.
+        this.voxes[2] = newv;  
+        if (this.plane == undefined) {
+          this.plane = new Plane().FromPoints(this.voxes);
+          if (this.plane == undefined) {
+              //cycle the points
+              this.voxes[1] = this.voxes[2];
+              this.voxes.pop();
+          }
+        }
+      }
+      if (this.plane != undefined) {
+        let dist = this.plane.Distance(vox);
+        let isplanar = (Math.abs(dist) < 0.0001) ? true : false;   
+        return isplanar;
+      } else 
+        return false;
+    }
+    
     // same but for a point
     this.EnvelopePoint = function(vox) {
         if (vox != undefined) {
@@ -1135,6 +1213,7 @@ function Bbox() {
                 if (this.max[i] === undefined)   this.max[i] = vox.v[i];
                 else if (this.max[i] < vox.v[i]) this.max[i] = vox.v[i];
             }
+            this.planar = this.IsPlanar(vox);
         }
     }
     
