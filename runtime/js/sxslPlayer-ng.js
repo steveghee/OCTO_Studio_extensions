@@ -838,7 +838,15 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         var hideReview = function () {
           maximise();
         }
+        var hideAndStopBarcode = function() {
+          const t4 = document.querySelector('div.scan-content');
+          if (t4 != undefined) t4.className = 'sxsl-preview-hide';
+          if (scope.renderer.stopBarCodeScanning) {
+            scope.renderer.stopBarCodeScanning();
+          }
+        }
         var maximise = function () {
+          hideAndStopBarcode();
           if (scope.runningField == true) {
             const t1 = document.querySelector('div#sxsl-instruction-container');
             t1.className = 'sxsl-instruction-container';
@@ -1577,7 +1585,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           }
         };
 
-
         function createReferencePreviewHTML() {
           const container = document.querySelector('.sxslroot');
           scope.referencePreviewWindow = document.createElement('div');
@@ -1597,6 +1604,29 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             scope.previewList.innerHTML = contents;
           }
         };
+        
+        function createBarcodeScannerHTML() {
+
+          const container = document.querySelector('.twx-2d-overlay .panel.body');
+          scope.barcodeScannerWindow = document.createElement('div');
+          scope.barcodeScannerWindow.innerHTML = "\
+            <div class='scan-content runtime' style='height:80vh;'>\
+              <div class='scan-mask'></div>\
+              <div class='scan-elements'>\
+                <div class='scan-message'>Point camera at code</div>\
+                <div class='scan-line'></div>\
+                <button class='scan-exit-button iconClose'>X</button>\
+              </div>\
+            </div>";
+          scope.barcodeScannerWindow.id = 'preview-container';
+          scope.barcodeScannerWindow.className = 'barcodeScanner-hide';
+          
+          container.insertBefore(scope.barcodeScannerWindow, container.firstChild);
+          const btnClose = document.querySelector('.scan-exit-button');
+          btnClose.addEventListener('click', maximise);
+
+        };
+
         var datasink = function (text) {
           debugLog('swallowing this text :', text);
         }
@@ -2203,9 +2233,20 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             var barcodeTool = function (src, callback) {
               var cb = callback;
               var display = src;
+              
               if (scope.renderer.scanForNextBarCode) {
+                  
+                // create and show the scanner?
+                minimise();
+                if (!scope.barcodeScannerWindow) {
+                  createBarcodeScannerHTML();
+                } else {
+                  scope.barcodeScanerWindow;
+                }
+                
                 scope.renderer.scanForNextBarCode(function (scannedValue) {
                   display.value = scannedValue;
+                  maximise();                                
                 });
               } else {
                 //inject dummy value for now  
