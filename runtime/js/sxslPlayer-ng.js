@@ -30,7 +30,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         executingField: '=',
         clockField: '=',
         trackingField: '=',
-        strictatusField: '=',
+        statusField: '=',
         steplistField: '=',
         toollistField: '=',
         consumablesField: '=',
