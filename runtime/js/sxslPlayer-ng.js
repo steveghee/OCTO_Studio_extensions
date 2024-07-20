@@ -764,10 +764,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
         var minimise = function () {
           const t1 = document.querySelector('div.sxsl-instruction-container');
-          t1.className = 'sxsl-instruction-container-hide';
-          const t2 = document.querySelector('div#sxsl-instruction-max');
-          t2.className = 'sxsl-thumbnail-show';
-          minimisePreview()
+          if (t1 != undefined) {
+            t1.className = 'sxsl-instruction-container-hide';
+            const t2 = document.querySelector('div#sxsl-instruction-max');
+            t2.className = 'sxsl-thumbnail-show';
+            minimisePreview()
+          }
         }
         var minimisePreview = function () {
           const t3 = document.querySelector('div#preview-container');
@@ -849,12 +851,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           hideAndStopBarcode();
           if (scope.runningField == true) {
             const t1 = document.querySelector('div#sxsl-instruction-container');
-            t1.className = 'sxsl-instruction-container';
-            const t2 = document.querySelector('div#sxsl-instruction-max');
-            t2.className = 'sxsl-thumbnail-hide';
-            const t3 = document.querySelector('div#viewer-container');
-            t3.className = 'sxsl-preview-hide';
-            maximisePreview();
+            if ( t1 != undefined) {
+              t1.className = 'sxsl-instruction-container';
+              const t2 = document.querySelector('div#sxsl-instruction-max');
+              t2.className = 'sxsl-thumbnail-hide';
+              const t3 = document.querySelector('div#viewer-container');
+              t3.className = 'sxsl-preview-hide';
+              maximisePreview();
+            }
           }
         }
         var maximisePreview = function () {
@@ -1678,7 +1682,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           var rot = new Matrix4().Set3V(rg, up, gz).ToPosEuler(true).rot;
           return rot.v;
         }
-            
+        
         // add them as we need them - a better version might use a re-usable pool of shapes but let's keep 
         // it simple for now
         scope.$parent.$on('stepcompleted', function (event, target, unused, data) {
@@ -1876,12 +1880,372 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 scope.renderer.setProperties(name+'-'+oid, { hidden: false, shader: shader, occlude: false, phantom: false, decal: false });
               });
             } else {
-              debugLog('showing full model for', name);               
-              oids = ['/'];
-              scope.renderer.setProperties(name+'-/', { hidden: false, shader: shader, occlude: false, phantom: false, decal: false });
+              console.log('showing full model for', name);               
+              if (oids) {
+                oids = ['/'];
+                scope.renderer.setProperties(name+'-/', { hidden: false, shader: shader, occlude: false, phantom: false, decal: false });
+              } else {
+                scope.renderer.setProperties(name, { hidden: false, shader: shader, occlude: false, phantom: false, decal: false });
+              }
             }
           }
         });
+
+        // we must wait for the item to actually load to get some of the data
+        //
+        scope.$root.$on('imageLoaded',function(event, image) {
+          let name = image;
+          
+          var named = scope.data.pois[name];
+          if (named != undefined && named.loaded == false) {
+            named.loaded = true;  
+            scope.renderer.setProperties(name, { forceHidden:false, hidden: false, billboard: named.billboard, occlude: false, phantom: false, decal: false });
+            scope.$parent.$applyAsync();
+          }
+        });
+
+function getMultilineLabelHeightAttribute(element) {
+  let padding   = element.attr('padding');
+  let font      = element.attr('font');
+  let lineCount = element.attr('linecount');
+  let width     = element.attr('width');
+    
+  var scalefactor = 512/0.04;
+  return (parseInt(padding.match(/[\^\d+]/g,).join(""))*2 + (parseInt(font.match(/[\^\d+]/g).join(""))*lineCount))/scalefactor;
+}
+function rgb2hex(rgb) {
+  rgb = rgb.match(/^rgba?[\s+]?\([\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?/i);
+  return (rgb && rgb.length === 4) ? "#" +
+    ("0" + parseInt(rgb[1], 10).toString(16)).slice(-2) +
+    ("0" + parseInt(rgb[2], 10).toString(16)).slice(-2) +
+    ("0" + parseInt(rgb[3], 10).toString(16)).slice(-2) : '';
+}
+function multilinehelper(context, text, padding, lineHeight, lineCount) {
+    
+  // first split into 'forced' lines (linebreaks)
+  var linesIn   = text.split('\n');
+  var fitWidth  = 0;
+  var fitHeight = 0;
+  // then, for each sub-line, render to width
+  var lines = [];
+  linesIn.forEach(function(subline) {
+    var metrics  = context.measureText(subline);
+    if (metrics.width > fitWidth) {
+      fitWidth = metrics.width;
+    }
+    fitHeight += (lineHeight + padding);
+    lines.push(subline);
+  })
+                   
+  // finally, render out as many lines as we need
+  lines  = lines.slice(0,lineCount);
+  return { width:fitWidth + (2 * padding), height:fitHeight + (2 * padding), lines:lines, count:lines.length} ;
+}
+function multilinerender(context, lines, x, y, lineHeight) {
+  var sy = y;
+  lines.forEach(function(line) {
+    context.fillText(line, x, sy);
+    sy += lineHeight;
+  });
+}
+function buildMultilineLabel2(props, boxit) {
+
+  let canvas    = document.createElement("canvas");
+  let ctx       = canvas.getContext("2d");
+    
+  let fontSize  = props.font ? parseInt(props.font.match(/[\^\d+]/g,).join("")) : undefined;
+  let padding   = props.padding ? parseInt(props.padding.match(/[\^\d+]/g,).join("")) : 10;
+  let lineCount = props.linecount ? parseInt(props.linecount) : 5;
+  ctx.fillStyle = rgb2hex(props.fontcolor);                    // pass in font color prop
+  ctx.font      = props.font ? props.font : "bold "+fontSize+"px Arial";  // only works with some tricky stuff see Styles for more information
+
+  let  info = multilinehelper(ctx, props.text, padding, fontSize, 3); //max 3 lines
+
+  // we scale the rendering to fit onto a texture which starts as a 512x512 square based on a 0.04x0.04 button
+  // we resize this texture to match the size of the label
+  var aspect = info.height/info.width;
+  canvas.width  = info.width;
+  canvas.height = info.height;
+
+  if (true) { // always draw the box behind   //if (boxit) {
+    ctx.fillstyle = "black";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+  }
+    
+  ctx.fillStyle = rgb2hex(props.fontcolor);                    // pass in font color prop
+  ctx.font      = props.font ? props.font : "bold "+fontSize+"px Arial";  // only works with some tricky stuff see Styles for more information
+  multilinerender(ctx, info.lines, padding, padding+fontSize, padding+fontSize); //max 3 lines
+  
+  if (boxit) {
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = "white";
+    ctx.rect(0,0,canvas.width,canvas.height);
+    ctx.stroke();
+  }
+  // This function make the multiline magic happen 
+  var newimg = canvas.toDataURL();
+  return newimg;  
+}
+
+function getNominal(properties) {
+  var n = parseFloat(properties["PTC_DIM_NOMINAL_VAL"]);
+  if (properties["PTC_DIM_DISP_VAL_ROUNDED"] == "YES") {
+    var dp = parseInt(properties["PTC_DIM_DECIMALS"] || 3);
+    n = n.toFixed(dp);
+  }
+  return n;
+}
+function getdimstring(properties) {
+  var res = [];
+  if (properties["PTC_DIM_TEXT"] == undefined) {
+    return properties["PTC_DTAG_NAME"] || properties["PTC_NOTE_TEXT"] 
+  }
+  var toparse = properties["PTC_DIM_TEXT"].trim();
+  var parsed = ""
+  var blocks = toparse.split('}');
+  //parse each line
+  blocks.forEach(function(block) {
+    var node = block.split('{');
+    if (node[0].length > 0) {
+      // assume for now its newline
+      res.push(parsed);
+      parsed = "";
+    }
+    if (node[1] != undefined) {
+      var toks = node[1].split(':');
+      //index will be tok[0]
+      if (toks[1] != undefined) {
+        if(toks[1].startsWith('@')) {
+          parsed += getNominal(properties);
+//skip xref annotations for now          
+//        } else if(toks[1].startsWith('&')) {
+//          let ref = $scope.annotations[toks[1].split('&')[1].toUpperCase()];
+//          if (ref != undefined) parsed += getdimstring(ref.properties);
+        } else {
+          parsed += toks[1];
+        }
+      }
+    } 
+  });
+  res.push(parsed);
+  
+  // finally, we need to flatten res into \n separated
+  var final="";
+  for(let i=0;i<res.length;i++) {
+    final = final + res[i];
+    if (i < res.length -1) final += "\n";
+  }
+  return final;
+}
+function getpmistring(properties) {
+  var pmi = "";
+  var boxit = true;
+  switch (properties["PTC_GTOL_TYPE"]) {
+    case "FLATNESS"        : pmi = `\u23E5`; break;
+    case "PERPENDICULAR"   : pmi = `\u23CA`; break;
+    case "POSITION"        : pmi = `\u2316`; break;
+    case "PARALLEL"        : pmi = `\u2AFD`; break;
+    case "SURFACE"         : pmi = `\u2313`; break;
+    case "TOTAL RUNOUT"    : pmi = `\u2330`; break;
+    case "CIRCULAR RUNOUT" : pmi = `\u2197`; break;
+    case "CONCENTRICITY"   : pmi = `\u25CE`; break;
+    case "STRAIGHTNESS"    : pmi = `\u23E4`; break;
+    case "CIRCULAR"        : pmi = `\u25CB`; break;
+    case "SYMMETRY"        : pmi = `\u232F`; break;
+    case "ANGULARITY"      : pmi = `\u2220`; break;
+    default:
+      pmi = getdimstring(properties); 
+      boxit = false;
+      break;
+  }
+  
+  function getline(index, line) {
+    if (properties[index + "_TOL_STRING"] != undefined) {
+      line += ` | ${properties[index + "_TOL_STRING"]}`;
+    
+      function add(s) {
+        return (s != undefined && s.length > 0) ? ` | ${s}` : '';
+      }
+      line += add(properties[index+"_DTM_PRIM_STRING"]);
+      line += add(properties[index+"_DTM_SEC_STRING" ]);
+      line += add(properties[index+"_DTM_TERT_STRING"]);
+      
+    }
+    return line;
+  }
+  pmi = getline("PTC_GTOL_1",pmi);
+  if (properties["PTC_GTOL_2_TOL_STRING"] != undefined) pmi = getline("PTC_GTOL_2",pmi+"\n");
+
+  var props = { height:0.02, width:0.2, font:"bold 26px Arial", text:pmi, fontcolor:'rgba(255,255,255,1)' } ;
+  return buildMultilineLabel2(props, boxit);
+}
+function getLongest(p,s) {
+  var l;
+  l = (p[0] > p[1]) ? p[0] : p[1];
+  l = (l > p[2]) ? l : p[2];
+  var w;
+  let w1 = (p[0] < p[1] && p[0] > 0) ? p[0] : p[1];
+  let w2 = (p[1] < p[2] && p[1] > 0) ? p[1] : p[2];
+  let w3 = (p[0] < p[2] && p[0] > 0) ? p[0] : p[2];
+  w = (w1 < w2 && w1 > 0) ? w1 : w2;
+  w = (w3 < w  && w3 > 0) ? w3 : w;
+  var aspect = w/l;     
+  return {w:aspect*s, l:s};
+}
+
+        scope.addNamedLabel = function (name, properties, pos, rot, scale, size, hide, shader) {
+          console.log('add named label', name);
+          if (scope.data.pois[name] != undefined) {
+              var me = scope.data.pois[name];
+              this.renderer.setProperties(name, { forceHidden: false });
+            
+              me.hidden = false;
+              me.active = true;
+              me.deactivated = false;
+              return
+          }
+          
+          //create a new one
+          let sz = getLongest(size, 0.1);
+          
+          var params = {
+            tracker : 'tracker1',
+            id      : name,
+            src     : getpmistring(properties),
+            parent  : undefined,
+            leaderX : undefined, // Unused leaderX
+            leaderY : undefined, // Unused leaderY
+            anchor  : undefined, // Unused anchor
+            width   : sz.l,
+            height  : sz.w, // slightly smaller than the cube
+            pivot   : 5,    // center
+            preload : false
+          };
+          
+          scope.renderer.add3DImage(params, () => {
+              console.log('success creating ',name);
+              scope.data.pois[name] = { active: false, loaded: false, shader: shader, billboard: true };
+            
+             // we added the model, so set the location
+              var locn = new Matrix4();
+              if (rot != undefined) locn.RotateFromEuler(rot[0], rot[1], rot[2], true);
+              if (pos != undefined) locn.Translate(pos[0], pos[1], pos[2]);
+              if (scope.data.context != undefined && scope.data.context.target.mimeType == "application/vnd.ptc.tracker.spatialtracker" && scope.data.context.target.rotation != undefined) 
+                locn.RotateFromQuaternion(scope.data.context.target.rotation);
+              var tr = locn.ToPosEuler(true);
+              
+              scope.data.pois[name].pos = tr.pos;
+              scope.data.pois[name].rot = tr.rot;
+              scope.renderer.setTranslation(name, tr.pos.X(), tr.pos.Y(), tr.pos.Z());
+              //scope.renderer.setRotation(name, tr.rot.X(), tr.rot.Y(), tr.rot.Z());
+              //scope.renderer.setScale(name, scale, scale, scale);
+
+              scope.renderer.setProperties(name,{hidden:hide, billboard: true, phantom:false, occlude: false, decal:false });
+              
+              console.log('asset loaded for',name);  
+              
+              // we can use this later...
+              scope.data.pois[name].active = true;
+              $timeout(function() { 
+                scope.$emit('imageLoaded',name); 
+              }, 1000);
+                                  
+            }, (err) => {
+              // something webt wrong
+              console.log(`add3DImage failed to add new image: ${JSON.stringify(err)}`); 
+            }
+          );
+ 
+          scope.$parent.$applyAsync();
+        }
+      
+        scope.addNamedPrim = function (name, polyform, pos, rot, scale, hide, focal, shader) {
+          console.log('add named prim', name);
+          
+          var reuse = false;
+          for(var i=0;i<polyform.mesh.length;i++) {
+            let meshname = name + i;
+            if (scope.data.pois[meshname] != undefined) {
+
+              debugLog('reusing prim', meshname);
+              reuse = true;
+            
+              var me = scope.data.pois[meshname];
+            
+              this.renderer.setProperties(meshname, { forceHidden: false });
+            
+              me.hidden = false;
+              me.active = true;
+              me.deactivated = false;
+            }
+          }
+          if (reuse) {
+            scope.$parent.$applyAsync();
+            return;
+          }
+          
+          // otherwise create the prim directly
+ 
+          console.log('loading shape for prim',name);
+          
+          // build up the 3dobject
+          var vertices = [];
+          var poly = polyform;
+          poly.points.forEach(function(p) {
+            vertices.push(p[0]);
+            vertices.push(p[1]);
+            vertices.push(p[2]);
+          })
+          //we can have one or more meshes - we render each as a 3dobj
+          for(var i=0;i<poly.mesh.length;i++) {
+            let mesh = poly.mesh[i];
+            let meshname = name + i;
+            scope.data.pois[meshname] = { active: false, loaded: false, shader: shader };
+            scope.renderer.add3DObject("tracker1", 
+                            meshname, 
+                            vertices, 
+                            undefined, 
+                            undefined, 
+                            mesh.indices, 
+                            [1,0,0,1], 
+                            undefined,
+                            undefined, //parentId = unused
+            function() {
+              console.log('success creating ',meshname);
+              scope.data.pois[meshname].loaded = false;
+            
+              // we added the model, so set the location
+              var locn = new Matrix4();
+              if (rot != undefined) locn.RotateFromEuler(rot[0], rot[1], rot[2], true);
+              if (pos != undefined) locn.Translate(pos[0], pos[1], pos[2]);
+              if (scope.data.context != undefined && scope.data.context.target.mimeType == "application/vnd.ptc.tracker.spatialtracker" && scope.data.context.target.rotation != undefined) 
+                locn.RotateFromQuaternion(scope.data.context.target.rotation);
+              var tr = locn.ToPosEuler(true);
+              
+              scope.data.pois[meshname].pos = tr.pos;
+              scope.data.pois[meshname].rot = tr.rot;
+              scope.renderer.setTranslation(meshname, tr.pos.X(), tr.pos.Y(), tr.pos.Z());
+              scope.renderer.setRotation(meshname, tr.rot.X(), tr.rot.Y(), tr.rot.Z());
+              scope.renderer.setScale(meshname, scale, scale, scale);
+
+              scope.renderer.setProperties(meshname,{hidden:hide, shader:shader, phantom:false, occlude: false, decal:false });
+              
+              debugLog('asset loaded for',name);  
+              
+              // we can use this later...
+              scope.data.pois[meshname].active = true;
+              $timeout(function() { 
+                scope.$emit('modelLoaded',meshname); 
+              }, 1000);
+            },function(err) { 
+              console.log('failed to create rect ' + meshname,err);
+            })
+          }  
+            
+          if (focal) scope.setFocus(name, scope.data.pois[name]);
+          scope.$parent.$applyAsync();
+
+        }
 
         scope.addNamedPOI = function (name, shape, pos, rot, scale, hide, context, seq, oid, focal, shader) {
             
@@ -1989,7 +2353,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           for (const name in scope.data.pois) {
             var me = scope.data.pois[name];
             if (me.active) {
-              this.renderer.setProperties(name, { hidden: false });
+              this.renderer.setProperties(name, { hidden: false, billboard: me.billboard || false });
               me.hidden = false;
             }
           }
@@ -1999,7 +2363,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           for (const name in scope.data.pois) {
             var me = scope.data.pois[name];
             if (me.deactivated != undefined && me.deactivated == true) {
-              this.renderer.setProperties(name, { forceHidden: true });
+              this.renderer.setProperties(name, { forceHidden: true, hidden: true });
               if (me.animated == true) {
                 me.animated = false;
                 scope.renderer.loadPVI({ modelID: name, url: "" }, function () {
@@ -2575,6 +2939,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   scope.data.pois[assetId].sequenceToLoad = res.content.animationName;
                   isAnimated = true;
                 }
+                if (res.mimeType == "application/vnd.ptc.model.surface" || res.mimeType == "application/vnd.ptc.model.edge") {
+                  scope.addNamedPrim(assetId, res.polyform, res.translation, genrotation(res.normal), 1, true,  true, "green");//scope.data.hiliteshade);
+                  isAnimated = false;
+                }
                 if (res.mimeType == "image/png") {
                   //$scope.view.wdg.alternative.imgsrc = $scope.app.params.anchor + res.url;
                   //$scope.view.wdg.alternative.visible = true;
@@ -2599,10 +2967,16 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             if (a.annotations != undefined) a.annotations.forEach(function (me) {
               var sub = me.ann;
               var res = me.asset.resources[0];
-              var occurrenceIds = (res.occurrenceIds == undefined) ? me.occurrenceIds : res.occurrenceIds;
-              var src = scope.data.anchor + res.modelUrl;                                                             //should it be action/sub/res or sub/res/action?
-              scope.addNamedPOI(me.id, src, undefined, undefined, 1, true, undefined, (res.composition == "partset" ? (sub.sceneName || res.sceneName || a.animation) : a.animation), occurrenceIds, false, scope.data.annotateshade);
-              isAnimated = isAnimated || scope.data.pois[me.id].sequenceToLoad != undefined;
+              if (res.mimeType == "application/vnd.ptc.pvz") {
+                var occurrenceIds = (res.occurrenceIds == undefined) ? me.occurrenceIds : res.occurrenceIds;
+                var src = scope.data.anchor + res.modelUrl;                                                             //should it be action/sub/res or sub/res/action?
+                scope.addNamedPOI(me.id, src, undefined, undefined, 1, true, undefined, (res.composition == "partset" ? (sub.sceneName || res.sceneName || a.animation) : a.animation), occurrenceIds, false, scope.data.annotateshade);
+                isAnimated = isAnimated || scope.data.pois[me.id].sequenceToLoad != undefined;
+              } else if (res.mimeType == "application/vnd.ptc.annotation.gdandt" || res.mimeType == "application/vnd.ptc.annotation.dim") {
+                  scope.addNamedLabel(me.id, res.properties, res.label.center, genrotation(res.label.normal), 1, res.label.size, true, scope.data.annotateshade);
+                  isAnimated = false;
+              }
+
             })
             
             // right now we only support 0 or 1 tool - per action
