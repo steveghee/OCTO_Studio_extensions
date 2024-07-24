@@ -41,7 +41,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         
         function show() {
           console.log('show');
-          $timeout(function() {
+          if (scope.data.placed != undefined) $timeout(function() {
             scope.data.placed.forEach(function(p) {
               scope.renderer.setProperties(p.tmlid, {hidden:false});                                             
             });
@@ -49,14 +49,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         }
         function hide() {
           console.log('hide');
-          $timeout(function() {
+          if (scope.data.placed != undefined) $timeout(function() {
             scope.data.placed.forEach(function(p) {
               scope.renderer.setProperties(p.tmlid, {hidden:true});                                             
             });
           },10);
         }
         
-                //
+        //
         // look for changes in input data
         //
         scope.$watch(
@@ -75,28 +75,35 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           // to a full change, but for now, we'll just redo the entire list
           
           // undo data.placed - hide all the nodes
-console.log(scope.data.placed.length);
-          while(scope.data.placed.length > 0) {
-            var oid = scope.data.placed.pop();
-            scope.renderer.setProperties(oid.tmlid, {hidden:true});
-            scope.data.nodes.push(oid.tmlid);                        
+          if (scope.data.placed != undefined) {
+            console.log(scope.data.placed.length);
+            while(scope.data.placed.length > 0) {
+              var oid = scope.data.placed.pop();
+              scope.renderer.setProperties(oid.tmlid, {hidden:true});
+              scope.data.nodes.push(oid.tmlid);                        
+            }
+            console.log(scope.data.placed.length, scope.data.nodes.length);
           }
-console.log(scope.data.placed.length, scope.data.nodes.length);
-          // recreate from data.newdata
-          
+      
+          // now recreate from data.newdata
           scope.data.newdata.forEach(function(nid) {
+                                     
             var tmlid = scope.data.nodes.pop();                   
             scope.data.panels.push(new multiFunctionalDisplay(scope,tmlid)
+                                   
                        // the following are all optional - they modify/enhance the base display 
                        .SetWidth(0.15*nid.status)
                        .SetPosition(nid.position.x, nid.position.y, nid.position.z)
-                       .SetOrientation(0,Radians(nid.angle),0)
+                       .SetOrientation(nid.angle!=undefined ? 0 : nid.orientation.x,
+                                       nid.angle!=undefined ? nid.angle : nid.orientation.y,
+                                       nid.angle!=undefined ? 0 : nid.orientation.z)
                        .SetIndicator(nid.status)
                        .SetTitle(nid.title)
-                       .SetValue(nid.value,nid.color)
+                       .SetValue(nid.value,nid.units,nid.color)
                        .SetBadge(nid.badge)
                        .SetText(nid.text)
-                       );
+                       .SetPivot(nid.pivot)
+                     );
 
 //            scope.renderer.setProperties(tmlid, {hidden:true});
 
@@ -106,39 +113,7 @@ console.log(scope.data.placed.length, scope.data.nodes.length);
         
         scope.$watch('srcField', function () {
           console.log('srcField',scope.srcField);             
-          if (scope.srcField != undefined) {
-              
-            scope.data.imgsrc = scope.srcField;  
-            
-              // this is how many we will create
-              let count = 12; 
-  
-              // in a loop...
-              for(var i=0; i<count; i++) { 
-    
-                var angle = i * 360/count;
-                var rad   = 3;
-    
-                // draw a 3m radius ring, centered an the x,y,z origin, on the xz plane
-                var status = (i % 3) + 1; // indicator status will vary a we go around the circle
-    
-                // you can create notes, labels, and flags - lets switch between them based on the index around the circle
-                var radang = Radians(angle);
-    
-                scope.data.panels.push(new multiFunctionalDisplay(scope)
-                       // the following are all optional - they modify/enhance the base display 
-                       .SetWidth(0.15*status)
-                       .SetPosition(rad*Math.sin(radang), 0, rad*Math.cos(radang))
-                       .SetOrientation(0,angle,0)
-                       .SetIndicator(status)//,status==2)
-                       .SetTitle('I am label '+i)
-                       .SetValue(angle,"º",'rgba(6,254,6,1)')
-                       .SetBadge(i)
-                       .SetText('index = '+i)
-                      )
-              }
-              scope.data.panelCount = count;
-            }
+          if (scope.srcField != undefined) scope.data.imgsrc = scope.srcField;  
           
         });
 
@@ -194,6 +169,12 @@ console.log(scope.data.placed.length, scope.data.nodes.length);
     return this;
   }
 
+  //////////////////////////////////////////////////////////////////////////////
+  //
+  this.SetPivot = function(p) {
+    this.pivot = p;
+    return this;
+  }
   
   //////////////////////////////////////////////////////////////////////////////
   //
@@ -549,7 +530,7 @@ console.log(scope.data.placed.length, scope.data.nodes.length);
           "anchor"  : undefined, // deprecated anchor
           "width"   : data.width || 0.25,
           "height"  : undefined, // Calculated height from textToImage includes border,padding,etc.
-          "pivot"   : 5,
+          "pivot"   : 8,
           "preload" : false
         };
 

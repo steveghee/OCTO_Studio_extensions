@@ -612,12 +612,15 @@ function sxslHelper(renderer, anchor) {
       var steplist = [];
       var p = this.proc;
       var me = this;
+      me.statementscompleted = 0;
       p.statements.forEach(function (statement, idx) {
 
         // can be useful, later...
         statement._index = idx;
 
         var done = (statement.status == "done") || false;
+        if (done) me.statementscompleted += 1;
+        
         if (done && includeDone != undefined && includeDone == false) {
         } else
           for (var stp = 0; stp < p.steps.length; stp++) {
@@ -886,8 +889,14 @@ function sxslHelper(renderer, anchor) {
 
         // check each prerequisite to see if it has already been completed
         if (execlist != undefined && statement.prereq != undefined) statement.prereq.forEach(function (idx) {
-          if (execlist[idx] != undefined && execlist[idx].statement.status != "done")
-            goodtogo = false;
+          if (execlist[idx] != undefined && execlist[idx].statement.status != "done") {
+              //recurse
+              next = goodToGo(execlist[idx].statement,statements,execlist);
+              if (next != undefined)
+                return next; // drop out of recursion
+              else
+                goodtogo = false;   
+          }
         });
         if (!goodtogo)
           next = undefined;
@@ -965,6 +974,7 @@ function sxslHelper(renderer, anchor) {
         // we can have procedure, step and action=level contexts, so we capture and pass these down
         me.context = me.proc.contexts != undefined ? me.proc.contexts : me.context;
         me.statementcount = me.proc.statements.length;
+        me.statementscompleted = 0;
         if (me.statementcount > 0) {
           me.execlist = {};
           me.proc.statements.forEach(function(s,i) {
@@ -995,6 +1005,7 @@ function sxslHelper(renderer, anchor) {
         // we can have procedure, step and action=level contexts, so we capture and pass these down
         me.context = me.proc.contexts != undefined ? me.proc.contexts : me.context;
         me.statementcount = me.proc.statements.length;
+        me.statementscompleted = 0;
         if (me.statementcount > 0) {
           me.execlist = {};
           me.proc.statements.forEach(function(s,i) {

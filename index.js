@@ -35,7 +35,7 @@ exports.runtimeAngularModulesRequires = ["groupy-ng",
                                          //new - mainly alpha testing
                                          "sxslplayer-ng",
                                          "cart-ng",
-                                         //"infodisplay-ng",
+                                         "infodisplay-ng",
                                          //"dynamictarget-ng",
                                          
                                          "multiline3D-ng",

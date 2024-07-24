@@ -173,7 +173,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               registerEvent('stepStart', function (evt, step) {
                 debugLog('+++++++++++++++++++++++\nstarting step', step.id, step.title);
                 scope.setHeadLabel(step.title);
-                scope.setStepLabel(proc.sti + " OF " + proc.statementcount);
+                scope.setStepLabel( (proc.statementscompleted + 1) + " OF " + proc.statementcount);
                 scope.executingField = true;
 
                 scope.startStepTimeClock(step, scope.ticker, scope);
