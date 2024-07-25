@@ -577,8 +577,8 @@ function sxslHelper(renderer, anchor) {
       var prelist = JSON.parse(data);  
       //otherwise iterate through the list matching id to statement id            
       if (prelist != undefined && prelist.length > 0) {
-        prelist.forEach(function(s,i) {
-          for (var j=0; j<me.statementcount;j++) {                
+        prelist.forEach(function(s) {
+          for (var j=0; j<me.statementcount; j++) {                
             if (me.proc.statements[j] != undefined && s.statementId != undefined && me.proc.statements[j].id == s.statementId) {
               me.proc.statements[j].status = s.status;              
               me.proc.statements[j].pass = s.pass;  
@@ -588,6 +588,27 @@ function sxslHelper(renderer, anchor) {
               me.proc.statements[j].status = s.status;              
               me.proc.statements[j].pass = s.pass;  
               break;
+            }
+            if (me.proc.statements[j] != undefined && s.actionId != undefined) {
+              //lets look at all the step and see if this action exists; if it does, set the status at the STEP level
+              //first, lets find the step
+              var actionFound = false;
+              for(var i=0; i<me.proc.steps.length; i++) {
+                if (me.proc.steps[i].id == me.proc.statements[j].stepId) {
+                  let step = me.proc.steps[i];      
+                  //now lets see if this action exists
+                  for (var a=0; a<step.actions.length; a++) {
+                      if (step.actions[a].id == s.actionId) {
+                        // we found it!!!!  We actually set the status at the statement level
+                        actionFound = true;  
+                        me.proc.statements[j].status = s.status;              
+                        me.proc.statements[j].pass = s.pass;  
+                        break; // out of this action forloop
+                      }
+                  }
+                }
+                if (actionFound) break; // out of the step forloop
+              }
             }
           }
         })
@@ -689,7 +710,11 @@ function sxslHelper(renderer, anchor) {
           me.action.details.response = me.action.details.pending;
           me.action.details.pending = undefined;
 
-          me.events.emit('actionInputDelivered', { event: "input", step: this.step, action: this.action });
+          me.events.emit('actionInputDelivered', { event: "input", 
+                                                    step: this.step, 
+                                                  action: this.action, 
+                                                    name: me.action.details.ID, 
+                                                   value: me.action.details.response[me.action.details.ID] } );
           
         }
         
@@ -949,6 +974,9 @@ function sxslHelper(renderer, anchor) {
             break;
           }
         }
+        
+        if (next != undefined)
+          next = goodToGo(next, me.proc.statements, me.execlist);
 
       }
 
