@@ -764,10 +764,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
         var minimise = function () {
           const t1 = document.querySelector('div.sxsl-instruction-container');
-          t1.className = 'sxsl-instruction-container-hide';
-          const t2 = document.querySelector('div#sxsl-instruction-max');
-          t2.className = 'sxsl-thumbnail-show';
-          minimisePreview()
+          if (t1 != undefined) {
+            t1.className = 'sxsl-instruction-container-hide';
+            const t2 = document.querySelector('div#sxsl-instruction-max');
+            t2.className = 'sxsl-thumbnail-show';
+            minimisePreview()
+          }
         }
         var minimisePreview = function () {
           const t3 = document.querySelector('div#preview-container');
@@ -849,12 +851,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           hideAndStopBarcode();
           if (scope.runningField == true) {
             const t1 = document.querySelector('div#sxsl-instruction-container');
-            t1.className = 'sxsl-instruction-container';
-            const t2 = document.querySelector('div#sxsl-instruction-max');
-            t2.className = 'sxsl-thumbnail-hide';
-            const t3 = document.querySelector('div#viewer-container');
-            t3.className = 'sxsl-preview-hide';
-            maximisePreview();
+            if (t1 != undefined) {
+              t1.className = 'sxsl-instruction-container';
+              const t2 = document.querySelector('div#sxsl-instruction-max');
+              t2.className = 'sxsl-thumbnail-hide';
+              const t3 = document.querySelector('div#viewer-container');
+              t3.className = 'sxsl-preview-hide';
+              maximisePreview();
+            }
           }
         }
         var maximisePreview = function () {

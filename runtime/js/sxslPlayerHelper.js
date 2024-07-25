@@ -386,7 +386,7 @@ function sxslHelper(renderer, anchor) {
       if (this.step != undefined) {
         this.step.ref.status = 'halt';
           
-        var haltInfo = { event: reason.event, reason: reason.reason, step: this.step };
+        var haltInfo = { event: reason.event, reason: reason.reason, step: this.step, proc:this };
         this.events.emit('procHalt', haltInfo);
 
         this.action = undefined;
