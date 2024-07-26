@@ -63,7 +63,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         var hilite = function(nodeId,rd,nv) {
           var shader = scope.data.hiliteShader+toHolo()+scope.data.hiliteColor;
           if (scope.data.legend != undefined && nv!= undefined) {
-            shader = scope.data.hiliteShader+toHolo()+";fu f 1.0;fv f "+nv;
+            shader = scope.data.hiliteShader+toHolo()+";mixer f 1;fu f 1.0;fv f "+nv;
           }
           rd.setProperties(nodeId,
             {
