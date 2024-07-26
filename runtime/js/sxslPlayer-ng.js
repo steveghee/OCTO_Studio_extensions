@@ -572,8 +572,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                         } else {
                           debugLog(e.msg);
 
-                          proc.halt(e.msg) // this should fire procHalt event
-                            .then(() => {
+                          proc.halt({event:"fatal",reason:e.msg}) // this should fire procHalt event
+                              .then(() => {
                               //
                               // is there anything else we need to do here?    
                               // e.g. scope.logger.submit()("halt");
