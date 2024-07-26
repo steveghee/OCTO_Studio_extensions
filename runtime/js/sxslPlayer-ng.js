@@ -499,6 +499,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                         scope.canrunField = false;
                       })
                       .catch(e => {
+                        scope.$parent.$emit('procHalt', { event: "fatal", reason: e });
                         debugLog(e);
                       });
                   };
@@ -1660,6 +1661,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         registerRootEvent("$ionicView.beforeLeave", function (event,info) {
           // clean up
           debugLog('leaving view',info.title);
+          //scope.deactivateAll();
+
         });
           
 
@@ -2047,10 +2050,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           scope.focusField.current = 0; 
           
           // deallocate any event listeners we registered ($on, addEventListener etc.)              
-          scope.data.events.forEach(function(evtfn) {
-            evtfn();
-          });
-              
+          if (scope.data.events != undefined) {
+            scope.data.events.forEach(function(evtfn) {
+              evtfn();
+            });
+            scope.data.events = undefined;
+          }    
           scope.$parent.$applyAsync();    
         }
         scope.animatePOIs = function (start) {
