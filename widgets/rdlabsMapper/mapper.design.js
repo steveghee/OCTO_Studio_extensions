@@ -79,6 +79,16 @@ function twxMapper() {
  isBindingTarget: true,
        showInput: true
       },
+      {
+            name: 'legend',
+           label: 'Legend',
+        datatype: 'resource_url',
+  resource_image: true,
+ allowedPatterns: ['.png','.jpg'],
+         default: '',
+ isBindingTarget: true,
+      isVisible : true
+      },
     ],
 
     events: [
@@ -122,7 +132,7 @@ function twxMapper() {
       var ps3gl = '<script name="mapper_desaturatedgl" type="x-shader/x-fragment"> precision mediump float; const float PI=3.1415926; varying vec3 vertex; varying vec3 normal; uniform vec4 surfaceColor; const vec4 ambientColor = vec4(0.15, 0.15, 0.15, 1.0); const vec4 specColor    = vec4(0.05, 0.05, 0.05, 1.0); vec4 luma(vec4 cin) {float min = min( min(cin.x, cin.y), cin.z ); float max = max( max(cin.x, cin.y), cin.z ); float v = (max+min)/2.; return vec4(v,v,v,cin.w); } void main() {vec4 color = luma(surfaceColor); vec3 lightPos    = vec3(1.,1.,1.); vec3 lightDir    = -normalize(lightPos); vec3 finalNormal = normalize(normal); float lambertian = dot(lightDir,finalNormal); float specular   = 0.0; vec3 viewDir     = normalize(-vertex); if (lambertian < 0.0) finalNormal = - finalNormal; vec3 reflectDir = reflect(-lightDir, finalNormal); float specAngle = max(dot(reflectDir, viewDir), 0.0); specular = pow(specAngle, 4.0); color = ambientColor * color + color * abs(lambertian)   + specColor * specular; color.a = 1.; gl_FragColor=vec4(color); } </script>'
       var vs3gl = '<script name="mapper_desaturatedgl" type="x-shader/x-vertex"> attribute vec3 vertexPosition; attribute vec3 vertexNormal; varying   vec3 normal; varying   vec3 vertex; uniform   mat4 modelViewProjectionMatrix; uniform   mat4 normalMatrix; void main() {vec4 vp     = vec4(vertexPosition, 1.0); gl_Position = modelViewProjectionMatrix * vp; normal      = vec3(normalize(normalMatrix * vec4(vertexNormal,0.0))); vertex      = vp.xyz; } </script>'
       
-      var tmpl = '<div ng-mapper isholo-field='+isholo+' info-field="me.data" shader-field={{me.shader}} autoselect-field={{me.autoSelect}} color-field={{me.color}} default-field={{me.default}} polarity-field={{me.physical}} model-field={{me.model}} delegate-field="delegate"></div>';
+      var tmpl = '<div ng-mapper isholo-field='+isholo+' info-field="me.data" legend-field={{me.legend}} shader-field={{me.shader}} autoselect-field={{me.autoSelect}} color-field={{me.color}} default-field={{me.default}} polarity-field={{me.physical}} model-field={{me.model}} delegate-field="delegate"></div>';
       return tmpl+ps1gl+vs1gl+ps2gl+vs2gl+ps3gl+vs3gl+ps1hl+vs1hl+ps2hl+vs2hl+ps3hl+vs3hl;
     }
   }
