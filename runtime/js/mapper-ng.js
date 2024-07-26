@@ -63,46 +63,49 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         var hilite = function(nodeId,rd,nv) {
           var shader = scope.data.hiliteShader+toHolo()+scope.data.hiliteColor;
           if (scope.data.legend != undefined && nv!= undefined) {
-              //rd.setTexture(nodeId,scope.data.legend);  
-              shader = scope.data.hiliteShader+toHolo()+";fu f 1.0;fv f "+nv;
+            shader = scope.data.hiliteShader+toHolo()+";fu f 1.0;fv f "+nv;
           }
           rd.setProperties(nodeId,
             {
-              shader:shader, 
-              hidden:false,
-             opacity:scope.data.polarity?0.8:1.0,
-             phantom:scope.data.polarity,
-               decal:false
+              shader: shader, 
+              hidden: false,
+             opacity: scope.data.polarity?0.8:1.0,
+             phantom: scope.data.polarity,
+               decal: false
            });
-          if (scope.data.legend != undefined)
-            rd.setTexture(nodeId,scope.data.legend);  
 
         };
         var unlite = function(nodeId,rd) {
           rd.setProperties(nodeId,
             {
-              shader:scope.data.unliteShader+toHolo(),
-              hidden:false,
-             opacity:0.5,phantom:true,
-               decal:false,occlude:false
+              shader: scope.data.unliteShader+toHolo(),
+              hidden: false,
+             opacity: 0.5, 
+             phantom: true,
+               decal: false,
+             occlude: false
             });      
         };
         var dotlite = function(nodeId,rd) {
           rd.setProperties(nodeId,
             {
-              shader:scope.data.dotlitShader+toHolo(),
-              hidden:false,
-             opacity:0.5,phantom:false,
-               decal:false,occlude:true
+              shader: scope.data.dotlitShader+toHolo(),
+              hidden: false,
+             opacity: 0.5,
+             phantom: false,
+               decal: false,
+             occlude: true
             });      
         };
         var normal = function(nodeId,rd) {
           rd.setProperties(nodeId,
             {
-              shader:"Default",
-              hidden:false,
-             opacity:1,phantom:false,
-               decal:false,occlude:false
+              shader: "Default",
+              hidden: false,
+             opacity: 1,
+             phantom: false,
+               decal: false,
+             occlude: false
             });      
         };
         var tolist = function(ids,cb,rd) {
