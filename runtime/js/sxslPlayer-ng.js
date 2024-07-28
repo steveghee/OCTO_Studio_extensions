@@ -1307,7 +1307,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         });
 
         scope.$watch('prerequisiteField', function () {
-          scope.data.prerequisites = scope.prerequisiteField;             
+          scope.data.prerequisites = scope.prerequisiteField != undefined ? JSON.parse(scope.prerequisiteField) : undefined;             
         });
     
         scope.$watch('reasoncodeField', function () {
@@ -1325,7 +1325,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 break;
             }
           }
-
         });
 
         scope.$watchGroup(['physicalField', 'disabledField', 'holoField', 'loggingField', 'includeField', 'hiliteshadeField', 'annotateshadeField'], function () {
@@ -1376,7 +1375,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 //TODO : rename this event     
                 scope.$parent.$emit("statusUpdateComplete");
               }, 10);
-            }
+            };
           }
         });
 
@@ -3254,12 +3253,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           }
         };
 
-        scope.stepValidator = function (step, test) {
+        scope.stepValidator = function (step, jump) {
 
           // if its a valid step and there is a configured external (twx) validator, lets call it  
           if (step != undefined && scope.data.isProcessThingAvailable && scope.twxStepValidator)
-            return scope.twxStepValidator(step, test);
-          else {
+            return scope.twxStepValidator(step, jump);
+          else if ($rootScope.stepValidator != undefined) {
+            return $rootScope.stepValidator(step, jump);
+          } else {
             // a dummy call which always returns true
             return new Promise((next, reject) => {
               next(); // signal it is ok to move on
@@ -3288,7 +3289,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 scope.sxslStepValidated(false);
               }
             });
-            scope.twxStepValidator = (step, test) => new Promise((next, reject) => {
+            scope.twxStepValidator = (step, jump) => new Promise((next, reject) => {
 
               scope.data.sxslStepValidatorTimeout = undefined;
 
@@ -3319,7 +3320,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               // ask if things are ok
               twx.app.fn.triggerDataService('processThing', 'validateStep', {
                 'stepID': step != undefined ? step.id : undefined,
-                'test': JSON.stringify(test)
+                'jump': jump
               });
 
             });

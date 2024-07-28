@@ -571,10 +571,10 @@ function sxslHelper(renderer, anchor) {
     }
     
     this.applyPrerequisites = function (data) {
-      if (data == undefined || data.length < 2)
+      if (data == undefined)
         return;
             
-      var prelist = JSON.parse(data);  
+      var prelist = data;
       //otherwise iterate through the list matching id to statement id            
       if (prelist != undefined && prelist.length > 0) {
         prelist.forEach(function(s) {
@@ -825,13 +825,13 @@ function sxslHelper(renderer, anchor) {
         }
 
         // if configured, we need to do a remote check to see if we are ok to move to the next step
-        me.stepValidator(me.step, me.step != undefined ? me.step.ack : undefined)
+        me.stepValidator(me.step, jumpRef)
           .then((newJumpRef) => {
 
             // now move to next step
             // console.log('iterating steps');  
             //
-            me.stepRef = me.nextStatement(jumpRef);
+            me.stepRef = me.nextStatement(newJumpRef || {jumpRef:jumpRef});
             if (me.stepRef != undefined) {
 
               //find the next step in the step bucket  
@@ -928,9 +928,12 @@ function sxslHelper(renderer, anchor) {
 
         return next;
       }
-
+      
+      if (jumpRef != undefined && jumpRef.prereqs)
+        this.applyPrerequisites(jumpRef.prereqs);
+      
       // are we being told to go to a specific?
-      var next = me.proc.statements[jumpRef];
+      var next = me.proc.statements[jumpRef.jumpRef];
 
       // if not, which is next? we should do "hold" item first
       if (next == undefined) {
