@@ -3217,7 +3217,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           // if its a valid step and there is a configured external (twx) validator, lets call it  
           if (proc != undefined && scope.data.isProcessThingAvailable && scope.twxProcValidator)
             return scope.twxProcValidator(proc, entry);
-          else {
+          else if ($rootScope.procValidator != undefined) {
+            return $rootScope.procValidator(proc, entry);
+          } else {
 
             // a dummy call which always returns true
             if (entry) return new Promise((next, reject) => {
@@ -3259,7 +3261,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           // if its a valid step and there is a configured external (twx) validator, lets call it  
           if (step != undefined && scope.data.isProcessThingAvailable && scope.twxStepValidator)
             return scope.twxStepValidator(step, jump);
-          else if ($rootScope.stepValidator != undefined) {
+          else if (step != undefined && $rootScope.stepValidator != undefined) {
             return $rootScope.stepValidator(step, jump);
           } else {
             // a dummy call which always returns true
