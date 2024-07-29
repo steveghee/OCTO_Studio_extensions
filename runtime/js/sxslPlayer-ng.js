@@ -17,7 +17,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         disabledField: '@',
         physicalField: '@',
         resourceField: '@',
-        reasoncodeField: '@',
+        reasoncodeField: '=',
         includeField: '@',
         anchorField: '@',
         holoField: '@',
@@ -175,6 +175,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 scope.setHeadLabel(step.title);
                 scope.setStepLabel( (proc.statementscompleted + 1) + " OF " + proc.statementcount);
                 scope.executingField = true;
+                scope.steplistField = proc.getStepList();
 
                 scope.startStepTimeClock(step, scope.ticker, scope);
 
@@ -282,7 +283,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 scope.canrunField = false;
                 scope.runningField = false;
                 scope.executingField = false;
-
+                scope.reasoncodeField = { reason:reason.reason, event:reason.event };
+                
                 scope.logger.push({
                   statement: reason.step != undefined ? reason.step.ref.id : undefined,                
                   id: reason.step != undefined ? reason.step.id : undefined,
@@ -499,8 +501,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                         scope.canrunField = false;
                       })
                       .catch(e => {
-                        scope.$parent.$emit('procHalt', { event: "fatal", reason: e });
-                        debugLog(e);
+                        scope.$parent.$emit('procHalt', e);
                       });
                   };
 
@@ -572,7 +573,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                         } else {
                           debugLog(e.msg);
 
-                          proc.halt({event:"fatal",reason:e.msg}) // this should fire procHalt event
+                          proc.halt(e.msg) // this should fire procHalt event
                               .then(() => {
                               //
                               // is there anything else we need to do here?    
