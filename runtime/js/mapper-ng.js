@@ -18,6 +18,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         defaultField  : '@',
         modelField    : '@',
         colorField    : '@',
+        legendField   : '@',
         isholoField   : '@',
      autoselectField  : '@',
         infoField     : '=',
@@ -38,6 +39,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                         model: undefined,
                       default: undefined,
                          undo: undefined,
+                       legend: undefined,
                       isholo : false,
                   hiliteColor: ';r f 1;g f 0.5;b f 0.25',
                  hiliteShader: defaultHiliteShader,
@@ -58,41 +60,52 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         }
 
         
-        var hilite = function(nodeId,rd) {
+        var hilite = function(nodeId,rd,nv) {
+          var shader = scope.data.hiliteShader+toHolo()+scope.data.hiliteColor;
+          if (scope.data.legend != undefined && nv!= undefined) {
+            shader = scope.data.hiliteShader+toHolo()+";mixer f 1;fu f 1.0;fv f "+nv;
+          }
           rd.setProperties(nodeId,
             {
-              shader:scope.data.hiliteShader+toHolo()+scope.data.hiliteColor, 
-              hidden:false,
-             opacity:scope.data.polarity?0.8:1.0,
-             phantom:scope.data.polarity,
-               decal:false
-            });      
+              shader: shader, 
+              hidden: false,
+             opacity: scope.data.polarity?0.8:1.0,
+             phantom: scope.data.polarity,
+               decal: false
+           });
+
         };
         var unlite = function(nodeId,rd) {
           rd.setProperties(nodeId,
             {
-              shader:scope.data.unliteShader+toHolo(),
-              hidden:false,
-             opacity:0.5,phantom:true,
-               decal:false,occlude:false
+              shader: scope.data.unliteShader+toHolo(),
+              hidden: false,
+             opacity: 0.5, 
+             phantom: true,
+               decal: false,
+             occlude: false
             });      
         };
         var dotlite = function(nodeId,rd) {
           rd.setProperties(nodeId,
             {
-              shader:scope.data.dotlitShader+toHolo(),
-              hidden:false,
-             opacity:0.5,phantom:false,
-               decal:false,occlude:true
+              shader: scope.data.dotlitShader+toHolo(),
+              hidden: false,
+             opacity: 0.5,
+             phantom: false,
+               decal: false,
+             occlude: true
             });      
         };
         var normal = function(nodeId,rd) {
           rd.setProperties(nodeId,
             {
-              shader:"Default",
-              hidden:false,
-             opacity:1,phantom:false,
-               decal:false,occlude:false
+              shader: "Default",
+              hidden: false,
+             opacity: 1,
+             phantom: false,
+               decal: false,
+             occlude: false
             });      
         };
         var tolist = function(ids,cb,rd) {
@@ -100,8 +113,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             //make sure we're hitting a model that has been defined / loaded                                                  
             let base = scope.$parent.view.wdg[id.model];
             if (base != undefined && base.src != undefined && base.src.length > 0) { //has a model been loaded? 
-              var nodeId = id.model+'-'+id.path;                                                    
-              cb(nodeId,rd);
+              var nodeId = (scope.data.model != undefined ? scope.data.model : id.model)+'-'+id.path;                                                    
+              cb(nodeId,rd,id.normalised);
             }
           });
         };
@@ -201,6 +214,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               changed = true;  
             }           
             
+            if (scope.legendField != scope.data.legend) {  
+              scope.data.legend = scope.legendField + "?name=legend";
+              scope.renderer.setTexture(scope.data.model+'-/',scope.data.legend);
+              changed = true;  
+            }           
+            
             if (scope.shaderField != scope.data.shader) {  
               scope.data.shader = scope.shaderField;
               if (scope.data.shader != undefined && scope.data.shader != '') 
@@ -223,7 +242,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
         };
         
-        scope.$watchGroup(['polarityField','shaderField','modelField','defaultField','infoField'], function () {
+        scope.$watchGroup(['legendField','polarityField','shaderField','modelField','defaultField','infoField'], function () {
           updateMapper();
         });
 
