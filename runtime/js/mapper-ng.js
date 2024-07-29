@@ -214,8 +214,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               changed = true;  
             }           
             
-            if (scope.legendField != scope.data.legend) {  
-              scope.data.legend = scope.legendField + "?name=legend";
+            if (scope.legendField != scope.data.legend) {
+              if (scope.legendField != undefined && scope.legendField.length > 0) {
+                scope.data.legend = scope.legendField + "?name=legend";
+              } else {
+                scope.data.legend = undefined;
+              }
               scope.renderer.setTexture(scope.data.model+'-/',scope.data.legend);
               changed = true;  
             }           
