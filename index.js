@@ -37,6 +37,7 @@ exports.runtimeAngularModulesRequires = ["groupy-ng",
                                          "cart-ng",
                                          "infodisplay-ng",
                                          "compressor-ng",
+                                         "quantizer-ng",
                                          //"dynamictarget-ng",
                                          
                                          "multiline3D-ng",

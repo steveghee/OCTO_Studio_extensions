@@ -60,10 +60,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         }
 
         
-        var hilite = function(nodeId,rd,nv) {
+        var hilite = function(nodeId,rd,nv,nu) {
           var shader = scope.data.hiliteShader+toHolo()+scope.data.hiliteColor;
           if (scope.data.legend != undefined && nv!= undefined) {
-            shader = scope.data.hiliteShader+toHolo()+";mixer f 1;fu f 1.0;fv f "+nv;
+            var fu = nu || 1.0;  
+            shader = scope.data.hiliteShader+toHolo()+";mixer f 1;fu f "+fu+";fv f "+nv;
           }
           rd.setProperties(nodeId,
             {
@@ -114,7 +115,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             let base = scope.$parent.view.wdg[id.model];
             if (base != undefined && base.src != undefined && base.src.length > 0) { //has a model been loaded? 
               var nodeId = (scope.data.model != undefined ? scope.data.model : id.model)+'-'+id.path;                                                    
-              cb(nodeId,rd,id.normalised);
+              cb(nodeId,rd,id.normalised,id.quantized);
             }
           });
         };
