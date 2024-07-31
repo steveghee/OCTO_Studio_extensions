@@ -69,7 +69,7 @@ function twxPinger() {
         datatype: 'resource_url',
   resource_image: true,
  allowedPatterns: ['.png', '.jpg', '.svg', '.jpeg', '.gif','.bmp'],
-         default: '../../extensions/images/pingerBlank.png',
+         default: '../../extensions/images/pingerHand.png',
  isBindingTarget: true,
       isVisible : true
       },
@@ -175,7 +175,7 @@ function twxPinger() {
     ],
 
     dependencies: {
-      files         : ['images/pingerBlank.png'],
+      files         : ['images/pingerBlank.png','images/pingerHand.png'],
     },
 
     designTemplate: function (data, html) {

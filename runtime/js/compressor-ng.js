@@ -70,8 +70,10 @@ function isbool(v) {
                     scope.resultField = undefined;
                   } else {
                     scope.errorField  = undefined;
-                    let nd = { model: row.model, path:row.path };
-                    nd[name] = row[name];
+                    var nd = {};
+                    for(let key in row) {
+                      nd[key] = row[key];
+                    }
                     nd.normalised = (inp - lower) / range;
                     result.push(nd);
                   }
