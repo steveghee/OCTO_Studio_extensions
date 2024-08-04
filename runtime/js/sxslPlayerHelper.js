@@ -290,7 +290,10 @@ function sxslHelper(renderer, anchor) {
       // where we'd set stuff up
       this.procValidator(this.proc, true)
         .then((pre) => {
-          this.prereq = pre;
+          this.prereq = { tools:pre.tools, consumables:pre.consumables };
+          if (pre.prereqs != undefined) {
+            this.applyPrerequisites(pre.prereqs);
+          }
           this.events.emit('procStart', this);
           next(this.intro);
         })
@@ -347,6 +350,12 @@ function sxslHelper(renderer, anchor) {
             return true;
           }
         }
+      } else if (this.inputs != undefined) { //procedure-level inputs (note we only deal with one)
+        var myID = this.inputs[0].name;  
+        if (this.inputs.pending == undefined) this.inputs.pending = {};
+        if (this.inputs.pending[myID] == undefined) this.inputs.pending[myID] = [];
+        this.inputs.pending[myID].push(input);
+        return true;
       }
 
       return false;
@@ -689,7 +698,27 @@ function sxslHelper(renderer, anchor) {
     // ensure the procedure can continue
     //
     this.next = (response, jumpRef) => new Promise((next, reject) => {
-
+                                                   
+      //handle procedure level inputs - are we waiting on one?
+      if (me.inputs != undefined && me.inputs.response == undefined) {
+          
+        //if one is pending, is it mandatory?  
+        if (me.inputs.pending == undefined && me.inputs[0].required == true) {
+          reject({cmd:'input'});
+          return;  
+        } 
+        //otherwise, process the results and allow the plyer to move on
+        else if (me.inputs.pending != undefined) {
+          me.inputs.response = me.inputs.pending; // return the last pushed value
+          me.inputs.pending  = undefined;  
+          var iid = Object.keys(me.inputs.response)[0]; //we;re only handling the first one
+          me.events.emit('procInputDelivered', { event: "input", 
+                                                    proc: me.id, 
+                                                    name: iid, 
+                                                   value: me.inputs.response[iid] } );
+        }
+      }
+    
       //the player willl step through each action of each step, until
       //it reaches the end of the procedure
       //
@@ -1004,6 +1033,7 @@ function sxslHelper(renderer, anchor) {
         me.thumbnail = me.proc.thumbnail != undefined ? me.anchor + me.proc.thumbnail : me.proc.thumbnail;
         // we can have procedure, step and action=level contexts, so we capture and pass these down
         me.context = me.proc.contexts != undefined ? me.proc.contexts : me.context;
+        me.inputs = me.proc.inputs;
         me.statementcount = me.proc.statements.length;
         me.statementscompleted = 0;
         if (me.statementcount > 0) {
@@ -1035,6 +1065,7 @@ function sxslHelper(renderer, anchor) {
         me.thumbnail = me.proc.thumbnail != undefined ? me.anchor + me.proc.thumbnail : me.proc.thumbnail;
         // we can have procedure, step and action=level contexts, so we capture and pass these down
         me.context = me.proc.contexts != undefined ? me.proc.contexts : me.context;
+        me.inputs = me.proc.inputs;
         me.statementcount = me.proc.statements.length;
         me.statementscompleted = 0;
         if (me.statementcount > 0) {

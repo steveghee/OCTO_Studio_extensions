@@ -161,7 +161,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 var titleString = (proc.title || "" ) + (proc.versionInfo != undefined ? (" (" + proc.versionInfo + ") ") : "") + (proc.published != undefined ? ("Last published: " + proc.published.toUTCString()) : "")
                 scope.setHeadLabel(titleString);
                 scope.steplistField = proc.getStepList();
-
+                
+                if (proc.inputs != undefined) {
+                  scope.inputValidator = scope.actions.findInputValidator(proc.inputs[0]);
+                }
+                
                 scope.logger.push({
                   id: proc.id,
                   event: "procstart",
@@ -337,6 +341,19 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   time: Date.now(),
                   response: input.action.details.response
                 });
+              });
+                  
+              registerEvent('procInputDelivered', function (evt, input) {
+                debugLog('proc input delivered');
+                /*
+                hideCapture();
+                scope.logger.push({
+                  id: input.name,
+                  event: input.event,
+                  time: Date.now(),
+                  response: input.value
+                });
+                */     
               });
 
               registerEvent('stepCompletionPending', function (evt, step) {
@@ -1308,7 +1325,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         });
 
         scope.$watch('prerequisiteField', function () {
-          scope.data.prerequisites = scope.prerequisiteField != undefined ? JSON.parse(scope.prerequisiteField) : undefined;             
+          scope.data.prerequisites = scope.prerequisiteField != undefined && scope.prerequisiteField.length > 0 ? JSON.parse(scope.prerequisiteField) : undefined;             
         });
     
         scope.$watch('reasoncodeField', function () {
@@ -1344,8 +1361,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           function () { return scope.steplistField != undefined ? JSON.stringify(scope.steplistField.selectedRows) : '' },
           function (value) {
             if (value != undefined && scope.steplistField != undefined) {
-              var parsed = JSON.parse(value);
-              // check if we CAN run
+              var parsed = JSON.parse(value);              // check if we CAN run
               if (scope.canrunField && scope.runningField &&
                   //and if we can, then do we have a valid jump point?
                   parsed != undefined && parsed.length == 1 && parsed[0].status != 'done') {
@@ -2373,9 +2389,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             var passThru = function (i) {
               var input = i;
               var src = scope.captureTextWindow
-              if (i.hint != undefined && i.hint.instructions != undefined) {
-                src.placeholder = i.hint.instructions.resources[0].text;
-              }
+              if (i.hint != undefined) {
+                if (i.hint.instructions != undefined) 
+                  src.placeholder = i.hint.instructions.resources[0].text;
+                else if (i.hint.resources != undefined) 
+                  src.placeholder = i.hint.resources[0].text;
+              } 
+              else src.placeholder = "";
+              
               src.className = 'sxsl-capture-text';
               src.value = '';
 
@@ -2526,6 +2547,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               case 'CaptureNumber': return rangeInput(input);
               case 'CaptureImage': return photocapture(input);
               default:
+                if (input.mimeType=="text/plain") return passThru(input);
                 return undefined;
             }
           }
@@ -3248,7 +3270,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               })
 
               //
-              next(prereqs);
+              next( { tools:prereqs.tools, conumables:prereqs.consumables } );
             });
             else return new Promise((next, reject) => {
               next();
@@ -3259,14 +3281,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         scope.stepValidator = function (step, jump) {
 
           // if its a valid step and there is a configured external (twx) validator, lets call it  
-          if (step != undefined && scope.data.isProcessThingAvailable && scope.twxStepValidator)
+          if (scope.data.isProcessThingAvailable && scope.twxStepValidator)
             return scope.twxStepValidator(step, jump);
-          else if (step != undefined && $rootScope.stepValidator != undefined) {
+          else if ($rootScope.stepValidator != undefined) {
             return $rootScope.stepValidator(step, jump);
           } else {
             // a dummy call which always returns true
             return new Promise((next, reject) => {
-              next(); // signal it is ok to move on
+              next({jumpRef: jump}); // signal it is ok to move on
             });
           }
         }
