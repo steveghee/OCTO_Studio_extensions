@@ -1295,7 +1295,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
                   // and the steps
                   scope.data.steplist = getSteps(proc);
-                  startSxslPlayer();
+//we should wait                  startSxslPlayer();
                 }
               })
               .error(function (data, status, headers, config) {
@@ -1318,7 +1318,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
             // and the steps
             scope.data.steplist = getSteps(proc);
-            startSxslPlayer();
+//we should wait            startSxslPlayer();
              
           }
 
@@ -1664,7 +1664,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             createReferencePreviewHTML();
             createReferenceViewerHTML();
             createProofCaptureHTML();
-
+            
+            //is this the right way to start?
             startSxslPlayer();
           } else {
               
