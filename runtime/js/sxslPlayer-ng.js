@@ -107,7 +107,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             debug.text = scope.data.debuglog;
             scope.$parent.$applyAsync();
           }
-          else console.log(arguments);
+          //else console.log(arguments);
         }
         
         var registerRootEvent = function(evt,fn) {

@@ -16,11 +16,37 @@ function sxslHelper(renderer, anchor) {
       return undefined;
   }
   
-  this.sxslAction = function (a, s, i, last, e) {
+  function getResourceTypes(res) {
+    return res != undefined ? res.resources.map(v => { return v.mimeType; }) : [];
+  }
+
+  function getResourceText(res,vars,type) {
+      
+    //ideally will search through the resources for type (and also language at somepoint)  
+    var stype = type || "text/plain";  
+    var txt = res != undefined ? res.resources.filter(function(v) { return v.mimeType==stype;})[0].text : ""
+    //var txt = res != undefined ? res.resources[0].text : "";
+    
+    if (txt.length>0 && vars != undefined) {
+      //are there any variables referenced? if so, can we fill them in?
+      const regexp = /\${(\w+)}/g;
+      for (const match of txt.matchAll(regexp)) {
+        var name = match[1];
+        var nv = vars[name];
+        if (nv!= undefined) {
+          var rg2 = RegExp(`(\\$\{${match[1]}})`,"g");
+          txt = txt.replace(rg2,nv);
+        }
+      }
+    }
+    return txt;
+  }
+  
+  this.sxslAction = function (a, s, i, last, p) {
     this.step = s;
     this.stepid = s.id;
     this.index = i;
-    this.events = e;
+    this.events = p.events;
     this.isFirst = (i == 0);
     this.isLast = (last == true);
     this.introtext = (i == 0) ? s.intro : undefined;
@@ -143,8 +169,8 @@ function sxslHelper(renderer, anchor) {
           this.tools.push({
             name: tool.name,
             id: tool.id,
-            mime: tool.extras != undefined ? tool.extras.resources[0].mimeType : undefined,
-            text: tool.extras != undefined ? tool.extras.resources[0].text : undefined,
+            mime: undefined, //not used at this point
+            text: getResourceText(tool.extras),
             context: context,
             asset: asset
           }
@@ -164,7 +190,7 @@ function sxslHelper(renderer, anchor) {
             mime: ref.resources[0].mimeType,
             url: ref.resources[0].url,
             thumb: ref.thumbnail,
-            desc: ref.description != undefined ? ref.description.resources[0].text : ""
+            desc: getResourceText(ref.description)
           });
         }
       }
@@ -173,7 +199,7 @@ function sxslHelper(renderer, anchor) {
     this.viewpoint = getViewpoint(a.viewpoint != undefined ? a.viewpoint : s.viewpoint, this.context);
     this.sceneName = a.sceneName != undefined ? a.sceneName : s.sceneName; // if defined, use this to drive the background context (model/occluder)
     this.id = a.id;
-    this.instruction = a.instructions != undefined ? a.instructions.resources[0].text : undefined;
+    this.instruction = getResourceText(a.instructions, p.variables);
 
     //pointer back to the master
     this.base = a;
@@ -212,7 +238,7 @@ function sxslHelper(renderer, anchor) {
     }
 
   }
-
+  
   //
   // step processor
   //
@@ -228,9 +254,9 @@ function sxslHelper(renderer, anchor) {
     this.canBypass = p.getStepList(false).length > 1;
     this.actioncount = s.actions != undefined ? s.actions.length : 0;
     this.id = s.id;
-    this.title = s.title != undefined ? s.title.resources[0].text : undefined;
-    this.intro = s.introduction != undefined ? s.introduction.resources[0].text : undefined;
-    this.outro = s.conclusion != undefined ? s.conclusion.resources[0].text : undefined;
+    this.title = getResourceText(s.title, p.variables);
+    this.intro = getResourceText(s.introduction, p.variables);
+    this.outro = getResourceText(s.conclusion, p.variables);
     this.sceneName = p.sceneName != undefined ? p.sceneName : s.sceneName; //optional
     this.viewpoint = s.viewpoint;
     this.annotations = s.annotations;
@@ -282,8 +308,8 @@ function sxslHelper(renderer, anchor) {
     //
     this.start = () => new Promise((next, reject) => {
       this.action = undefined;
-      this.step = undefined;
-      this.intro = this.proc.introduction != undefined ? this.proc.introduction.resources[0].text : undefined;
+      this.step   = undefined;
+      this.intro  = getResourceText(this.proc.introduction);
 
       // here we would likely do some sanity checks, clean up internal data
       // e.g. if we were to keep a record of al the step/action progress, heres
@@ -293,6 +319,9 @@ function sxslHelper(renderer, anchor) {
           this.prereq = { tools:pre.tools, consumables:pre.consumables };
           if (pre.prereqs != undefined) {
             this.applyPrerequisites(pre.prereqs);
+          }
+          if (pre.inputs != undefined) {
+            this.applyInputs(pre.inputs);
           }
           this.events.emit('procStart', this);
           next(this.intro);
@@ -309,7 +338,7 @@ function sxslHelper(renderer, anchor) {
 
       this.action = undefined;
       this.step = undefined;
-      this.outro = this.proc.conclusion != undefined ? this.proc.conclusion.resources[0].text : undefined;
+      this.outro = getResourceText(this.proc.conclusion, this.variables);
 
       // user is signalling we are done, so clean up anything we need to
       //
@@ -339,15 +368,20 @@ function sxslHelper(renderer, anchor) {
           this.action.details.pending = {};
 
         // we may need to capture multiple samples
-        if (this.validateActionInputs(input)) {
+        if (this.validateActionInputs()) {
           var myID = this.action.details.ID;
           if (this.action.details.pending[myID] == undefined)
             this.action.details.pending[myID] = [];
 
           var mintries = this.action.details.minCaptures != undefined ? this.action.details.minCaptures : 0;
-          if (this.action.details.pending[myID].length <= mintries) {
+          var maxtries = this.action.details.maxCaptures ;
+          if (maxtries == undefined || this.action.details.pending[myID].length < maxtries) {
             this.action.details.pending[myID].push(input);
-            return true;
+            me.variables[myID] = input.response;
+            
+            //go around until we have min collected
+            if (this.action.details.pending[myID].length >= mintries) 
+              return true;
           }
         }
       } else if (this.inputs != undefined) { //procedure-level inputs (note we only deal with one)
@@ -355,6 +389,7 @@ function sxslHelper(renderer, anchor) {
         if (this.inputs.pending == undefined) this.inputs.pending = {};
         if (this.inputs.pending[myID] == undefined) this.inputs.pending[myID] = [];
         this.inputs.pending[myID].push(input);
+        me.variables[myID] = input.response;
         return true;
       }
 
@@ -474,7 +509,7 @@ function sxslHelper(renderer, anchor) {
                           name: tool.name, 
                             id: tool.id, 
                           info: tool.extras != undefined ? tool.extras.resources.filter(function(v) { return v.mimeType=='text/plain';}).map(v => { return v.text }) : undefined,
-                           img: tool.extras != undefined ? tool.extras.resources.filter(function(v) { return v.mimeType=='image/jpeg';}).map( v => { return anchor + v.url }) : undefined
+                           img: tool.extras != undefined ? tool.extras.resources.filter(function(v) { return v.mimeType=='image/jpeg';}).map(v => { return anchor + v.url }) : undefined
               } );
             });
           }
@@ -579,11 +614,51 @@ function sxslHelper(renderer, anchor) {
       return subjects;    
     }
     
+    this.applyInputs = function (data) {
+      if (data == undefined)
+        return;
+      // walk down the procedure structure looking for inputs
+      // we can have proc-level inputs (proc.inputs) and per-action inputs (details)
+      // each _should_ be unique within the scope of the procedure
+      
+      // lets start with the proc
+      if (this.inputs != undefined) {
+        var iname = this.inputs[0].name;
+        function findnamed(v) { return v.name == iname };
+        var pre = data.filter(findnamed); //only deal with the first for now
+        if (pre != undefined) {
+          this.inputs.response = {};
+          this.inputs.response[iname] = pre;  
+        }  
+      }
+      // then do the same for all actions in all the steps
+      this.proc.steps.forEach(function(step) {
+        step.actions.forEach(function(action) {
+          if (action.details != undefined) {
+            var aname = action.details.name;                       
+            function findnamed(v) { return v.name == aname };
+            var pre = data.filter(findnamed);
+            if (pre != undefined) {
+              action.details.response = {};
+              action.details.response[aname] = pre;  
+            }  
+          }
+        });
+      });
+      me.variables = data;    
+    }
+    
+    this.getNamedVariable = function(name) {
+      function findvar(v) { return v.name == name };
+      return me.variables != undefined ? me.variables.filter(findvar) : undefined;
+    }
+    
     this.applyPrerequisites = function (data) {
       if (data == undefined)
         return;
             
       var prelist = data;
+        
       //otherwise iterate through the list matching id to statement id            
       if (prelist != undefined && prelist.length > 0) {
         prelist.forEach(function(s) {
@@ -659,7 +734,7 @@ function sxslHelper(renderer, anchor) {
             // only add it if we can jump to and execute it
             if (statement.stepId == step.id && canExec(statement, p.statements, me.execlist)) {
 
-              var title = step.title ? step.title.resources[0].text : statement.stepId;
+              var title = step.title ? getResourceText(step.title) : statement.stepId;
               var done  = (statement.status == "done") || false;
               var pass  = done ? statement.pass : undefined;
               
@@ -687,7 +762,13 @@ function sxslHelper(renderer, anchor) {
       if (me.action.details.required == undefined || me.action.details.required == true) {
         // input is required, so lets check it matches 
       }
-
+      
+      var mintries = me.action.details.minCaptures || 0;
+      if (input != undefined && input[me.action.details.ID] != undefined && input[me.action.details.ID].length < mintries) {
+        console.log('being asked to collect at least',mintries,'samples of',me.action.details.ID,input[me.action.details.ID].length);
+        return false;
+      }
+      
       //we've passed all the tests
       return true;
     }
@@ -719,7 +800,7 @@ function sxslHelper(renderer, anchor) {
         }
       }
     
-      //the player willl step through each action of each step, until
+      //the player will step through each action of each step, until
       //it reaches the end of the procedure
       //
       if (me.action != undefined) {
@@ -904,7 +985,7 @@ function sxslHelper(renderer, anchor) {
       //magic case of step with no actions (is this even allowed?)                                          
       if (me.step.actioncount === 0) {
         //create a dummy action  
-        var dummyaction = new this.helper.sxslAction({}, me.step, 0, true, me.events);
+        var dummyaction = new this.helper.sxslAction({}, me.step, 0, true, me);
         // expose it
         next(dummyaction);
         me.action = undefined;
@@ -913,7 +994,7 @@ function sxslHelper(renderer, anchor) {
       var idx = me.step.actioncount - (me.aci--);
       var act = me.step.actions[idx];
       if (act != undefined) {
-        me.action = new this.helper.sxslAction(act, me.step, idx, me.aci == 0, me.events);
+        me.action = new this.helper.sxslAction(act, me.step, idx, me.aci == 0, me);
 
         // heads up - were starting a new action  
         me.events.emit('actionStart', me.action);
@@ -1027,13 +1108,14 @@ function sxslHelper(renderer, anchor) {
         me.aci = 0;
         me.proc = JSON.parse(fs.readFileSync(fi, 'utf8'));
         me.id = me.proc.id;
-        me.title = me.proc.title != undefined ? me.proc.title.resources[0].text : undefined;
+        me.title = getResourceText(me.proc.title);
         me.versionInfo = me.proc.versionDisplayName != undefined ? me.proc.versionDisplayName : undefined;
         me.published = me.proc.publishDate != undefined ? new Date(me.proc.publishDate) : undefined;
         me.thumbnail = me.proc.thumbnail != undefined ? me.anchor + me.proc.thumbnail : me.proc.thumbnail;
         // we can have procedure, step and action=level contexts, so we capture and pass these down
         me.context = me.proc.contexts != undefined ? me.proc.contexts : me.context;
         me.inputs = me.proc.inputs;
+        me.variables = [];
         me.statementcount = me.proc.statements.length;
         me.statementscompleted = 0;
         if (me.statementcount > 0) {
@@ -1059,13 +1141,14 @@ function sxslHelper(renderer, anchor) {
         me.aci = 0;
         me.proc = data;
         me.id = me.proc.id;
-        me.title = me.proc.title != undefined ? me.proc.title.resources[0].text : undefined;
+        me.title = getResourceText(me.proc.title);
         me.versionInfo = me.proc.versionDisplayName != undefined ? me.proc.versionDisplayName : undefined;
         me.published = me.proc.publishDate != undefined ? new Date(me.proc.publishDate) : undefined;
         me.thumbnail = me.proc.thumbnail != undefined ? me.anchor + me.proc.thumbnail : me.proc.thumbnail;
         // we can have procedure, step and action=level contexts, so we capture and pass these down
         me.context = me.proc.contexts != undefined ? me.proc.contexts : me.context;
         me.inputs = me.proc.inputs;
+        me.variables = {};
         me.statementcount = me.proc.statements.length;
         me.statementscompleted = 0;
         if (me.statementcount > 0) {
