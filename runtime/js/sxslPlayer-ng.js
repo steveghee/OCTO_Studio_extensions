@@ -2413,6 +2413,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             var textPattern = function (i) {
               var input = i;
               var pattern = input.regex;
+              input.attempts = 0;
               var src = scope.captureTextWindow;
               if (i.hint != undefined && i.hint.instructions != undefined) {
                 src.placeholder = i.hint.instructions.resources[0].text;
@@ -2428,6 +2429,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   var t = src.value;
                   debugLog('test', t, 'against', pattern);
                   var valid = t.match(pattern) != null;
+                  
+                  var maxtries = input.maxCaptures ;
+                  input.attempts += 1;
+                  if (maxtries != undefined && input.attempts >= maxtries) 
+                    valid = false;
+                    
                   src.className = 'sxsl-capture-text' + (valid == false ? ' sxsl-capture-error' : '');
                   if (valid)
                     next({ response: t, type: input.type, time: Date.now() })
@@ -2443,6 +2450,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               var min = input.minerror, max = input.maxerror;
               var minwarn = input.minwarn, maxwarn = input.maxwarn;
               var nominal = input.nominal; // expected value
+              input.attempts = 0;
 
               var src = scope.captureTextWindow;
               src.className = 'sxsl-capture-text';
@@ -2463,7 +2471,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   var fv = parseFloat(t);
 
                   var valid = (min != undefined ? min <= fv : true) && (max != undefined ? max >= fv : true);
-
+                  
+                  var maxtries = input.maxCaptures ;
+                  input.attempts += 1;
+                  if (maxtries != undefined && input.attempts >= maxtries) 
+                    valid = false;
+                  
                   //how can we show tristate e.g. pass/fail/warn?
                   var warn = (minwarn != undefined ? minwarn > fv : false) || (maxwarn != undefined ? maxwarn < fv : false);
                   if (valid && warn)
