@@ -909,6 +909,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           }
         }
         var hideCapture = function () {
+          const t4 = document.querySelector('div#capture');
+          t4.className = 'sxsl-capture-hide';
           const t5 = document.querySelector('button#activateCapture');
           t5.className = 'sxsl-actions-hide';
           const t6 = document.querySelector('div#enumeratedCapture');
@@ -1414,7 +1416,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         }
 
         function createInstructionPanelHTML() {
-          const container = document.querySelector('.sxslroot');
+          const container = document.querySelector('.twx-2d-overlay');
           scope.sxslPlayerWindowMinimised = document.createElement('div');
           scope.sxslPlayerWindowMinimised.innerHTML = "<div id='sxsl-instruction-max' class='sxsl-thumbnail-hide' style='position: absolute;left: 24px;bottom: 24px;'><button id='maximise' class='sxsl-button sxsl-button-round sxsl-icon-work-instruction sxsl-blue-bb'/></div>";
 
@@ -1549,7 +1551,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
 
         function createReferenceViewerHTML() {
-          const container = document.querySelector('.sxslroot');
+          const container = document.querySelector('.twx-2d-overlay');
           scope.referenceViewerWindow = document.createElement('div');
 
           scope.referenceViewerWindow.innerHTML = "\
@@ -1578,7 +1580,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         };
 
         function createProofCaptureHTML() {
-          const container = document.querySelector('.sxslroot');
+          const container = document.querySelector('.twx-2d-overlay');
           scope.proofWindow = document.createElement('div');
 
           scope.proofWindow.innerHTML = "\
@@ -1607,7 +1609,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         };
 
         function createReferencePreviewHTML() {
-          const container = document.querySelector('.sxslroot');
+          const container = document.querySelector('.twx-2d-overlay');
           scope.referencePreviewWindow = document.createElement('div');
 
           scope.referencePreviewWindow.innerHTML = "\
