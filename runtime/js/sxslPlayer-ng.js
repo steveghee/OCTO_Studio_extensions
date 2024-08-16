@@ -832,7 +832,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               const t5i = document.querySelector('img#viewImage');
               t5i.src = src;
               t5i.className = 'sxsl-viewer-image';
-
               const t6iv = document.querySelector('video#viewVideo');
               t6iv.className = 'sxsl-preview-hide';
               const t6id = document.querySelector('div#viewPdf');
@@ -1383,7 +1382,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               if (scope.runningField == true)
                 scope.halt({event:'reset', reason:'reset'})
               //TODO: and now we need to reset/restart the main proc
-              $timeout(startSxslPlayer(),1000);  
+              $timeout(scope.startup,1000);  
             };
             delegate.resume = function () {
               if (scope.canrunField == true)
@@ -1417,12 +1416,16 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
         function createInstructionPanelHTML() {
           const container = document.querySelector('.twx-2d-overlay');
-          scope.sxslPlayerWindowMinimised = document.createElement('div');
-          scope.sxslPlayerWindowMinimised.innerHTML = "<div id='sxsl-instruction-max' class='sxsl-thumbnail-hide' style='position: absolute;left: 24px;bottom: 24px;'><button id='maximise' class='sxsl-button sxsl-button-round sxsl-icon-work-instruction sxsl-blue-bb'/></div>";
-
-          scope.sxslPlayerWindow = document.createElement('div');
-          scope.sxslPlayerWindow.innerHTML = "\
-            <div id='panel' class='sxsl-instruction-panel'>\
+          scope.sxslPlayerWindowMinimised = document.querySelector('#sxsl-instruction-max');
+          if (scope.sxslPlayerWindowMinimised == null) {
+            scope.sxslPlayerWindowMinimised = document.createElement('div');
+            scope.sxslPlayerWindowMinimised.innerHTML = "<div id='sxsl-instruction-max' class='sxsl-thumbnail-hide' style='position: absolute;left: 24px;bottom: 24px;'><button id='maximise' class='sxsl-button sxsl-button-round sxsl-icon-work-instruction sxsl-blue-bb'/></div>";
+          }
+          scope.sxslPlayerWindow = document.querySelector('#sxsl-instruction-container');
+          if (scope.sxslPlayerWindow == null) {
+            scope.sxslPlayerWindow = document.createElement('div');
+            scope.sxslPlayerWindow.innerHTML = "\
+            <div id='sxsl-instruction-panel' class='sxsl-instruction-panel'>\
               <div  style='margin-right:12px;margin-left:12px'>\
                 <div id='cmdrow' style='padding-top: 12px'>\
                   <div id='stepinfo' class='sxsl-instruction-step'>----</div>\
@@ -1467,12 +1470,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               <div style='left:24px;'><img id='photoCapture' class='sxsl-capture-photo sxsl-capture-hide'></img></div>\
               <div style='right:24px'><button id='activateCapture' class='sxsl-button sxsl-capture-activate sxsl-capture-hide' >Activate</button></div>\
               <div id='captureFeedback' class='sxsl-capture-feedback'>info here</div>\
-            </div>";
-          scope.sxslPlayerWindow.id = 'sxsl-instruction-container';
-          scope.sxslPlayerWindow.className = 'sxsl-instruction-container';
+              </div>";
+            scope.sxslPlayerWindow.id = 'sxsl-instruction-container';
+            scope.sxslPlayerWindow.className = 'sxsl-instruction-container';
 
-          container.insertBefore(scope.sxslPlayerWindow, container.firstChild);
-          container.insertBefore(scope.sxslPlayerWindowMinimised, container.firstChild);
+            container.insertBefore(scope.sxslPlayerWindow, container.firstChild);
+            container.insertBefore(scope.sxslPlayerWindowMinimised, container.firstChild);
+          }
 
           scope.headLabel = document.querySelector('div#header');
           scope.instLabel = document.querySelector('div#action');
@@ -1552,9 +1556,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
         function createReferenceViewerHTML() {
           const container = document.querySelector('.twx-2d-overlay');
-          scope.referenceViewerWindow = document.createElement('div');
-
-          scope.referenceViewerWindow.innerHTML = "\
+          scope.referenceViewerWindow = document.querySelector('#viewer-container');
+          if (scope.referenceViewerWindow == null) {
+              
+            scope.referenceViewerWindow = document.createElement('div');
+            scope.referenceViewerWindow.innerHTML = "\
             <div id='viewerPanel' class='sxsl-viewer-panel'>\
               <div class='sxsl-viewer-cmdview'>\
                 <div id='viewinfo' class='sxsl-viewer-infoView'>view info</div>\
@@ -1568,11 +1574,94 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 </div> \
               </div>\
             </div>"
-          scope.referenceViewerWindow.id = 'viewer-container';
-          scope.referenceViewerWindow.className = 'sxsl-preview-hide';
+            scope.referenceViewerWindow.id = 'viewer-container';
+            scope.referenceViewerWindow.className = 'sxsl-preview-hide';
+            container.insertBefore(scope.referenceViewerWindow, container.firstChild);
+            
+            let imageElementScale = 1;
+            var vwindow = document.querySelector('#viewImage');
+            var start={};
+            var initialLoad = true;
+            var translateX = 0;
+            var translateY = 0;
+            var debug = scope.$parent.view.wdg.debug;
+            const distance = (event) => {
+              return Math.hypot(event.touches[0].pageX - event.touches[1].pageX, event.touches[0].pageY - event.touches[1].pageY);
+            };
+            vwindow.addEventListener('touchstart', (event) => { //'touchstart''touchstart'
+              // Check if the element is an image
+              if (event.target.tagName === 'IMG') {
+                if (event.touches.length === 2) {
+                  event.preventDefault(); // Prevent page scroll
+                              
+                  // Calculate where the fingers have started on the X and Y axis
+                  start.x = (event.touches[0].pageX + event.touches[1].pageX) / 2;
+                  start.y = (event.touches[0].pageY + event.touches[1].pageY) / 2;
+                  start.distance = distance(event);
+                }
+              }
+            });
+                
+            vwindow.addEventListener('touchmove', (event) => { 
+              // Check if the element is an image
+              if (event.target.tagName === 'IMG') {
+                if (event.touches.length === 2) { 
+                  event.preventDefault(); // Prevent page scroll
 
-          container.insertBefore(scope.referenceViewerWindow, container.firstChild);
+                  // Safari provides event.scale as two fingers move on the screen
+                  // For other browsers just calculate the scale manually
+                  let scale;
+                  if (event.scale) {
+                    scale = event.scale;
+                  } else {
+                    const deltaDistance = distance(event);
+                    scale = deltaDistance / start.distance;
+                  }
+                  imageElementScale = Math.min(Math.max(1, scale), 10);
+                                  
+                  // Check if it's the initial load
+                  if (initialLoad) {
+                    // Get the existing transform style property for proper calculations
+                    var style = $window.getComputedStyle(event.target);
+                    const existingTransform = style.getPropertyValue("transform");
 
+                    if(existingTransform.toString() !== "none") {
+                      const rect = event.target.getBoundingClientRect();
+                      translateX = -rect.width / 2;
+                      translateY = -rect.height / 2;
+                    }
+                    initialLoad = false; // Update the flag to indicate initial load has occurred
+                  }
+
+                  // Calculate how much the fingers have moved on the X and Y axis
+                  const deltaX = (((event.touches[0].pageX + event.touches[1].pageX) / 2) - start.x) * 2; // x2 for accelerated movement
+                  const deltaY = (((event.touches[0].pageY + event.touches[1].pageY) / 2) - start.y) * 2; // x2 for accelerated movement
+
+                  // Combine the existing transform with the additional calculations
+                  const transform = "translate3d(" + (translateX + deltaX) + "px, " + (translateY + deltaY) + "px, 0) scale(" + imageElementScale + ")";
+                  event.target.style.transform = transform;
+                                 
+                  event.target.style.WebkitTransform = transform;
+                  event.target.style.zIndex = "9999";
+                }
+              }
+            });
+
+            vwindow.addEventListener('touchend', (event) => { 
+              // Check if the element is an image
+              if (event.target.tagName === 'IMG') {
+                // Reset image to it's original format
+                event.target.style.transform = "";
+                event.target.style.WebkitTransform = "";
+                event.target.style.zIndex = "";
+              }
+              //reset initialLoad and translateX and translateY needed to apply the existing transform on image
+              initialLoad = true;
+              translateX = 0;
+              translateY = 0;
+            });                
+          }
+          
           //close button
           const btn2b = document.querySelector('button#minimiseView');
           btn2b.addEventListener("click", hideReview);
@@ -1581,9 +1670,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
         function createProofCaptureHTML() {
           const container = document.querySelector('.twx-2d-overlay');
-          scope.proofWindow = document.createElement('div');
-
-          scope.proofWindow.innerHTML = "\
+          scope.proofWindow = document.querySelector('#proof-container');
+          if (scope.proofWindow == null) {
+              
+            scope.proofWindow = document.createElement('div');
+            scope.proofWindow.innerHTML = "\
             <div id='proofPanel' class='sxsl-proof-panel'>\
               <div style='display:flex;vertical-align: middle; align-items: center;'>\
                 <img id='proofHint' class='sxsl-proof-hint' src='app/resources/Uploaded/example101/beauties.jpg' width=128/>\
@@ -1591,11 +1682,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               </div>\
               <div id='proofInstruction' class='sxsl-proof-text'>text here</div>\
             </div>"
-          scope.proofWindow.id = 'proof-container';
-          scope.proofWindow.className = 'sxsl-proof-hide';
+            scope.proofWindow.id = 'proof-container';
+            scope.proofWindow.className = 'sxsl-proof-hide';
 
-          container.insertBefore(scope.proofWindow, container.firstChild);
-
+            container.insertBefore(scope.proofWindow, container.firstChild);
+          }
           //capture button
           const btn2b = document.querySelector('button#proofCapture');
           btn2b.addEventListener("click", captureProofPhoto);
@@ -1610,18 +1701,20 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
         function createReferencePreviewHTML() {
           const container = document.querySelector('.twx-2d-overlay');
-          scope.referencePreviewWindow = document.createElement('div');
+          scope.referencePreviewWindow = document.querySelector('#preview-container');
+          if (scope.referencePreviewWindow == null) {
+            scope.referencePreviewWindow = document.createElement('div');
 
-          scope.referencePreviewWindow.innerHTML = "\
+            scope.referencePreviewWindow.innerHTML = "\
             <div id='previewPanel' class='sxsl-preview-panel-collapsed'>\
               <div id='previewList' class='sxsl-previews'>\
               </div>\
             </div>"
-          scope.referencePreviewWindow.id = 'preview-container';
-          scope.referencePreviewWindow.className = 'preview-container-collapsed';
+            scope.referencePreviewWindow.id = 'preview-container';
+            scope.referencePreviewWindow.className = 'preview-container-collapsed';
 
-          container.insertBefore(scope.referencePreviewWindow, container.firstChild);
-
+            container.insertBefore(scope.referencePreviewWindow, container.firstChild);
+          }
           scope.previewList = document.querySelector('div#previewList');
           scope.setPreviewList = function (contents) {
             scope.previewList.innerHTML = contents;
@@ -1631,8 +1724,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         function createBarcodeScannerHTML() {
 
           const container = document.querySelector('.twx-2d-overlay .panel.body');
-          scope.barcodeScannerWindow = document.createElement('div');
-          scope.barcodeScannerWindow.innerHTML = "\
+          
+          scope.barcodeScannerWindow = document.querySelector('#barcode-container');
+          if (scope.barcodeScannerWindow == null) {
+            scope.barcodeScannerWindow = document.createElement('div');
+            scope.barcodeScannerWindow.innerHTML = "\
             <div class='scan-content runtime' style='height:80vh;'>\
               <div class='scan-mask'></div>\
               <div class='scan-elements'>\
@@ -1641,10 +1737,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 <button class='scan-exit-button iconClose'>X</button>\
               </div>\
             </div>";
-          scope.barcodeScannerWindow.id = 'preview-container';
-          scope.barcodeScannerWindow.className = 'barcodeScanner-hide';
+            scope.barcodeScannerWindow.id = 'barcode-container';
+            scope.barcodeScannerWindow.className = 'barcodeScanner-hide';
           
-          container.insertBefore(scope.barcodeScannerWindow, container.firstChild);
+            container.insertBefore(scope.barcodeScannerWindow, container.firstChild);
+          }
           const btnClose = document.querySelector('.scan-exit-button');
           btnClose.addEventListener('click', maximise);
 
@@ -1657,10 +1754,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         scope.setInstLabel = datasink;
         scope.setStepLabel = datasink;
         scope.setPreviewList = datasink;
-
-        registerRootEvent("$ionicView.afterEnter", function (event, info) {
-          debugLog('entering view',info.title);
-
+        
+        scope.startup = function() {
           if (!scope.data.isHolo) {
             createInstructionPanelHTML();
             createReferencePreviewHTML();
@@ -1675,14 +1770,21 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             //for now...
 
           }
+        }
+        
+        registerRootEvent("$ionicView.afterEnter", function (event, info) {
+          debugLog('entering view',info.title);
+          
+          registerRootEvent("$ionicView.beforeLeave", function (event,info) {
+            // clean up
+            debugLog('leaving view',info.title);
+            scope.deactivateAll();
+
+          });
+            
+          scope.startup();
         });
             
-        registerRootEvent("$ionicView.beforeLeave", function (event,info) {
-          // clean up
-          debugLog('leaving view',info.title);
-          //scope.deactivateAll();
-
-        });
           
 
         //
