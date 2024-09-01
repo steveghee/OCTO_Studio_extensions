@@ -162,8 +162,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 scope.setHeadLabel(titleString);
                 scope.steplistField = proc.getStepList();
                 
-                if (proc.inputs != undefined) {
-                  scope.inputValidator = scope.actions.findInputValidator(proc.inputs[0]);
+                if (proc.input != undefined) {
+                  scope.inputValidator = scope.actions.findInputValidator(proc.input);
+                  if (!!proc.input.required) 
+                    scope.advanceWindow.className = 'sxsl-button sxsl-button-round sxsl-icon-nav-right';
                 }
                 
                 scope.logger.push({
@@ -325,6 +327,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 });
               });
 
+              registerEvent('procInputPending', function (evt, input) {
+                debugLog('proc input pending', input.type);
+                if (!!input.required) 
+                  scope.advanceWindow.className = 'sxsl-button sxsl-button-round sxsl-icon-nav-right';
+              });
               registerEvent('actionInputPending', function (evt, input) {
                 debugLog('action input pending', input.type);
                 if (!!input.required) 
@@ -1578,6 +1585,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             scope.referenceViewerWindow.className = 'sxsl-preview-hide';
             container.insertBefore(scope.referenceViewerWindow, container.firstChild);
             
+            //simple implementation of a pinch-controlled zoom effect
             let imageElementScale = 1;
             var vwindow = document.querySelector('#viewImage');
             var start={};
@@ -1763,7 +1771,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             createProofCaptureHTML();
             
             //is this the right way to start?
-            startSxslPlayer();
+            $timeout(startSxslPlayer,1000);
           } else {
               
             //TODO : creaate holographic UI
@@ -2005,7 +2013,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               });
             } else {
               debugLog('showing full model for', name);               
-              oids = ['/'];
+              named.occurrenceIds = ['/'];
               scope.renderer.setProperties(name+'-/', { hidden: false, shader: shader, occlude: false, phantom: false, decal: false });
             }
           }
@@ -2493,15 +2501,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             }
             var passThru = function (i) {
               var input = i;
-              var src = scope.captureTextWindow
-              if (i.hint != undefined) {
-                if (i.hint.instructions != undefined) 
-                  src.placeholder = i.hint.instructions.resources[0].text;
-                else if (i.hint.resources != undefined) 
-                  src.placeholder = i.hint.resources[0].text;
-              } 
-              else src.placeholder = "";
+              var src = scope.captureTextWindow;
               
+              src.placeholder = i.hint || "";              
               src.className = 'sxsl-capture-text';
               src.value = '';
 
@@ -2519,9 +2521,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               var pattern = input.regex;
               input.attempts = 0;
               var src = scope.captureTextWindow;
-              if (i.hint != undefined && i.hint.instructions != undefined) {
-                src.placeholder = i.hint.instructions.resources[0].text;
-              }
+              
+              src.placeholder = i.hint || "";              
               src.value = '';
               src.className = 'sxsl-capture-text';
 
@@ -2536,14 +2537,15 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   
                   var maxtries = input.maxCaptures ;
                   input.attempts += 1;
-                  if (maxtries != undefined && input.attempts >= maxtries) 
+                  if (maxtries != undefined && input.attempts > maxtries) 
                     valid = false;
                     
                   src.className = 'sxsl-capture-text' + (valid == false ? ' sxsl-capture-error' : '');
                   if (valid)
                     next({ response: t, type: input.type, time: Date.now() })
                   else {
-                    var message = 'Invalid response.<p>' + (i.hint != undefined && i.hint.instructions != undefined ? i.hint.instructions.resources[0].text : '');
+                    var resp = (maxtries != undefined && input.attempts > maxtries) ? 'Exceeded maximum attempts.<p>' : 'Invalid response.<p>'; 
+                    var message = resp + (i.hint || "");
                     reject(message);
                   }
                 });
@@ -2558,9 +2560,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
               var src = scope.captureTextWindow;
               src.className = 'sxsl-capture-text';
-              if (input.hint != undefined && input.hint.instructions != undefined) {
-                src.placeholder = input.hint.instructions.resources[0].text;
-              }
+              src.placeholder = i.hint || "";              
               src.value = nominal != undefined ? nominal : ''; //preset the value
 
               document.querySelector('div#capture').className = 'sxsl-capture-show';
@@ -2578,7 +2578,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   
                   var maxtries = input.maxCaptures ;
                   input.attempts += 1;
-                  if (maxtries != undefined && input.attempts >= maxtries) 
+                  if (maxtries != undefined && input.attempts > maxtries) 
                     valid = false;
                   
                   //how can we show tristate e.g. pass/fail/warn?
@@ -2594,7 +2594,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   if (valid)
                     next({ response: t, tolerance: deviation, type: input.type, time: Date.now() });
                   else {
-                    var message = 'Invalid response<p>Value ' + fv + ' falls outside of range [' + min + ',' + max + ']';
+                      var message = (maxtries != undefined && input.attempts > maxtries) 
+                                       ? 'Maximum tries exceeded.<p>' + (i.hint || "") 
+                                       : 'Invalid response<p>Value ' + fv + ' falls outside of range [' + min + ',' + max + ']';
                     reject(message);
                   }
                 });
@@ -2605,7 +2607,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               var header = "<option class='item'>Select...</option>";
               var display = "";
               enums.forEach(function (item) {
-                display = display + "<option class='sxsl-item' value=" + item.value + ">" + item.display.resources[0].text + "</option>";
+                display = display + "<option class='sxsl-item' value=" + item.value + ">" + item.display + "</option>";
               });
               return display.length > 0 ? header + display : display;
             }
@@ -2639,7 +2641,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               const btnAC = document.querySelector('button#activateCapture');
               btnAC.className = 'sxsl-button sxsl-capture';
               if (i.hint != undefined)
-                btnAC.innerHTML = i.hint.resources[0].text;
+                btnAC.innerHTML = i.hint;
 
               if (input.tool == undefined)
                 input.tool = "camera";
@@ -2761,8 +2763,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               // does the tool have any animation defined?
               // note technically we should do this PER tool - in general, we'll assume one tool per action, for this POC at least
               if (a.tools[0] != undefined && a.tools[0].asset != undefined) {
-                var me = a.tools[0];
-                var res = me.asset.resources[0];
+                  
+                //TODO: not sure what the usecase is for more than one tool per action, but we should probably support it
+                var me = a.tools[0]; // for now, we support the first
+                
+                var res = me.asset.resources[0];  
                 var occurrenceIds = (res.occurrenceIds == undefined) ? me.occurrenceIds : res.occurrenceIds;
                 var src = scope.data.anchor + me.asset.resources[0].modelUrl;
                 scope.addNamedPOI(me.id, src, undefined, undefined, 1, false, undefined, (res.composition == "partset" ? (res.sceneName || a.animation) : a.animation), occurrenceIds, false, scope.data.toolshade);
@@ -3015,7 +3020,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                       (this.results[i].ack.response == "f") ? "fail" : this.results[i].ack.response;
 
               var event = {
-                ID: this.results[i].id.toString(),
+                id: this.results[i].id.toString(),
                 event: this.results[i].event,
                 time: this.results[i].time,
                 pass: res,
@@ -3024,30 +3029,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
               this.submission.push(event);
             }
-
-            //
-            // technically, we could do this in different ways
-            // 1. we could have a central 'logging' service to which we write results
-            // 2. as we are accepting a unique Thing with the procedure, we could write back to the Thing - makes a lot of sense to keep the results close (note this Thign could then ask
-            //    a manager to distrubute the data)
-            // 3. a central Manager wihch route the results 
-
-            //Triggers a Service on a Manager Thing that expects the procID and the result and internally hands it over to the correct procedure. is overwritable so that it works with CWC SOWI and others
-            debugLog('stopping : sending', JSON.stringify(this.submission));
-
-            if (this.id != undefined)
-              twx.app.fn.triggerDataService('PTC.InspectionAccelerator.Imp.Manager', 'stopWorkTask', {
-                'workstationID': $scope.app.params.workstationID,
-                'workTaskID': $scope.app.params.Workorder.workorderkinstructionID.toString(),
-                'serialNumber': $scope.app.params.Workorder.serialnumber,
-                //                                                                                             'summary': JSON.stringify(this.submission),
-                'reason': reason
-              });
-            else {
-              scope.$parent.$emit("stopWorkTask.serviceInvokeComplete");
-            }
           }
-
+        
         }
 
         // ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3378,9 +3361,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                       prereqs.tools[tool.id] = tool;
                     });
                   }
-                  if (a.materialConsumed != undefined) {
+                  if (a.materials != undefined) {
                     // can be defined inline, or referenced as context assets
-                    a.materialConsumed.forEach(function (consumable) {
+                    a.materials.forEach(function (consumable) {
                       prereqs.consumables[consumable.asset.id] = { amount: consumable.amountConsumed, units: consumable.unitsOfConsumption.resources[0].text, material: consumable.asset };
                     });
                   }
@@ -3388,7 +3371,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               })
 
               //
-              next( { tools:prereqs.tools, conumables:prereqs.consumables } );
+              next( { tools:prereqs.tools, consumables:prereqs.consumables } );
             });
             else return new Promise((next, reject) => {
               next();

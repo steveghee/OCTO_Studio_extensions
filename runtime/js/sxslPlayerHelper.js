@@ -24,16 +24,15 @@ function sxslHelper(renderer, anchor) {
       
     //ideally will search through the resources for type (and also language at somepoint)  
     var stype = type || "text/plain";  
-    var txt = res != undefined ? res.resources.filter(function(v) { return v.mimeType==stype;})[0].text : ""
-    //var txt = res != undefined ? res.resources[0].text : "";
+    var txt   = res != undefined ? res.resources.filter(function(v) { return v.mimeType==stype;})[0].text : ""
     
     if (txt.length>0 && vars != undefined) {
       //are there any variables referenced? if so, can we fill them in?
       const regexp = /\${(\w+)}/g;
       for (const match of txt.matchAll(regexp)) {
         var name = match[1];
-        var nv = vars[name];
-        if (nv!= undefined) {
+        var nv   = vars[name];
+        if (nv != undefined) {
           var rg2 = RegExp(`(\\$\{${match[1]}})`,"g");
           txt = txt.replace(rg2,nv);
         }
@@ -41,7 +40,32 @@ function sxslHelper(renderer, anchor) {
     }
     return txt;
   }
-  
+
+  this.sxslInput = function (i) {  
+    this.type     = i.type;
+    this.id       = i.id || i.ID || i.name;
+    this.mimeType = i.mimeType;
+    this.regex    = i.regex;
+    this.minwarn  = i.minwarn;
+    this.maxwarn  = i.maxwarn;
+    this.minerror = i.minerror;
+    this.maxerror = i.maxerror;
+    this.nominal  = i.nominal;
+    this.maxCaptures = i.maxCaptures;
+    this.minCaptures = i.minCaptures || 0;
+    if (i.enumerations != undefined) {
+      var me = this;
+      me.enumerations = [];  
+      i.enumerations.forEach(function(e) {
+        me.enumerations.push( { display:getResourceText(e.display), value:e.value } );                       
+      });
+    }
+    this.required = i.required;
+    this.tool     = i.tool;
+    this.title    = getResourceText(i.title);  
+    this.hint     = i.hint != undefined ? getResourceText(i.hint.instructions || i.hint) : undefined;
+  }
+
   this.sxslAction = function (a, s, i, last, p) {
     this.step = s;
     this.stepid = s.id;
@@ -57,7 +81,7 @@ function sxslHelper(renderer, anchor) {
 
     this.ack  = s.ack;
     this.type = a.type;
-    this.details   = a.details;
+    this.details   = a.details != undefined ? new p.helper.sxslInput(a.details) : undefined; //a.details
     this.materials = a.materials;
     
     this.animation = undefined;
@@ -369,7 +393,7 @@ function sxslHelper(renderer, anchor) {
 
         // we may need to capture multiple samples
         if (this.validateActionInputs()) {
-          var myID = this.action.details.ID;
+          var myID = this.action.details.id;
           if (this.action.details.pending[myID] == undefined)
             this.action.details.pending[myID] = [];
 
@@ -384,11 +408,11 @@ function sxslHelper(renderer, anchor) {
               return true;
           }
         }
-      } else if (this.inputs != undefined) { //procedure-level inputs (note we only deal with one)
-        var myID = this.inputs[0].name;  
-        if (this.inputs.pending == undefined) this.inputs.pending = {};
-        if (this.inputs.pending[myID] == undefined) this.inputs.pending[myID] = [];
-        this.inputs.pending[myID].push(input);
+      } else if (this.input != undefined) { //procedure-level inputs (note we only deal with one)
+        var myID = this.input.id;  
+        if (this.input.pending == undefined) this.input.pending = {};
+        if (this.input.pending[myID] == undefined) this.input.pending[myID] = [];
+        this.input.pending[myID].push(input);
         me.variables[myID] = input.response;
         return true;
       }
@@ -645,9 +669,19 @@ function sxslHelper(renderer, anchor) {
           }
         });
       });
-      me.variables = data;    
+      me.addVariables(data);    
     }
     
+    this.addVariable = function(name,value) {
+      me.variables[name] = value;
+    } 
+    
+    this.addVariables = function(data) {
+      if (data != undefined) data.forEach(function(v) {
+        me.variables[v.name] = v.value;
+      })
+    } 
+
     this.getNamedVariable = function(name) {
       function findvar(v) { return v.name == name };
       return me.variables != undefined ? me.variables.filter(findvar) : undefined;
@@ -764,8 +798,8 @@ function sxslHelper(renderer, anchor) {
       }
       
       var mintries = me.action.details.minCaptures || 0;
-      if (input != undefined && input[me.action.details.ID] != undefined && input[me.action.details.ID].length < mintries) {
-        console.log('being asked to collect at least',mintries,'samples of',me.action.details.ID,input[me.action.details.ID].length);
+      if (input != undefined && input[me.action.details.id] != undefined && input[me.action.details.id].length < mintries) {
+        console.log('being asked to collect at least',mintries,'samples of',me.action.details.id,input[me.action.details.id].length);
         return false;
       }
       
@@ -781,22 +815,23 @@ function sxslHelper(renderer, anchor) {
     this.next = (response, jumpRef) => new Promise((next, reject) => {
                                                    
       //handle procedure level inputs - are we waiting on one?
-      if (me.inputs != undefined && me.inputs.response == undefined) {
+      if (me.input != undefined && me.input.response == undefined) {
           
         //if one is pending, is it mandatory?  
-        if (me.inputs.pending == undefined && me.inputs[0].required == true) {
+        if (me.input.pending == undefined && me.input.required == true) {
+          me.events.emit('procInputPending', me.input);
           reject({cmd:'input'});
           return;  
         } 
         //otherwise, process the results and allow the plyer to move on
-        else if (me.inputs.pending != undefined) {
-          me.inputs.response = me.inputs.pending; // return the last pushed value
-          me.inputs.pending  = undefined;  
-          var iid = Object.keys(me.inputs.response)[0]; //we;re only handling the first one
+        else if (me.input.pending != undefined) {
+          me.input.response = me.input.pending; // return the last pushed value
+          me.input.pending  = undefined;  
+          var iid = Object.keys(me.input.response)[0]; //we;re only handling the first one
           me.events.emit('procInputDelivered', { event: "input", 
-                                                    proc: me.id, 
-                                                    name: iid, 
-                                                   value: me.inputs.response[iid] } );
+                                                  proc: me.id, 
+                                                  name: iid, 
+                                                 value: me.input.response[iid] } );
         }
       }
     
@@ -814,18 +849,19 @@ function sxslHelper(renderer, anchor) {
             reject({ cmd: 'input', msg: 'action requires input' });
             return;
           }
-
-          //
-          // prepare responses for action processor
-          me.action.details.response = me.action.details.pending;
-          me.action.details.pending = undefined;
-
-          me.events.emit('actionInputDelivered', { event: "input", 
-                                                    step: this.step, 
-                                                  action: this.action, 
-                                                    name: me.action.details.ID, 
-                                                   value: me.action.details.response[me.action.details.ID] } );
           
+          if (me.action.details.pending) {
+            //
+            // prepare responses for action processor
+            me.action.details.response = me.action.details.pending;
+            me.action.details.pending = undefined;
+
+            me.events.emit('actionInputDelivered', { event: "input", 
+                                                      step: this.step, 
+                                                    action: this.action, 
+                                                      name: me.action.details.id, 
+                                                     value: me.action.details.response[me.action.details.id] } );
+          }
         }
         
         // consume materials
@@ -1041,7 +1077,11 @@ function sxslHelper(renderer, anchor) {
       
       if (jumpRef != undefined && jumpRef.prereqs)
         this.applyPrerequisites(jumpRef.prereqs);
-      
+      if (jumpRef != undefined && jumpRef.variables) {
+        this.addVariables(jumpRef.variables);
+      }
+        
+        
       // are we being told to go to a specific?
       var next = me.proc.statements[jumpRef.jumpRef];
 
@@ -1147,8 +1187,8 @@ function sxslHelper(renderer, anchor) {
         me.thumbnail = me.proc.thumbnail != undefined ? me.anchor + me.proc.thumbnail : me.proc.thumbnail;
         // we can have procedure, step and action=level contexts, so we capture and pass these down
         me.context = me.proc.contexts != undefined ? me.proc.contexts : me.context;
-        me.inputs = me.proc.inputs;
-        me.variables = {};
+        me.input = me.proc.inputs != undefined ? new me.helper.sxslInput(me.proc.inputs[0]) : undefined;//me.proc.inputs;
+        me.variables = [];
         me.statementcount = me.proc.statements.length;
         me.statementscompleted = 0;
         if (me.statementcount > 0) {
