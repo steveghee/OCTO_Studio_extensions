@@ -107,7 +107,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             debug.text = scope.data.debuglog;
             scope.$parent.$applyAsync();
           }
-          //else console.log(arguments);
+          else{
+            //NGC_Change: JH: provide the ability log sxsldebug 
+            if (scope.$parent.view.wdg.sxsldebug){
+              console.log(arguments);
+            }
+          }
         }
         
         var registerRootEvent = function(evt,fn) {
@@ -828,7 +833,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               const t5v = document.querySelector('video#viewVideo');
               t5v.firstChild.src = src;
               t5v.className = 'sxsl-viewer-image';
-
+              //For ipad this makes sure when there are multiple videos it is loaded
+              // without this the initial video selected is always used
+              t5v.load();
               const t6vi = document.querySelector('img#viewImage');
               t6vi.className = 'sxsl-preview-hide';
               const t6vd = document.querySelector('div#viewPdf');
@@ -1441,7 +1448,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                     <button id='minimise' class='sxsl-button sxsl-button-round sxsl-icon-collapse-hide'/> \
                     <button id='advance' class='sxsl-button sxsl-button-round sxsl-blue-bb sxsl-icon-nav-right'/></div>\
                 </div>\
-                <div style='margin-top:54px'><img id='thumbnail' class='sxsl-thumbnail-show' src='app/resources/Uploaded/earthNight.jpg' height=320/></div>\
+                <div style='margin-top:54px'><img id='thumbnail' class='sxsl-thumbnail-show' src='app/resources/Uploaded/earthNight.jpg' height=160/></div>\
                 <div id='header' class='sxsl-instruction-header'>header text</div>\
                 <div style='padding-bottom=12px'>\
                   <div id='action' class='sxsl-instruction-actions'>action text</div>\
@@ -2678,8 +2685,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             // a step described as one or more actions; we can have optional introduction and conclusion too, so to render out 
             // a step/action, we will show the intro, each action  as it is consumed, and the outro. For multi-action steps, we show the
             // full 
-
-            var pdesc = a.step.ongoing != undefined ? "<span style='color:grey;font-size:75%'>" + a.step.ongoing + "</span>" : "";
+            //NGC_Change JH: keep font size the same
+            var pdesc = a.step.ongoing != undefined ? "<span style='color:grey;font-size:99%'>" + a.step.ongoing + "</span>" : "";
             var odesc = "";
             var prefix = "";
             if (a.step.actioncount > 1) {

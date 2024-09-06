@@ -352,7 +352,8 @@
 .sxsl-instruction-actions {
     display: flex;
     block: auto;
-    height: 60px;
+    //NGC_Change JH: 8/24
+    height: 100px;
     flex-direction: column;
     justify-content: flex-start;
     align-items: stretch;
@@ -396,7 +397,8 @@
   position: relative;
   textalign: ft;
   left: 12px; 
-  top:5px;
+  //NGC_Change JH: 8/16/24
+  //top:5px;
   border-radius: 8px;
 }
 .sxsl-capture-button {
