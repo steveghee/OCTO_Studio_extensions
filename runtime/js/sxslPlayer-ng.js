@@ -892,9 +892,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           const t4 = document.querySelector('div#previewPanel');
           t4.className = 'sxsl-preview-panel';
         }
-        var expandContract = function () {
+        var expandContract = function (forceExpand) {
           const t1 = document.querySelector('img#thumbnail');
-          if (t1.className == 'sxsl-thumbnail-hide') {
+          if (forceExpand || t1.className == 'sxsl-thumbnail-hide') {
             //expand
             t1.className = 'sxsl-thumbnail-show';
 
@@ -1244,7 +1244,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               if (proc.steps[i].id == stepid) {
                 //found it
                 var step = proc.steps[i];
-                var title = step.title != undefined ? step.title.resources[0].text : step.id;
+                var title = step.title != undefined ? step.title.resourcess[0].text : step.id;
                 steplist.push({ display: title, value: idx });
                 break;
               }
@@ -1685,7 +1685,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             scope.proofWindow.innerHTML = "\
             <div id='proofPanel' class='sxsl-proof-panel'>\
               <div style='display:flex;vertical-align: middle; align-items: center;'>\
-                <img id='proofHint' class='sxsl-proof-hint' src='app/resources/Uploaded/example101/beauties.jpg' width=128/>\
+                <img id='proofHint' class='sxsl-proof-hint' src='app/resources/Default/square.png' width=128/>\
                 <button id='proofCapture' class='sxsl-button sxsl-button-round sxsl-icon-to-do' style='position:relative;left: 12px;'/> \
               </div>\
               <div id='proofInstruction' class='sxsl-proof-text'>text here</div>\
@@ -2727,12 +2727,16 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   isAnimated = true;
                 }
                 if (res.mimeType == "image/png") {
-                  //$scope.view.wdg.alternative.imgsrc = $scope.app.params.anchor + res.url;
-                  //$scope.view.wdg.alternative.visible = true;
+                  if (scope.thumbnail) {
+                    scope.thumbnail.src = scope.data.anchor + res.url;;
+                    expandContract(true);
+                  }
                 }
                 else if (res.mimeType == "image/jpeg") {
-                  //$scope.view.wdg.alternative.imgsrc = $scope.app.params.anchor + res.url;
-                  //$scope.view.wdg.alternative.visible = true;
+                  if (scope.thumbnail) {
+                    scope.thumbnail.src = scope.data.anchor + res.url;;
+                    expandContract(true);
+                  }
                 }
                 else if (res.mimeType == "application/vnd.ptc.poi") {
                   scope.addNamedPOI(res.id, 'extensions/images/diamond.pvz', res.translation, genrotation(res.normal), 0.1, false, undefined, undefined, undefined, true, scope.data.hiliteshade);
