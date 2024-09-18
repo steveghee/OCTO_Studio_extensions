@@ -1127,7 +1127,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   var urlidx = tgt.lastIndexOf('.dat');
                   target = target + tgt.substring(0, urlidx) + '?id=' + tracker.content.targetName;
 
-                  if (true) { //contextual.target.mimeType != "application/vnd.ptc.tracker.advancedmodeltracker") {
+                  if (contextual.target.mimeType != "application/vnd.ptc.tracker.advancedmodeltracker") {
                     contextual.target.mimeType = tracker.mimeType;
                     contextual.target.target = target;
                     contextual.target.position = tracker.content.offset != undefined && tracker.content.offset.translation != undefined 
