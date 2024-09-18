@@ -224,8 +224,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 if (procedure.consumed != undefined) 
                   debugLog('in total, we consumed', procedure.consumed);     
                     
-                //and signal termination    
-                scope.$parent.$emit("finished");
               });
 
               registerEvent('stepEnd', function (evt, step) {
@@ -675,8 +673,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             else
               scope.resume(false);
           }
-          else
+          else {
             minimise()
+            
+            //and signal completion
+            scope.$parent.$emit("finished");
+          }
         }
 
         //detail capture (inputs)
@@ -893,9 +895,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           const t4 = document.querySelector('div#previewPanel');
           t4.className = 'sxsl-preview-panel';
         }
-        var expandContract = function (forceExpand) {
+        var expandContract = function (evt, forceExpand) {
           const t1 = document.querySelector('img#thumbnail');
-          if (forceExpand || t1.className == 'sxsl-thumbnail-hide') {
+          if (forceExpand || t1.className == 'sxsl-thumbnail-small') {
             //expand
             t1.className = 'sxsl-thumbnail-show';
 
@@ -907,7 +909,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
           } else {
             //contract
-            t1.className = 'sxsl-thumbnail-hide';
+            t1.className = 'sxsl-thumbnail-small';
 
             const t3 = document.querySelector('div#preview-container');
             t3.className = 'preview-container';
@@ -2707,6 +2709,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             scope.setFocus(a.title, a.viewpoint);
             
             var isAnimated = false;
+            if (scope.thumbnail) scope.thumbnail.className = "sxsl-thumbnail-hide";
 
             if (a.subjects != undefined) a.subjects.forEach(function (sub) {
 
@@ -2730,13 +2733,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 if (res.mimeType == "image/png") {
                   if (scope.thumbnail) {
                     scope.thumbnail.src = scope.data.anchor + res.url;;
-                    expandContract(true);
+                    expandContract(undefined,true);
                   }
                 }
                 else if (res.mimeType == "image/jpeg") {
                   if (scope.thumbnail) {
                     scope.thumbnail.src = scope.data.anchor + res.url;;
-                    expandContract(true);
+                    expandContract(undefined,true);
                   }
                 }
                 else if (res.mimeType == "application/vnd.ptc.poi") {
