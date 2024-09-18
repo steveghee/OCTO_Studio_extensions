@@ -454,7 +454,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   debugLog('intro', intro);
 
                   if (scope.thumbnail) {
-                    scope.thumbnail.src = proc.thumbnail;
+                    scope.thumbnail.src = proc.thumbnail || "";
                   }
                   scope.actions.start(intro);
 
@@ -566,8 +566,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                           .then(conclusion => {
 
                             // finish things up
-                            scope.actions.end(conclusion);
-
+                            scope.actions.end(conclusion || "Procedure complete - click > to finish.");
+                            scope.stepLabel.className = 'sxsl-proof-hide';
+                            
                             // TODO : let thingworx know? 
                             scope.statusField = scope.logger.sanitise();
                             //debugLog('results:', JSON.stringify(scope.logger.results, null, ' '));
@@ -1441,7 +1442,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                     <button id='minimise' class='sxsl-button sxsl-button-round sxsl-icon-collapse-hide'/> \
                     <button id='advance' class='sxsl-button sxsl-button-round sxsl-blue-bb sxsl-icon-nav-right'/></div>\
                 </div>\
-                <div style='margin-top:54px'><img id='thumbnail' class='sxsl-thumbnail-show' src='app/resources/Uploaded/earthNight.jpg' height=320/></div>\
+                <div style='margin-top:54px'><img id='thumbnail' class='sxsl-thumbnail-show' src='' height=320/></div>\
                 <div id='header' class='sxsl-instruction-header'>header text</div>\
                 <div style='padding-bottom=12px'>\
                   <div id='action' class='sxsl-instruction-actions'>action text</div>\
