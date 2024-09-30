@@ -21,7 +21,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
       link: function (scope, element, attr) {
 
         scope.data = { 
-                      nominal: true, 
+                      nominal: false, 
                           min: 20, 
                           max: 100, 
                      interval: undefined 

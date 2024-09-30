@@ -24,6 +24,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         prerequisiteField: '@',
         hiliteshadeField: '@',
         annotateshadeField: '@',
+        autostartField: '@',
         toolshadeField: '@',
         canrunField: '=',
         runningField: '=',
@@ -42,28 +43,29 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
         var lastUpdated = 'unknown';
         scope.data = {
-          name: undefined,
-          disabled: false,
-          isHolo: false,
-          src: undefined,
-          context: undefined,
+          autostart: true,  
+               name: undefined,
+           disabled: false,
+            isHolo: false,
+               src: undefined,
+           context: undefined,
           loggingEnabled: false,
           reasonCode: {},
           steplist: [],
           physical: true,
-          anchor: "",
-          guide: "",
+            anchor: "",
+             guide: "",
           firstStep: true,
           isProcessThingAvailable: false,
           isToolThingAvailable: false,
           heroWidget: undefined,
-          pois: {},
-          ask: undefined,
+           pois: {},
+            ask: undefined,
           debug: undefined,
           focus: [],
-          hiliteshade: "sxsl_proximityHilitegl",
+            hiliteshade: "sxsl_proximityHilitegl",
           annotateshade: "sxsl_coloredHilitegl;r f 0; g f 1;b f 1",
-          toolshade: "sxsl_coloredHilitegl;r f 1; g f 1;b f 0",
+              toolshade: "sxsl_coloredHilitegl;r f 1; g f 1;b f 0",
           events:[]
         };
 
@@ -831,7 +833,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               const t5v = document.querySelector('video#viewVideo');
               t5v.firstChild.src = src;
               t5v.className = 'sxsl-viewer-image';
-
+              t5v.load(); // ensure this loads ready for play
+              
               const t6vi = document.querySelector('img#viewImage');
               t6vi.className = 'sxsl-preview-hide';
               const t6vd = document.querySelector('div#viewPdf');
@@ -885,7 +888,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               t2.className = 'sxsl-thumbnail-hide';
               const t3 = document.querySelector('div#viewer-container');
               t3.className = 'sxsl-preview-hide';
-              maximisePreview();
+              
+              //we should only open this if there is content within
+              if (scope.previewList.isPopulated)
+                maximisePreview();
             }
           }
         }
@@ -1196,7 +1202,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
                 },
                   (err) => {
-                    debugLog('addMarker failed');
+                    debugLog('addMarkerer failed');
                   })
               },
                 (err) => {
@@ -1221,6 +1227,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             pscope.$applyAsync();
           }
           scope.trackingField = true;
+          
+          //late start after tracking established
+          if (!scope.data.autostart && !scope.runningField)
+            $timeout(scope.startup,1000);  
         });
 
         scope.$root.$on('trackinglost', function (event, args) {
@@ -1356,15 +1366,16 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           }
         });
 
-        scope.$watchGroup(['physicalField', 'disabledField', 'holoField', 'loggingField', 'includeField', 'hiliteshadeField', 'annotateshadeField'], function () {
-          scope.data.physical = (scope.physicalField != undefined && scope.physicalField === 'true') ? true : false;
-          scope.data.disabled = (scope.disabledField != undefined && scope.disabledField === 'true') ? true : false;
-          scope.data.isHolo = (scope.holoField != undefined && scope.holoField == 'true') ? true : false;
+        scope.$watchGroup(['physicalField', 'disabledField', 'holoField', 'loggingField', 'includeField', 'hiliteshadeField', 'annotateshadeField','autostartField'], function () {
+          scope.data.physical       = (scope.physicalField != undefined && scope.physicalField === 'true') ? true : false;
+          scope.data.disabled       = (scope.disabledField != undefined && scope.disabledField === 'true') ? true : false;
+          scope.data.isHolo         = (scope.holoField != undefined && scope.holoField == 'true') ? true : false;
           scope.data.loggingEnabled = (scope.loggingField != undefined && scope.loggingField == 'true') ? true : false;
-          scope.data.ask = (scope.includeField != undefined && scope.includeField.length > 0) ? scope.includeField.split(',') : undefined;
-          scope.data.hiliteshade = (scope.hiliteshadeField != undefined && scope.hiliteshadeField.length > 0) ? scope.hiliteshadeField : "sxsl_proximityHilitegl";
-          scope.data.annotateshade = (scope.annotateshadeField != undefined && scope.annotateshadeField.length > 0) ? scope.annotateshadeField : "sxsl_coloredHilitegl;r f 0;g f 1;b f 1";
-          scope.data.toolshade = (scope.toolshadeField != undefined && scope.toolshadeField.length > 0) ? scope.toolshadeField : "sxsl_coloredHilitegl;r f 1;g f 1;b f 0";
+          scope.data.ask            = (scope.includeField != undefined && scope.includeField.length > 0) ? scope.includeField.split(',') : undefined;
+          scope.data.hiliteshade    = (scope.hiliteshadeField != undefined && scope.hiliteshadeField.length > 0) ? scope.hiliteshadeField : "sxsl_proximityHilitegl";
+          scope.data.annotateshade  = (scope.annotateshadeField != undefined && scope.annotateshadeField.length > 0) ? scope.annotateshadeField : "sxsl_coloredHilitegl;r f 0;g f 1;b f 1";
+          scope.data.toolshade      = (scope.toolshadeField != undefined && scope.toolshadeField.length > 0) ? scope.toolshadeField : "sxsl_coloredHilitegl;r f 1;g f 1;b f 0";
+          scope.data.autostart      = (scope.autostartField != undefined && scope.autostartField == 'false') ? false : true;
         });
             
         // if there is a SUBSET of data defined, lets watch to see if that list changes    
@@ -1388,6 +1399,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
         scope.$watch('delegateField', function (delegate) {
           if (delegate) {
+            delegate.start = function () {
+              //only start if we are not already running     
+              if (scope.runningField == false)
+                $timeout(scope.startup,1000);  
+            };
             delegate.reset = function () {
               if (scope.runningField == true)
                 scope.halt({event:'reset', reason:'reset'})
@@ -1723,12 +1739,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             </div>"
             scope.referencePreviewWindow.id = 'preview-container';
             scope.referencePreviewWindow.className = 'preview-container-collapsed';
-
+            
             container.insertBefore(scope.referencePreviewWindow, container.firstChild);
           }
           scope.previewList = document.querySelector('div#previewList');
+          scope.previewList.isPopulated = false;
           scope.setPreviewList = function (contents) {
             scope.previewList.innerHTML = contents;
+            scope.previewList.isPopulated = contents.length > 0;  
           }
         };
         
@@ -1790,10 +1808,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             // clean up
             debugLog('leaving view',info.title);
             scope.deactivateAll();
-
           });
             
-          scope.startup();
+          if (scope.data.autostart)
+            scope.startup();
         });
             
           
@@ -2338,10 +2356,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 }
 
               } else {
+                //clear the list
+                scope.setPreviewList("");
                 minimisePreview();
               }
 
             } else {
+              //clear the list
+              scope.setPreviewListviewList("");
               minimisePreview();
             }
 
@@ -2559,12 +2581,15 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               var min = input.minerror, max = input.maxerror;
               var minwarn = input.minwarn, maxwarn = input.maxwarn;
               var nominal = input.nominal; // expected value
+              var precision = input.precision;
+              //the display value can be clamped to a set precision (no of decimal places)
+              var ntp = nominal != undefined && precision != undefined ? nominal.toFixed(precision) : "";
               input.attempts = 0;
 
               var src = scope.captureTextWindow;
               src.className = 'sxsl-capture-text';
               src.placeholder = i.hint || "";              
-              src.value = nominal != undefined ? nominal : ''; //preset the value
+              src.value = ntp; //nominal != undefined ? nominal : ''; //preset the value
 
               document.querySelector('div#capture').className = 'sxsl-capture-show';
               const btnAC = document.querySelector('button#addCapture');
@@ -2576,6 +2601,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   var t = src.value;
                   debugLog('test', t, 'against min', min, 'max', max);
                   var fv = parseFloat(t);
+                  if (precision) t = src.value = fv.toFixed(precision);
 
                   var valid = (min != undefined ? min <= fv : true) && (max != undefined ? max >= fv : true);
                   
@@ -2590,12 +2616,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                     scope.setFeedbackLabel('Warning<p>Value ', fv, ' falls outside of range [', minwarn, maxwarn, ']');
 
                   src.className = 'sxsl-capture-text' + (valid == false ? ' sxsl-capture-error' : (warn == true ? ' sxsl-capture-warn' : ''));
-
+                  
                   // finally, look for nominal and if defined, report the deviation from this value
                   var deviation = (nominal != undefined) ? Math.abs(nominal - fv) : undefined;
 
                   if (valid)
-                    next({ response: t, tolerance: deviation, type: input.type, time: Date.now() });
+                    next({ response: t, precision: input.precision, tolerance: deviation, type: input.type, time: Date.now() });
                   else {
                       var message = (maxtries != undefined && input.attempts > maxtries) 
                                        ? 'Maximum tries exceeded.<p>' + (i.hint || "") 
@@ -2682,7 +2708,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             // a step/action, we will show the intro, each action  as it is consumed, and the outro. For multi-action steps, we show the
             // full 
 
-            var pdesc = a.step.ongoing != undefined ? "<span style='color:grey;font-size:75%'>" + a.step.ongoing + "</span>" : "";
+            var pdesc = a.step.ongoing != undefined ? "<span style='color:grey;font-size:85%'>" + a.step.ongoing + "</span>" : "";
             var odesc = "";
             var prefix = "";
             if (a.step.actioncount > 1) {

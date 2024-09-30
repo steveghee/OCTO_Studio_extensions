@@ -51,6 +51,7 @@ function sxslHelper(renderer, anchor) {
     this.minerror = i.minerror;
     this.maxerror = i.maxerror;
     this.nominal  = i.nominal;
+    this.precision = i.precision;
     this.maxCaptures = i.maxCaptures;
     this.minCaptures = i.minCaptures || 0;
     if (i.enumerations != undefined) {

@@ -158,7 +158,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
     var color = `r f ${(indicate<=2?1:0)};g f ${(indicate>=2?1:0)};b f 0`;
     
     // build the shader call
-    this.indicator = `multifunctionalDisplayDisplaygl;${color};nf f ${nnf};ff f ${nff}`;
+    this.indicator = `multifuncDisplaygl;${color};nf f ${nnf};ff f ${nff}`;
     return this;
   }
   
