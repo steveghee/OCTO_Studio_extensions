@@ -62,6 +62,28 @@ function Matrix4() {
         this.m[3][3] = a[3][3];
         return this;
     }
+    this.Set16A = function(a) {
+        this.m[0][0] = a[0];
+        this.m[0][1] = a[1];
+        this.m[0][2] = a[2];
+        this.m[0][3] = a[3];
+        
+        this.m[1][0] = a[4];
+        this.m[1][1] = a[5];
+        this.m[1][2] = a[6];
+        this.m[1][3] = a[7];
+        
+        this.m[2][0] = a[8];
+        this.m[2][1] = a[9];
+        this.m[2][2] = a[10];
+        this.m[2][3] = a[11];
+        
+        this.m[3][0] = a[12];
+        this.m[3][1] = a[13];
+        this.m[3][2] = a[14];
+        this.m[3][3] = a[15];
+        return this;
+    }
     this.SetM4 = function(m) {
         this.m[0][0] = m.m[0][0];
         this.m[0][1] = m.m[0][1];

@@ -31,11 +31,11 @@ The extension can be broken down into 7 main catagories
 
 1. Targets
 2. Inputs
-3. Metadata
+3. Metadata  (** new **)
 4. Containers
 5. Navigation
 6. Step by Step Instructions (** new **)
-7. Misc 
+7. Misc  (** new **)
 
 Lets look at each in turn.
 
@@ -130,6 +130,9 @@ WIP
 ### Locator (** new **)
 The Locator widget can be linked to the output of Finder. The output of locator is a matching list of location points that match the items in the find results list.  
 This list could be bound to the input of the wayfinder, allow the user to locate items spatially.
+
+If compound is set to true, s single composition location (box) which encompasses all N input items, is created.
+If false, each item in the input list is mapped to center point if the item.
 
 ### Finder
 Provides real-time metadata shearch within specified model ID.
@@ -243,8 +246,22 @@ TBC
 
 ## Misc
 
-If coumpound is set to true, s single composition location (box) which encompasses all N input items, is created.
-If false, each item in the input list is mapped to center point if the item
+
+### 3D Label Style  (** new **)
+This widget can be used to set the display styling for the rear-side of all 
+3d labels and images.  It has been added here to fix a long-standing regression/bug where 
+3d labels, when viewed from the reverse side, appear backwards.  A specific 
+design considered was that text would never be displayed back to front, hence 
+the default should have been that a label, when viewed from the opposite side, 
+would not actually be visible.  This is how it works on the Hololens.
+
+This widget fixes the issue, and extends the offered to alter how the back 
+side of the label is displayed.  Options include Single Sided (only the front 
+text is visible), Double Mirrored - the text on the reverse will be mirrored 
+so that it reads correcly on both side, and Double Blanked - here you are 
+given an additional Color control to choose the opaque color that will be 
+applied of the rear of the label.
+
 
 ### Image markup
 The markup widget can be used to provide in-situ markup (pen,text, shapes) over an 
