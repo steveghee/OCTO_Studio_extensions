@@ -82,7 +82,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         function setPointer(pos,rot,show) {
             
           if (scope.data.pointer == undefined) {
-            addNamedImage("pointer",pos,rot,show,scope);
+            addNamedImage("octoSurfaceIndicatorPointer",pos,rot,show,scope);
           } else {
             var name = scope.data.pointer;
             scope.renderer.setTranslation(name,pos.X(), pos.Y(), pos.Z());
