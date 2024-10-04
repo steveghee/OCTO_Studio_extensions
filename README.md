@@ -127,6 +127,10 @@ WIP
 
 ## Metadata 
 
+### Surface Indicator (** new **)
+The surface indicator widget will place a user-supplied marker (image) onto the surface athte location where the surface is tapped. The marker can be placed
+tangential to the surface, or orthogonal (along the surface 'normal').  
+
 ### Locator (** new **)
 The Locator widget can be linked to the output of Finder. The output of locator is a matching list of location points that match the items in the find results list.  
 This list could be bound to the input of the wayfinder, allow the user to locate items spatially.

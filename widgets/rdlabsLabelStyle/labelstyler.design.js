@@ -11,7 +11,7 @@ function twxLabelStyler() {
             name: 'style',
            label: 'Style',
         datatype: 'select',
-         default: "Single Sided",
+         default: "onesided-text",
  isBindingTarget: false,
           editor: 'select',
          options: [

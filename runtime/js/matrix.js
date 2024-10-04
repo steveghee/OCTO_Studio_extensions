@@ -1132,6 +1132,12 @@ function Vector4() {
         s = s.replace(/,/g, ' ');
         return s;
     }
+    
+    this.ToObject = function(incW) {
+        var o = incW ? { x:this.v[0], y:this.v[1], z:this.v[2], w:this.v[3] }
+                     : { x:this.v[0], y:this.v[1], z:this.v[2]} ;
+        return o;
+    }
 }
 
 function Bbox() {
