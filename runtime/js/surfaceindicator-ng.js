@@ -108,6 +108,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           }
         });
             
+        scope.vertical   = new Vector4().Set3(  0,0,0);
         scope.horizontal = new Vector4().Set3(-90,0,0);
         scope.$root.$on('userpick', function(evt, src, type, evtdata) { 
                         
@@ -168,7 +169,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 var bx = xform_bbox.max; // max
 
                 // position the pointer to be a the top center of the box
-                setPointer(new Vector4().Set3(bc.x, bx.y, bc.z), scope.horizontal, true);
+                setPointer(new Vector4().Set3(bc.x, bx.y, bc.z), scope.data.isTangential ? scope.horizontal : scope.vertical, true);
               }) 
             }
            
