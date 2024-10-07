@@ -468,11 +468,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                     if (scope.inputValidator != undefined) {
                       scope.inputValidator()
                         .then((validated) => {
+                        if (validated.remaining < 1) {
+                            scope.setFeedbackLabel('Confirmed. Press (>) to proceed');
+                            //we have valid content, so we can enable the next button    
+                            scope.advanceWindow.className = 'sxsl-button sxsl-button-round sxsl-blue-bb sxsl-icon-nav-right';
+                          }
+                          else 
+                            scope.setFeedbackLabel('Confirmed. '+validated.remaining+' value to collect');
 
-                          scope.setFeedbackLabel('Confirmed. Press (>) to proceed');
-
-                          //we have valid content, so we can enable the next button    
-                          scope.advanceWindow.className = 'sxsl-button sxsl-button-round sxsl-blue-bb sxsl-icon-nav-right';
                           return scope.pushInput(validated);
                         })
                         .catch(e => {
@@ -1257,7 +1260,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               if (proc.steps[i].id == stepid) {
                 //found it
                 var step = proc.steps[i];
-                var title = step.title != undefined ? step.title.resourcess[0].text : step.id;
+                var title = step.title != undefined ? step.title.resources[0].text : step.id;
                 steplist.push({ display: title, value: idx });
                 break;
               }
@@ -2372,8 +2375,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           //
           // this are probably UI eval validators, so they should realy be returning css/state-based UI settings
           //
-          this.findInputValidator = (input, tools) => {
-
+          this.findInputValidator = (input, tools, subjectCount) => {
+              
+            input.minCaptures = input.minCaptures || subjectCount;
+            if (input.maxCaptures != undefined) 
+              input.maxCaptures = input.maxCaptures * subjectCount;   //N captures PER INPUT
+            
             var cameraTool = function (callback) {
               var cb = callback;
               //  params = { dataURL:bool, withAugmentation: bool, imgFormat: string, imgWidth: number, imgHeight:number} 
@@ -2585,6 +2592,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               //the display value can be clamped to a set precision (no of decimal places)
               var ntp = nominal != undefined && precision != undefined ? nominal.toFixed(precision) : "";
               input.attempts = 0;
+              input.captures = 0;
 
               var src = scope.captureTextWindow;
               src.className = 'sxsl-capture-text';
@@ -2620,8 +2628,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   // finally, look for nominal and if defined, report the deviation from this value
                   var deviation = (nominal != undefined) ? Math.abs(nominal - fv) : undefined;
 
-                  if (valid)
-                    next({ response: t, precision: input.precision, tolerance: deviation, type: input.type, time: Date.now() });
+                  if (valid) {
+                      input.captures += 1;
+                      next({ response: t, precision: input.precision, tolerance: deviation, type: input.type, time: Date.now(), remaining: input.minCaptures - input.captures });
+                  }
                   else {
                       var message = (maxtries != undefined && input.attempts > maxtries) 
                                        ? 'Maximum tries exceeded.<p>' + (i.hint || "") 
@@ -2736,7 +2746,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             
             var isAnimated = false;
             if (scope.thumbnail) scope.thumbnail.className = "sxsl-thumbnail-hide";
-
+            
+            var noSubjects = 0;
             if (a.subjects != undefined) a.subjects.forEach(function (sub) {
 
               var assetId = sub.id;
@@ -2750,6 +2761,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   var src = scope.data.anchor + (res.composition == "partset" ? res.modelUrl : res.url);
                   scope.addNamedPOI(assetId, src, res.translation, genrotation(res.normal), 1, true, undefined, (res.composition == "partset" ? (sub.sceneName || res.sceneName || a.animation) : a.animation), occurrenceIds, true, scope.data.hiliteshade);
                   isAnimated = isAnimated || scope.data.pois[assetId].sequenceToLoad != undefined;
+                  if (occurrenceIds != undefined) noSubjects += occurrenceIds.length; else noSubjects += 1;
                 }
                 if (res.mimeType == "application/vnd.ptc.pvi" || res.mimeType == "application/vnd.ptc.animation.pvi") {
                   if (scope.data.pois[assetId] == undefined) scope.data.pois[res.id] = {};
@@ -2779,6 +2791,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               })
             })
 
+            a.subjectCount = noSubjects;
+            console.log("action is processing",noSubjects,"subjects");
+            
             // like subjects, we can have 0 or more annotations
             //
             if (a.annotations != undefined) a.annotations.forEach(function (me) {
@@ -2810,7 +2825,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
               // we also want to collect #tools * any details values
               a.tools[0].infoToCollect = {
-                count: a.subjects != undefined ? a.subjects.length : 1,
+                count: noSubjects,
                 details: a.details
               };
 
@@ -2836,7 +2851,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               // not sure if we need to do anything specific here, as the inputs should reference the tool so we can handle it there
             }
 
-            return this.findInputValidator(a.details, a.tools);
+            return this.findInputValidator(a.details, a.tools, noSubjects);
           }
 
           //find toolshe named action handler
@@ -3200,7 +3215,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               // a timeout in case we dont have the twx bindings
               scope.data.sxslToolConnectTimeout = $timeout(function () {
                 scope.data.isToolThingAvailable = false;
-                reject({ reason: 'Invalid or missing interface: Use manual entry' });
+                reject({ reason: 'Invalid or mightssing interface: Use manual entry' });
               }, 3000);
 
               // ask if things are ok

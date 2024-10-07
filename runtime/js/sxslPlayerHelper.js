@@ -398,8 +398,9 @@ function sxslHelper(renderer, anchor) {
           if (this.action.details.pending[myID] == undefined)
             this.action.details.pending[myID] = [];
 
-          var mintries = this.action.details.minCaptures != undefined ? this.action.details.minCaptures : 0;
-          var maxtries = this.action.details.maxCaptures ;
+          var mintries = this.action.details.minCaptures || 1;
+          var maxtries = this.action.details.maxCaptures;
+          
           if (maxtries == undefined || this.action.details.pending[myID].length < maxtries) {
             this.action.details.pending[myID].push(input);
             me.variables[myID] = input.response;
