@@ -23,15 +23,6 @@ exports.runtimeAngularModulesRequires = ["groupy-ng",
                                          "lighttube-ng", 
                                          "locator-ng",
                                          
-                                         ///////////// deprecated
-                                         //"octotoggle3D-ng",
-                                         //"octopress3D-ng",
-                                         //"image3D-ng", 
-                                         //"tethered-ng",
-                                         //"octoPinger-ng",
-                                         //"navigator-ng",
-                                         ////////////////////////
-                                         
                                          //new - mainly alpha testing
                                          "sxslplayer-ng",
                                          "cart-ng",
@@ -40,7 +31,6 @@ exports.runtimeAngularModulesRequires = ["groupy-ng",
                                          "quantizer-ng",
                                          "lister-ng",
                                          "surfaceindicator-ng",
-                                         //"dynamictarget-ng",
                                          
                                          "multiline3D-ng",
                                          "list3D-ng",

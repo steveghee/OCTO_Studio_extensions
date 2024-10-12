@@ -9,8 +9,8 @@ They are provided free of charge, and can be used, adapted, altered freely, but 
 
 The OCTO widget library includes widgets for
 * low-level (TML) support for new Vuforia Engine features e.g. Area and Trained model targets
-* 3d UI widgets for the hololens e.g. buttons, toggles, tethered backplate
-* 3d assistance tools e,g 'pinger' (attract attention), navigator, markup
+* 3d UI widgets for the hololens e.g. list, progress element
+* 3d assistance tools e,g 'pinger' (attract attention), markup
 * non-graphical logic elements e.g. AND/OR gates, flipflops, latches
 
 
@@ -171,11 +171,6 @@ The items output is an info table that can be passed to other widget or thingwor
 TBC
 
 ## Navigation
-There are two widgets in this category
-
-### Navigator
-Note : depricated : Vuforia Studio product now includes this capability in the form of the wayfinder widget.
-
 
 ### Zones of Interest (**new**)
 The Zones of interest widget provies a mechanism to declare one or more zones (these are cylindrical is shape) and 
@@ -183,7 +178,7 @@ position these in your space.  When then user navigates the scene and crossed in
 output appropriate events (Arrived, Departed) that allows your experince to react to the user proximity.  The value 
 property reflects the title/if of the zone that is being crossed. 
 
-Similar to the navigator widget, you can declare/bind an array zones and the control will manage them for you.  You can also create/mark new zones on demand.
+You can declare/bind an array zones and the control will manage them for you.  You can also create/mark new zones on demand.
 This data can be in table form - perhaps the result of a thingworx service call - or you can set the value from javascript.
 
   `$scope.view.wdg.zones.zoidata = [ \
