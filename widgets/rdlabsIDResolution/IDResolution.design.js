@@ -21,6 +21,15 @@ function twxIDResolution() {
         showInput: true
       },
       {
+        name: 'include',
+        label: 'Fields to Include',
+        datatype: 'string',
+        default: '',
+        isBindingSource: false,
+        isBindingTarget: true,
+        showInput: true
+      },
+      {
              name: 'result',
             label: 'Result',
          datatype: 'string',
@@ -54,7 +63,7 @@ function twxIDResolution() {
     },
 
     runtimeTemplate: function (props) {
-      var tmpl = '<div ng-idresolution result-field="me.result" urn-field={{me.urn}}></div>';
+      var tmpl = '<div ng-idresolution result-field="me.result" include-field={{me.include}} urn-field={{me.urn}}></div>';
       return tmpl;
     }
   }

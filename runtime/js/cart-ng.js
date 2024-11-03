@@ -34,6 +34,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           return v === 'true' || v === true;
         }
         
+        //initialise
+        scope.contentField = [];
+        scope.coundField = 0;
+        
         var add = function() {
             
           if (scope.data.results == undefined || scope.data.results.length == 0)
@@ -50,7 +54,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   scope.data.items[id] = inc;
                   
                   // and if we are being asked to ADD any metadata, do it here
-                  if (scope.data.include.length > 0) {
+                  if (scope.data.include!= undefined && scope.data.include.length > 0) {
                     var ask  =scope.data.include;  
                     var res = meta.get(inc.path, ask);
                     if (ask.length == res.length) for (var p=0;p<ask.length;p++) {
