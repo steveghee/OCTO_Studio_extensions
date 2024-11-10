@@ -6,14 +6,15 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
   'use strict';
 
   var cartModule = angular.module('cart-ng', []);
-  cartModule.directive('ngCart', ['$timeout', '$http', '$window', '$injector', ngCart]);
+  cartModule.directive('ngCart', ['$timeout', '$http', '$window', '$rootScope', '$injector', ngCart]);
 
-  function ngCart($timeout, $http, $window, $injector) {
+  function ngCart($timeout, $http, $window, $rootScope, $injector) {
 
     return {
       restrict: 'EA',
       scope: {
         includeField      : '@',
+        sharedField       : '@',  
         infoField         : '=',
         countField        : '=',
         contentField      : '=',
@@ -25,6 +26,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         var lastUpdated = 'unknown';
           
         scope.data = { include: [],
+                        shared: false,
                           data: undefined, 
                          items: {},
                        results: []
@@ -33,10 +35,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         function toBool(v) {
           return v === 'true' || v === true;
         }
-        
-        //initialise
-        scope.contentField = [];
-        scope.coundField = 0;
         
         var add = function() {
             
@@ -130,7 +128,29 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           } , 10);
         }
 
-        scope.$watchGroup(['includeField'], function () {
+        scope.$watchGroup(['includeField','sharedField'], function () {
+          scope.data.shared  = (scope.sharedField != undefined && scope.sharedField === 'true') ? true : false;
+          if (scope.data.shared) {
+            if ($rootScope.sharedCart == undefined) $rootScope.sharedCart = { items:[] };
+            scope.data = $rootScope.sharedCart;
+          } else {
+            scope.data = { include: [],
+                            shared: false,
+                              data: undefined, 
+                             items: {},
+                           results: []
+                         };
+          }
+          
+          //initialise
+          var final=[];
+          for(const key in scope.data.items) {
+            var item = scope.data.items[key];  
+            if (item.count === undefined || item.count > 0) final.push(item);
+          }
+          scope.contentField = final
+          scope.coundField = final.length;
+        
           scope.data.include = (scope.includeField != undefined && scope.includeField.length>0) ? scope.includeField.split(',') : undefined;
           // TODO : if this changed, we may need to re-run over the cart to get new fields
         });

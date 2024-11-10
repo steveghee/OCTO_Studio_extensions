@@ -43,6 +43,15 @@ function octoCart() {
          default: false,
  isBindingSource: true,
        showInput: false
+      },
+      {
+        name: 'shared',
+        label: 'Share across all Views',
+        datatype: 'boolean',
+        default:true,
+        isBindingSource: false,
+        isBindingTarget: true,
+        showInput: true
       }
     ],
 
@@ -79,7 +88,7 @@ function octoCart() {
 
     runtimeTemplate: function (props, twxWidgetEl, fullOriginalDoc, $, projectSettings) {
       
-      var tmpl = '<div ng-cart info-field="me.data" count-field="me.count" content-field="me.items" include-field={{me.include}} delegate-field="delegate"></div>';
+      var tmpl = '<div ng-cart info-field="me.data" count-field="me.count" content-field="me.items" shared-field={{me.shared}} include-field={{me.include}} delegate-field="delegate"></div>';
       return tmpl;
     }
   }
