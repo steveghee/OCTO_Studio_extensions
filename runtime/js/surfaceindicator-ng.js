@@ -139,8 +139,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               var xd = N.Normalize().CrossP(gz);
               var up = gz.CrossP(xd).Normalize();
       
-              var mat = new Matrix4().makePose(ps,N.Negate(),up);
-              var flip = new Matrix4().Rotate([1,0,0],-90,true);
+              var mat = new Matrix4().makePose(ps,N,up);
+              var flip = new Matrix4().Rotate([1,0,0],90,true);
               var oot = scope.data.isTangential ? mat.ToPosEuler(true) 
                                                 : flip.Multiply(mat.m).ToPosEuler(true);
               
