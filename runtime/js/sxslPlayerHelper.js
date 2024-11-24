@@ -27,7 +27,8 @@ function sxslHelper(renderer, anchor) {
     var txt   = res != undefined ? res.resources.filter(function(v) { return v.mimeType==stype;})[0].text : ""
     
     if (txt.length>0 && vars != undefined) {
-      //are there any variables referenced? if so, can we fill them in?
+        
+        //are there any variables referenced? it would look like ${varname}.  if so, can we fill them in?
       const regexp = /\${(\w+)}/g;
       for (const match of txt.matchAll(regexp)) {
         var name = match[1];
@@ -37,7 +38,7 @@ function sxslHelper(renderer, anchor) {
           txt = txt.replace(rg2,nv);
         }
       }
-      
+      //look for #{subject id} and, if found, display the correctly tinted bullet point
       const regexp2 = /\#{(\w+)}/g;
       for (const match2 of txt.matchAll(regexp2)) {
         var name = match2[1];
@@ -47,7 +48,7 @@ function sxslHelper(renderer, anchor) {
           txt = txt.replace(rg2,`<span style="color:${nv};">&#x26AB;&#xfe0e;</span>`);
         } else {
           var rg2 = RegExp(`(\\#\{${match2[1]}})`,"g");
-          txt = txt.replace(rg2,name);
+          txt = txt.replace(rg2,''); // no reference found - should we show an error?
         }
       }
   
@@ -135,10 +136,10 @@ function sxslHelper(renderer, anchor) {
               };
             }
             let asset = this.context[sub.contextId].assets[sub.assetId];
-            this.subjects.push({ context: fctx, asset: asset, id: sub.assetId, occurrenceIds:sub.occurrenceIds, tint:sub.tint });
+            this.subjects.push({ context: fctx, asset: asset, id: sub.assetId, occurrenceIds:sub.occurrenceIds, tint:sub.tint, name:sub.id });
           } else {
             //no context, so is the resource defined inline?
-            this.subjects.push({ asset: sub, id: sub.assetId, occurrenceIds: sub.occurrenceIds, tint:sub.tint });
+            this.subjects.push({ asset: sub, id: sub.assetId, occurrenceIds: sub.occurrenceIds, tint:sub.tint, name:sub.id });
           }
           if (sub.tint != undefined && sub.id != undefined) {
             this.variables[sub.id] = sub.tint;

@@ -2377,10 +2377,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           //
           this.findInputValidator = (input, tools, subjectCount) => {
               
-            input.minCaptures = input.minCaptures || subjectCount;
-            if (input.maxCaptures != undefined) 
-              input.maxCaptures = input.maxCaptures * subjectCount;   //N captures PER INPUT
-            
             var cameraTool = function (callback) {
               var cb = callback;
               //  params = { dataURL:bool, withAugmentation: bool, imgFormat: string, imgWidth: number, imgHeight:number} 
@@ -2534,6 +2530,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             var passThru = function (i) {
               var input = i;
               var src = scope.captureTextWindow;
+              input.captures = 0;
               
               src.placeholder = i.hint || "";              
               src.className = 'sxsl-capture-text';
@@ -2544,7 +2541,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
               return function () {
                 return new Promise((next, reject) => {
-                  next({ response: src.value, type: input.type, time: Date.now() });
+                  input.captures += 1;
+                  next({ response: src.value, type: input.type, time: Date.now(), remaining: input.minCaptures - input.captures });
                 });
               }
             }
@@ -2552,6 +2550,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               var input = i;
               var pattern = input.regex;
               input.attempts = 0;
+              input.captures = 0;
               var src = scope.captureTextWindow;
               
               src.placeholder = i.hint || "";              
@@ -2573,8 +2572,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                     valid = false;
                     
                   src.className = 'sxsl-capture-text' + (valid == false ? ' sxsl-capture-error' : '');
-                  if (valid)
-                    next({ response: t, type: input.type, time: Date.now() })
+                  if (valid) {
+                    input.captures += 1;  
+                    next({ response: t, type: input.type, time: Date.now(), remaining: input.minCaptures - input.captures })
+                  }
                   else {
                     var resp = (maxtries != undefined && input.attempts > maxtries) ? 'Exceeded maximum attempts.<p>' : 'Invalid response.<p>'; 
                     var message = resp + (i.hint || "");
@@ -2654,6 +2655,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             var selectoneInput = function (i) {
               var input = i;
               var src = scope.captureEnumWindow;
+              i.captures = 0;
 
               var list = input.enumerations;
               if (list == undefined) return passThru(i);
@@ -2668,14 +2670,16 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   var t = src.value;
                   debugLog('submitting', t);
                   var resp = t;
-                  next({ response: resp, type: input.type, time: Date.now() });
+                  i.captures += 1;
+                  next({ response: resp, type: input.type, time: Date.now(), remaining: i.minCaptures - i.captures });
                 });
               }
             }
 
             var photocapture = function (i) {
               var input = i;
-
+              input.captures = 0;
+              
               document.querySelector('div#capture').className = 'sxsl-capture-show';
               const btnAC = document.querySelector('button#activateCapture');
               btnAC.className = 'sxsl-button sxsl-capture';
@@ -2694,13 +2698,19 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
                 var photo = res;
                 var valid = photo.length > 0;
-                return valid ? { response: photo, type: input.type, time: Date.now() } : undefined;
+                if (valid) input.captures += 1;
+                return valid ? { response: photo, type: input.type, time: Date.now(), remaining: input.minCaptures - input.captures } : undefined;
               })
             }
 
             // chosen functions may turn one or more of these back on again 
             hideCapture();
             if (input == undefined) return undefined;
+            
+            input.minCaptures = input.minCaptures || subjectCount || 1;
+            if (input.maxCaptures != undefined) 
+              input.maxCaptures = input.maxCaptures * subjectCount;   //N captures PER INPUT
+            
             switch (input.type) {
               case 'CaptureString': return input.enumerations != undefined ? selectoneInput(input) : input.regex != undefined ? textPattern(input) : passThru(input);
               case 'CaptureNumber': return rangeInput(input);
@@ -2759,7 +2769,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             var noSubjects = 0;
             if (a.subjects != undefined) a.subjects.forEach(function (sub) {
 
-              var assetId = sub.id;
+              var assetId = sub.name || sub.id;
               var shade = (sub.tint == undefined) ? scope.data.hiliteshade : "sxsl_coloredHilitegl;"+hex2shader(sub.tint);
 
               if (sub.asset != undefined) sub.asset.resources.forEach(function (res) {
