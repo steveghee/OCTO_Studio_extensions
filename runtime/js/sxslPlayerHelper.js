@@ -37,6 +37,21 @@ function sxslHelper(renderer, anchor) {
           txt = txt.replace(rg2,nv);
         }
       }
+      
+      const regexp2 = /\#{(\w+)}/g;
+      for (const match2 of txt.matchAll(regexp2)) {
+        var name = match2[1];
+        var nv   = vars[name];
+        if (nv != undefined) {
+          var rg2 = RegExp(`(\\#\{${match2[1]}})`,"g");
+          txt = txt.replace(rg2,`<span style="color:${nv};">&#x26AB;&#xfe0e;</span>`);
+        } else {
+          var rg2 = RegExp(`(\\#\{${match2[1]}})`,"g");
+          txt = txt.replace(rg2,name);
+        }
+      }
+  
+  
     }
     return txt;
   }
@@ -92,7 +107,8 @@ function sxslHelper(renderer, anchor) {
       //really should check to see this is valid
       this.animation = this.context[sub.contextId].assets[sub.assetId].resources[0].content.animationName;
     }
-
+    
+    this.variables = [];
     this.subjects = undefined;
     var subcount = a.subjects != undefined ? a.subjects.length : 0;
     if (subcount > 0) {
@@ -119,10 +135,13 @@ function sxslHelper(renderer, anchor) {
               };
             }
             let asset = this.context[sub.contextId].assets[sub.assetId];
-            this.subjects.push({ context: fctx, asset: asset, id: sub.assetId, occurrenceIds:sub.occurrenceIds });
+            this.subjects.push({ context: fctx, asset: asset, id: sub.assetId, occurrenceIds:sub.occurrenceIds, tint:sub.tint });
           } else {
             //no context, so is the resource defined inline?
-            this.subjects.push({ asset: sub, id: sub.assetId, occurrenceIds: sub.occurrenceIds });
+            this.subjects.push({ asset: sub, id: sub.assetId, occurrenceIds: sub.occurrenceIds, tint:sub.tint });
+          }
+          if (sub.tint != undefined && sub.id != undefined) {
+            this.variables[sub.id] = sub.tint;
           }
         }
       }
@@ -155,6 +174,8 @@ function sxslHelper(renderer, anchor) {
             let asset = this.context[sub.contextId].assets[sub.assetId];
             this.annotations.push({ context: fctx, asset: asset, id: sub.assetId, ann:sub });
           }
+          if (sub.tint != undefined && sub.id != undefined) 
+            this.variables[sub.id] = sub.tint;
         }
       }
     }
@@ -224,7 +245,10 @@ function sxslHelper(renderer, anchor) {
     this.viewpoint = getViewpoint(a.viewpoint != undefined ? a.viewpoint : s.viewpoint, this.context);
     this.sceneName = a.sceneName != undefined ? a.sceneName : s.sceneName; // if defined, use this to drive the background context (model/occluder)
     this.id = a.id;
-    this.instruction = getResourceText(a.instructions, p.variables);
+    var cc = [];
+    for(v in this.variables) { cc[v] = this.variables[v] };
+    for(v in p.variables) { cc[v] = p.variables[v] };
+    this.instruction = getResourceText(a.instructions, cc);
 
     //pointer back to the master
     this.base = a;

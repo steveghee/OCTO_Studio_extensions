@@ -2710,7 +2710,16 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 return undefined;
             }
           }
-
+          var hex2rgbNormalized = (hex) => {
+            let validHex = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            if (!validHex) { return null; }
+            let rgb = [parseInt(validHex[1], 16) / 255, parseInt(validHex[2], 16) / 255, parseInt(validHex[3], 16) / 255];
+            return rgb;
+          }
+          var hex2shader = (hex) => {
+            var rgba = hex2rgbNormalized(hex);
+            return `r f ${rgba[0]};g f ${rgba[1]};b f ${rgba[2]}`;
+          }
           this.generic = (a) => {
             //debugLog(a)
 
@@ -2751,6 +2760,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             if (a.subjects != undefined) a.subjects.forEach(function (sub) {
 
               var assetId = sub.id;
+              var shade = (sub.tint == undefined) ? scope.data.hiliteshade : "sxsl_coloredHilitegl;"+hex2shader(sub.tint);
+
               if (sub.asset != undefined) sub.asset.resources.forEach(function (res) {
                                                                       
                 // inherit any subject occurences IF we dont have any ourselves                                                      
@@ -2759,7 +2770,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 if (res.mimeType == "application/vnd.ptc.pvz" || res.mimeType == "model/gltf-binary") {
 
                   var src = scope.data.anchor + (res.composition == "partset" ? res.modelUrl : res.url);
-                  scope.addNamedPOI(assetId, src, res.translation, genrotation(res.normal), 1, true, undefined, (res.composition == "partset" ? (sub.sceneName || res.sceneName || a.animation) : a.animation), occurrenceIds, true, scope.data.hiliteshade);
+                  scope.addNamedPOI(assetId, src, res.translation, genrotation(res.normal), 1, true, undefined, (res.composition == "partset" ? (sub.sceneName || res.sceneName || a.animation) : a.animation), occurrenceIds, true, shade);
                   isAnimated = isAnimated || scope.data.pois[assetId].sequenceToLoad != undefined;
                   if (occurrenceIds != undefined) noSubjects += occurrenceIds.length; else noSubjects += 1;
                 }
@@ -2781,7 +2792,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   }
                 }
                 else if (res.mimeType == "application/vnd.ptc.poi") {
-                  scope.addNamedPOI(res.id, 'extensions/images/diamond.pvz', res.translation, genrotation(res.normal), 0.1, false, undefined, undefined, undefined, true, scope.data.hiliteshade);
+                  scope.addNamedPOI(res.id, 'extensions/images/diamond.pvz', res.translation, genrotation(res.normal), 0.1, false, undefined, undefined, undefined, true, shade);
                 }
                 else if (res.mimeType == "application/vnd.ptc.partref") {
                   //TODO : how do we deal with gltf node referencing; thingview doesnt support it  
