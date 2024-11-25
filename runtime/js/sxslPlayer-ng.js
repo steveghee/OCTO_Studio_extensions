@@ -2743,6 +2743,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             if (a.step.actioncount > 1) {
               prefix = (a.index + 1).toString() + ". ";
             }
+            if (a.tint != undefined) prefix += `<span style="color:${a.tint};">&#x26AB;&#xfe0e;</span>`;
             if (a.isFirst && a.introtext != undefined) odesc = "<p>" + a.introtext + '</p>';
             if (a.instruction != undefined) odesc = odesc + "<p>" + prefix + a.instruction + "</p>";
             if (a.isLast && a.outrotext != undefined) odesc = odesc + "<p>" + a.outrotext + "</p>";
@@ -2770,7 +2771,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             if (a.subjects != undefined) a.subjects.forEach(function (sub) {
 
               var assetId = sub.name || sub.id;
-              var shade = (sub.tint == undefined) ? scope.data.hiliteshade : "sxsl_coloredHilitegl;"+hex2shader(sub.tint);
+              var tint = a.tint || sub.tint;                                              
+              var shade = (tint == undefined) ? scope.data.hiliteshade : "sxsl_coloredHilitegl;"+hex2shader(tint);
 
               if (sub.asset != undefined) sub.asset.resources.forEach(function (res) {
                                                                       

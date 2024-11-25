@@ -100,6 +100,7 @@ function sxslHelper(renderer, anchor) {
     this.type = a.type;
     this.details   = a.details != undefined ? new p.helper.sxslInput(a.details) : undefined; //a.details
     this.materials = a.materials;
+    this.tint      = a.tint;
     
     this.animation = undefined;
     if (a.animations != undefined) {
