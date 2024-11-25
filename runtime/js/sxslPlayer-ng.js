@@ -2811,6 +2811,24 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   //$scope.view.wdg.subjects.src = $scope.app.params.context.hero;
                   //$scope.view.wdg.subjects.visible = true;
                 }
+                else if (res.mimeType == "application/vnd.ptc.autovalidation.area") {
+                  //stepcheck autoalidation 
+                    
+                  //studio cannot do stepcheck, but we can ask the user to do this inspection manually, visually,
+                  //and confirm the results as pass/fail
+                  
+                  //pass/fail is handled by auto-injecting an acknowledge record of type passfail
+                  a.ack = { type: "PassFail" };
+                  
+                  //if the stepcheck was configured to ask for proof, we  should honour this
+                  if (sub.content != undefined && sub.content.config != undefined) {
+                      
+                    //proof can be implicit (automatic) or if in training mode, it is requested explicitly  
+                    //in either cae, we must request it manually  
+                    if (sub.content.config.provideProof != undefined || sub.training == true)
+                      a.ack.proof = [{ type: "Image" }]; // note we only support image proof
+                  }
+                }
               })
             })
 
