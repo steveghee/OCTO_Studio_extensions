@@ -82,19 +82,24 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         function setPointer(pos,rot,show) {
             
           if (scope.data.pointer == undefined) {
-            addNamedImage("octoSurfaceIndicatorPointer",pos,rot,show,scope);
+            addNamedImage("octoSurfaceIndicatorPointer",pos.Add(scope.data.N.Scale(0.002)),rot,show,scope);
           } else {
             var name = scope.data.pointer;
-            scope.renderer.setTranslation(name,pos.X(), pos.Y(), pos.Z());
+            
+            //move the position of the mrker up the normal very slightly - removes soe visual artifacts  
+            var dp = pos.Add(scope.data.N.Scale(0.002));  
+            
+            scope.renderer.setTranslation(name,dp.X(), dp.Y(), dp.Z());
             scope.renderer.setRotation   (name,rot.X(), rot.Y(), rot.Z());
             scope.renderer.setProperties (name,{hidden:!show, forceHidden:false});
           }
           
-          // and report this location+normal
+          // and report the location + normal and gaze (inverted normal)
           scope.resultsField = [ { model: scope.data.model, 
                                     path: scope.data.pathid, 
                                 position: pos.ToObject(), 
-                                    gaze: scope.data.N.ToObject(), 
+                                  normal: scope.data.N.ToObject(), 
+                                    gaze: scope.data.N.Negate().ToObject(), 
                                       up: scope.data.up.ToObject(), 
                                    scale: scope.data.size } ];
           scope.$parent.fireEvent('complete');
@@ -125,7 +130,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               var position = evtData.position;
               var normal   = evtData.normal;
       
-              var ps  = new Vector4().Set3a(position);
+              var ps  = new Vector4().Set3a(position)
               var N   = new Vector4().Set3a(normal);
               scope.data.N = N;
               
@@ -221,7 +226,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         /* *****************************************************
         // WIP - watch for a LIST of points - position and normal - and render these
         //
-        
+        */
         // a new list
         scope.$watch('infoField', function () {
           scope.data.info = scope.infoField;                 
@@ -232,9 +237,32 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           function() { return JSON.stringify(scope.infoField)},
           function(value) {
             if (value != undefined) 
-              scope.data.info = scope.infoField;                 
+            scope.data.info = scope.infoField;                 
+            
+            if (scope.data.info != undefined && scope.data.info.position !=undefined) {
+              var ps  = new Vector4().Set3a(scope.data.info.position);
+              var N   = new Vector4().Set3a(scope.data.info.normal);
+              scope.data.N = N;
+              
+              // up should be calaulated based on the current gaze vector - this will ensure we can see the marker
+              var gz = scope.data.gaze;
+              
+              //are these nearly parallel?
+              var dp = Math.abs(N.DotP(gz));
+              if (dp > 0.9) gz = scope.data.up; // choose different vector
+             
+              var xd = N.Normalize().CrossP(gz);
+              var up = gz.CrossP(xd).Normalize();
+      
+              var mat = new Matrix4().makePose(ps,N,up);
+              var flip = new Matrix4().Rotate([1,0,0],90,true);
+              var oot = scope.data.isTangential ? mat.ToPosEuler(true) 
+                                                : flip.Multiply(mat.m).ToPosEuler(true);
+              
+              setPointer(oot.pos, oot.rot, true);
+            }
         });
-        
+        /*
         // if there is a SUBSET of data defined, lets watch to see if that list changes    
         scope.$watch(
           function() { return scope.infoField != undefined ? JSON.stringify(scope.infoField.selectedRows) : ''},

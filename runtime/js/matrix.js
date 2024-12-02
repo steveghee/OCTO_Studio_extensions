@@ -160,14 +160,9 @@ function Matrix4() {
     }
     
     this.FromNormalAt = function(N,at) {
-        var up = new Vector4().Set3(0,1,0);
-        var gaze = N.Normalize();
-        if (Math.abs(up.DotP(gaze)) > 0.999) {
-          up = new Vector4().Set3(1,0,0); //choose a different axes
-        }
-        var xd   = up.Normalize().CrossP(gaze);
-        var nup  = gaze.CrossP(xd).Normalize(); // recalc up
-        var pose = new Matrix4().Set4V(xd,nup,gaze,at);
+        var z = new Vector4().Set3(0,0,1);
+        var q = new Quat().From2V(z,N);
+        var pose = new Matrix4().RotateFromQuaternion(q).TranslateV4(at);
         return pose;
     }
 
@@ -1137,6 +1132,12 @@ function Vector4() {
         var o = incW ? { x:this.v[0], y:this.v[1], z:this.v[2], w:this.v[3] }
                      : { x:this.v[0], y:this.v[1], z:this.v[2]} ;
         return o;
+    }
+    
+    this.ToArray = function(incW) {
+        var a = incW ? [ this.v[0], this.v[1], this.v[2], this.v[3] ]
+                     : [ this.v[0], this.v[1], this.v[2] ] ;
+        return a;
     }
 }
 
