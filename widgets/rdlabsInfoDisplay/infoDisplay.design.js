@@ -8,7 +8,7 @@ function twxInfoDisplay() {
     groups   : ['OCTO'],
     isVisibleInPalette: function(scope) {
       let builderSettings = scope.$root.builderSettings || {};
-      return !!builderSettings.octo; //WIP
+      return false; //!!builderSettings.octo; //WIP
     },
     
     properties: [
