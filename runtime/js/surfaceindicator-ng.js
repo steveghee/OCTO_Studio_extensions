@@ -8,6 +8,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
   var surfModule = angular.module('surfaceindicator-ng', []);
   surfModule.directive('ngSurfaceindicator', ['$timeout', '$http', '$window', '$injector', ngSurfaceIndicator]);
   
+  let indicatorShader = 'panelHilite2gl;ff f 2;nf f 1';//"indicatorProximitygl;cutoutDepth f 1.5"
+              
   function addNamedImage(name,pos,rot,show,scope) {
     var params = {
       tracker : 'tracker1',
@@ -23,6 +25,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
       preload : false
     };
 
+    scope.data.pointer = name;
     scope.renderer.add3DImage(params, () => {
   
       // we added the image, so set the location
@@ -34,12 +37,13 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
     
       scope.renderer.setTranslation(name,pos.X(), pos.Y(), pos.Z());
       scope.renderer.setRotation   (name,rot.X(), rot.Y(), rot.Z());
-      scope.renderer.setProperties (name,{hidden:!show, forceHidden:false});
+      scope.renderer.setProperties (name,{hidden:!show, forceHidden:false, shader: indicatorShader }); 
       scope.$parent.$applyAsync();
     },
     (err) => {
       // something went wrong
       console.log(`add3DImage failed to add new image: ${JSON.stringify(err)}`); 
+      scope.data.pointer = undefined;
     });
   }
 
@@ -60,7 +64,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
       link: function (scope, element, attr) {
 
         var lastUpdated = 'unknown';
-          
         scope.data = {  model: undefined,
                           src: undefined,
                          info: undefined,
@@ -91,7 +94,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             
             scope.renderer.setTranslation(name,dp.X(), dp.Y(), dp.Z());
             scope.renderer.setRotation   (name,rot.X(), rot.Y(), rot.Z());
-            scope.renderer.setProperties (name,{hidden:!show, forceHidden:false});
+            scope.renderer.setProperties (name,{hidden:!show, forceHidden:false, shader: indicatorShader});
           }
           
           // and report the location + normal and gaze (inverted normal)
@@ -150,32 +153,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                                                 : flip.Multiply(mat.m).ToPosEuler(true);
               
               setPointer(oot.pos, oot.rot, true);
-          
-            } else {
-                
-              PTC.Structure.fromId(scope.data.model)
-                            .then ( (structure) => {
-                //   
-                // Get the properties of the 'model-1' widget
-                // as we need to adjust the bbox into physical space to match where the widget has placed it
-                var widgetProps = scope.$parent.view.wdg[scope.data.model];
-                 
-                // Get the bounding box information for part '/0/9/1/2'
-                var bbox = structure.getBounds(pathid);
-                 
-                // Transform the bounding box to account for the 'model' widget’s location
-                var xform_bbox = bbox.transform(
-                                  [widgetProps.x, widgetProps.y, widgetProps.z],
-                                  [widgetProps.rx, widgetProps.ry, widgetProps.rz],
-                                  widgetProps.scale);
-
-                // work out the box center/size
-                var bc = xform_bbox.center; // box center
-                var bx = xform_bbox.max; // max
-
-                // position the pointer to be a the top center of the box
-                setPointer(new Vector4().Set3(bc.x, bx.y, bc.z), scope.data.isTangential ? scope.horizontal : scope.vertical, true);
-              }) 
             }
            
           } else if (scope.data.disabled == false && scope.infoField != undefined) {
@@ -187,7 +164,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             //
           } else if (scope.data.pointer != undefined) {
               
-            scope.renderer.setProperties(scope.data.pointer, { hidden:true } );
+            scope.renderer.setProperties(scope.data.pointer, { hidden:true, shader: indicatorShader } );
             
             //clear
             scope.resultsField = []; 
@@ -210,7 +187,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         scope.$watch('disabledField', function () {
           scope.data.disabled = (scope.disabledField != undefined && scope.disabledField === 'true') ? true :false ;
           if (scope.data.pointer != undefined) {
-            scope.renderer.setProperties(scope.data.pointer,{hidden:scope.data.disabled});
+            scope.renderer.setProperties(scope.data.pointer,{hidden:scope.data.disabled,shader: indicatorShader});
           }
         });
         scope.$watch('sizeField', function () {
