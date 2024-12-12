@@ -8,7 +8,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
   var surfModule = angular.module('surfaceindicator-ng', []);
   surfModule.directive('ngSurfaceindicator', ['$timeout', '$http', '$window', '$injector', ngSurfaceIndicator]);
   
-  let indicatorShader = 'panelHilite2gl;ff f 2;nf f 1';//"indicatorProximitygl;cutoutDepth f 1.5"
+  let indicatorShader = twx.app.isPreview() ? undefined : 'panelHilite2gl;ff f 2;nf f 1';//"indicatorProximitygl;cutoutDepth f 1.5"
               
   function addNamedImage(name,pos,rot,show,scope) {
     var params = {
