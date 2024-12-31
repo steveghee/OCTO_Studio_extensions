@@ -129,7 +129,8 @@ WIP
 
 ### Surface Indicator (** new **)
 The surface indicator widget will place a user-supplied marker (image) onto the surface athte location where the surface is tapped. The marker can be placed
-tangential to the surface, or orthogonal (along the surface 'normal').  
+tangential to the surface, or orthogonal (along the surface 'normal').  Optionally, a 3d marker can be used instad of a 2d image; the 3d marker is fixed (included with the widget) and is positioned to point along the normal towards the point on the surface.
+If supplied, text for an optional label will be displayed.  If bound to a data source (array) the first item in the array will be used to position (and label) the indicator.  
 
 ### Locator (** new **)
 The Locator widget can be linked to the output of Finder. The output of locator is a matching list of location points that match the items in the find results list.  
@@ -262,10 +263,12 @@ given an additional Color control to choose the opaque color that will be
 applied of the rear of the label.
 
 
-### Image markup
-The markup widget can be used to provide in-situ markup (pen,text, shapes) over an 
-image e.g. a photo collected from the camera widget.  Connect the image_url output from the camera to the image_url input of the markup; connect the picture taken even from the camera to the start markup service of the markup widget. When you take a picture, the markup editor
-will open and you can draw on the image. Click ok to generate a new image - you can route this to thingworx or similar.
+### Information Display (** new **)
+Use this widget to display one or more surface indicator "points". The widget accepts an infotable (array) of elements of the form
+
+`{ id:STRING, position:[FLOAT, FLOAT, FLOAT], normal:[FLOAT, FLOAT, FLOAT], label:STRING } `
+
+If label text is provided, a label will be displayed near the indicator which is positioned along the defined normal (or vertically, if no normal is provided).
 
 ### Logic and state management
 Included are a collection of simple logic 'gates' (based on core principals and building blocks used in microelectronics).

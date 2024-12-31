@@ -203,7 +203,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                                       up: scope.data.up.ToObject(), 
                                    scale: scope.data.size,
                                   label : scope.data.title} ];
-          scope.$parent.fireEvent('complete');
+          $timeout(function() { scope.$parent.fireEvent('complete'); },100);
           scope.$parent.$applyAsync();
         }
         
@@ -266,7 +266,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             
             //clear
             scope.resultsField = []; 
-            scope.$parent.fireEvent('complete');
             scope.$parent.$applyAsync();
           }
 
