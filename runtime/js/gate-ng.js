@@ -46,7 +46,7 @@ var cmds = {
         scope.data = { test: undefined, 
                       value: undefined, 
                          op: undefined, 
-                       auto: true,
+                       auto: false,
                      result: undefined
                      };
 
