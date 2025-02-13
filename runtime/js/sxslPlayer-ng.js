@@ -1868,7 +1868,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             var seq2load = named.sequenceToLoad;
             var oids     = named.occurrenceIds;
             var shader   = named.shader;
-            debugLog('3d obj seq',seq2load);
+            //console.log('3d obj seq',seq2load);
             
             if (seq2load != undefined && oids == undefined) {
               $timeout(function () {
@@ -1876,11 +1876,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               }, 100);
             } else if (oids != undefined) {
               oids.forEach(function(oid) {
-                debugLog('showing occurrence',oid,'for',name);               
+                //debugLog('showing occurrence',oid,'for',name);               
                 scope.renderer.setProperties(name+'-'+oid, { hidden: false, shader: shader, occlude: false, phantom: false, decal: false });
               });
             } else {
-              console.log('showing full model for', name);               
+              //console.log('showing full model for', name);               
               if (oids) {
                 oids = ['/'];
                 scope.renderer.setProperties(name+'-/', { hidden: false, shader: shader, occlude: false, phantom: false, decal: false });
@@ -2167,12 +2167,12 @@ function getLongest(p,s) {
             let meshname = name + i;
             if (scope.data.pois[meshname] != undefined) {
 
-              debugLog('reusing prim', meshname);
+              //console.log('reusing prim', meshname);
               reuse = true;
             
               var me = scope.data.pois[meshname];
             
-              this.renderer.setProperties(meshname, { forceHidden: false });
+              this.renderer.setProperties(meshname, { forceHidden: false, hidden: false });
             
               me.hidden = false;
               me.active = true;
@@ -2447,7 +2447,7 @@ function getLongest(p,s) {
             scope.setInstLabel(intro ? intro : "Press the play (>) button to start...");
           }
 
-          //terminate action handling, hide any remaining annotations etc.
+          //terminate action handling, hiddene any remaining annotations etc.
           this.end = (conclusion) => {
 
             scope.deactivateAll();
@@ -3309,6 +3309,7 @@ function getLongest(p,s) {
               return function () {
                 var et = s.ref.clock.elapsedTime + (Date.now() - s.ref.clock.start);
 
+                debugLog('tick for clock step', s.id);
                 cb(et, s.targetTime);
               }
             })(step, callback), 1000);
@@ -3320,8 +3321,9 @@ function getLongest(p,s) {
             //re-iniitalise display
             callback(0, undefined);
           }
-
-          step.ref.clock.timer = clock(step, callback);
+          
+          if (step.ref.clock.timer == undefined)
+            step.ref.clock.timer = clock(step, callback);
 
           me.stopStepTimeClock = function (step) {
             //make sure we only stop once  
