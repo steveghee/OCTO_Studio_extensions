@@ -99,7 +99,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         
         scope.data.debuglog = "";
         var debugLog = function() {
-          var debug = scope.$parent.view.wdg.debug;
+          var debug = scope != undefined ? scope.$parent.view.wdg.debug : undefined;
           if (debug != undefined) {
             var line = "";
             for (var i = 0; i < arguments.length; i++) {
@@ -3168,8 +3168,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             //re-iniitalise display
             callback(0, undefined);
           }
-
-          step.ref.clock.timer = clock(step, callback);
+          
+          // if not already running, start the timer for this step
+          if (step.ref.clock.timer == undefined)
+            step.ref.clock.timer = clock(step, callback);
 
           me.stopStepTimeClock = function (step) {
             //make sure we only stop once  
