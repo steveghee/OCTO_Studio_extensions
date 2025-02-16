@@ -1188,6 +1188,12 @@ function sxslHelper(renderer, anchor) {
         me.statementscompleted = 0;
         if (me.statementcount > 0) {
           me.execlist = {};
+          //if the proc is more generally set to 'odered' the fill in any missing prerequisites that would be used for ordered traversal
+          if (me.proc.ordered != undefined && me.proc.ordered == true) for (var i=0; i< me.statementcount; i++) {
+            var s = me.proc.statements[i];  
+            if (s.id == undefined) s.id = "ordered"+i;
+            if (i > 0 && s.prereq == undefined) s.prereq = [ me.proc.statements[i-1].id ];
+          }                                     
           me.proc.statements.forEach(function(s,i) {
             if (s.id != undefined) {
               me.execlist[s.id] = {statement:s, index:i };
@@ -1221,6 +1227,12 @@ function sxslHelper(renderer, anchor) {
         me.statementscompleted = 0;
         if (me.statementcount > 0) {
           me.execlist = {};
+          //if the proc is more generally set to 'odered' the fill in any missing prerequisites that would be used for ordered traversal
+          if (me.proc.ordered != undefined && me.proc.ordered == true) for (var i=0; i< me.statementcount; i++) {
+            var s = me.proc.statements[i];  
+            if (s.id == undefined) s.id = "ordered"+i;
+            if (i > 0 && s.prereq == undefined) s.prereq = [ me.proc.statements[i-1].id ];
+          }                                     
           me.proc.statements.forEach(function(s,i) {
             if (s.id != undefined) {
               me.execlist[s.id] = {statement:s, index:i };
