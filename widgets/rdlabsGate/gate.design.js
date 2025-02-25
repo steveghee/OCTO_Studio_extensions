@@ -22,7 +22,7 @@ function twxGate() {
         showInput: true
       },
       {
-        name: 'test',
+        name: 'property',
         label: 'Property',
         datatype: 'string',
         default: 'Name',
@@ -104,7 +104,7 @@ function twxGate() {
     },
 
     runtimeTemplate: function (props) {
-      var tmpl = '<div ng-gate result-field="me.result" q-field="me.q" auto-field={{me.auto}} test-field={{me.test}} op-field={{me.op}} value-field={{me.value}} delegate-field="delegate"></div>';
+      var tmpl = '<div ng-gate result-field="me.result" q-field="me.q" auto-field={{me.auto}} property-field={{me.property}} op-field={{me.op}} value-field={{me.value}} delegate-field="delegate"></div>';
       return tmpl;
     }
   }

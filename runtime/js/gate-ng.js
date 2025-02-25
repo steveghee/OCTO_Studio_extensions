@@ -31,13 +31,13 @@ var cmds = {
     return {
       restrict: 'EA',
       scope: {
-        testField    : '@',
-        valueField   : '@',
-        opField      : '@',
-        autoField    : '@',
-        resultField  : '=',
-        qField       : '=',
-        delegateField: '='
+        propertyField : '@',
+        valueField    : '@',
+        opField       : '@',
+        autoField     : '@',
+        resultField   : '=',
+        qField        : '=',
+        delegateField : '='
       },
       template: '<div></div>',
       link: function (scope, element, attr) {
@@ -53,9 +53,9 @@ var cmds = {
         var executeGate = function() {
             
           var excmd  = (scope.opField != undefined && scope.opField.length > 0) ? cmds[scope.opField] : cmds.eq;
-          var passed = (excmd != undefined) ? excmd(scope.testField, scope.valueField) 
+          var passed = (excmd != undefined) ? excmd(scope.propertyField, scope.valueField) 
                                             : false;
-          scope.data.result = (passed === true) ? scope.testField 
+          scope.data.result = (passed === true) ? scope.propertyField 
                                                 : scope.valueField;
 
           // output the output variables
@@ -76,7 +76,7 @@ var cmds = {
           },1);
         };
 
-        scope.$watch('testField', function () {
+        scope.$watch('propertyField', function () {
           updateGate(scope.data.auto);
         });
 
