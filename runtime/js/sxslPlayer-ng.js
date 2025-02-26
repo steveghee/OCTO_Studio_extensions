@@ -1885,18 +1885,17 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   debugLog('no bounds for',id);
                 }
                 scope.data.focus.push( { model: name, 
-                                    path: id, 
-                                position: loc, 
-                                    gaze: {x:0,y:0,z:0}, 
-                                      up: {x:0,y:1,z:0},
-                                metadata: ask,
-                                   label: ask != undefined ? ask[0].value : undefined,
-                             _isSelected: false });
+                                          path: id, 
+                                      position: loc, 
+                                          gaze: {x:0,y:0,z:0}, 
+                                            up: {x:0,y:1,z:0},
+                                      metadata: ask,
+                                         label: ask != undefined ? ask[0].value : undefined,
+                                   _isSelected: false });
               });
 
               scope.focusField = scope.data.focus;     
               scope.focusField.current = 0;
-              
             });
 
           } else if (me != undefined && me.translation != undefined) {
@@ -1904,22 +1903,37 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             // get the orientation matrix
             var q = new Quat().Set4a(me.rotation);
             var m = new Matrix4().RotateFromQuaternion(q);
-            scope.data.focus = [
-                                 { model: name, 
-                                    path: undefined, 
-                                position: {x: me.translation[0], y: me.translation[1], z: me.translation[2]}, 
-                                    gaze: {x: -m.m[2][0], y: -m.m[2][1], z: -m.m[2][2]}, 
-                                      up: {x:  m.m[1][0], y:  m.m[1][1], z:  m.m[1][2]},
-                                metadata: undefined,
-                                   label: undefined,
-                             _isSelected: false }];
+            scope.data.focus.push( { model: name, 
+                                      path: undefined, 
+                                  position: {x: me.translation[0], y: me.translation[1], z: me.translation[2]}, 
+                                      gaze: {x: -m.m[2][0], y: -m.m[2][1], z: -m.m[2][2]}, 
+                                        up: {x:  m.m[1][0], y:  m.m[1][1], z:  m.m[1][2]},
+                                  metadata: undefined,
+                                     label: undefined,
+                               _isSelected: false });
           
             scope.focusField = scope.data.focus;     
             scope.focusField.current = 0;
 
-          } else
+          } else if (me != undefined && me.pos != undefined) {
+              
+            //it's a POI  
+            scope.data.focus.push( { model: name, 
+                                      path: undefined, 
+                                  position: {x: me.pos.X(), y: me.pos.Y(), z: me.pos.Z()}, 
+                                      gaze: {x: me.rot.X(), y: me.rot.Y(), z: me.rot.Z()}, 
+                                        up: {x: 0, y: 1, z: 0},
+                                  metadata: undefined,
+                                     label: undefined,
+                               _isSelected: false });
+          
+            scope.focusField = scope.data.focus;     
+            scope.focusField.current = 0;
+
+          } else {
             scope.focusField = scope.data.focus = [];
             scope.focusField.current = 0;
+          }
         }
         
         // listen for pick events - if the items picked is one our (current) focus items, lets make 
@@ -2084,8 +2098,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             }
             
             if (focal) scope.setFocus(name, me);
-            scope.$parent.$applyAsync();
-    
             return;
           }
 
@@ -2136,8 +2148,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             }
             
             if (focal) scope.setFocus(name, scope.data.pois[name]);
-            
-            scope.$parent.$applyAsync();
           },
           (err) => {
             // something went wrong
@@ -2760,7 +2770,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             //$scope.view.wdg.alternative.visible = false;
 
             scope.deactivatePOIs();
-            
             // set default viewpoint (if there is one)
             scope.setFocus(a.title, a.viewpoint);
             
