@@ -1875,7 +1875,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 try {
                   var p = { x:me.pos.X(), y:me.pos.Y(), z:me.pos.Z() };
                   var o = { x:me.rot.X(), y:me.rot.Y(), z:me.rot.Z() };  
-                  var bbox = structure.getBounds(id).transform(p, o, 1);
+                  var bbox = structure.getBounds(id).transform(p, o, me.scale || 1);
                   loc = bbox.center;
                   
                   ask = (scope.data.ask != undefined) ? structure.metadata.get(id, scope.data.ask) : undefined;
@@ -2122,8 +2122,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               locn.RotateFromQuaternion(scope.data.context.target.rotation);
             var tr = locn.ToPosEuler(true);
             
-            scope.data.pois[name].pos = tr.pos;
-            scope.data.pois[name].rot = tr.rot;
+            scope.data.pois[name].pos   = tr.pos;
+            scope.data.pois[name].rot   = tr.rot;
+            scope.data.pois[name].scale = scale;
             scope.renderer.setTranslation(name, tr.pos.X(), tr.pos.Y(), tr.pos.Z());
             scope.renderer.setRotation(name, tr.rot.X(), tr.rot.Y(), tr.rot.Z());
             scope.renderer.setScale(name, scale, scale, scale);
@@ -2813,7 +2814,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   }
                 }
                 else if (res.mimeType == "application/vnd.ptc.poi") {
-                  scope.addNamedPOI(res.id, 'extensions/images/diamond.pvz', res.translation, genrotation(res.normal), 0.1, false, undefined, undefined, undefined, true, shade);
+                  scope.addNamedPOI(res.id, 'extensions/images/diamond.pvz', res.translation, genrotation(res.normal), 0.1, false, undefined, undefined, ["/"], true, shade);
+                  scope.data.pois[res.id].view = res.view; // if defined, can be used for focus setting later  
                 }
                 else if (res.mimeType == "application/vnd.ptc.partref") {
                   //TODO : how do we deal with gltf node referencing; thingview doesnt support it  
