@@ -2377,7 +2377,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
             } else {
               //clear the list
-              scope.setPreviewListviewList("");
+              scope.setPreviewList("");
               minimisePreview();
             }
 
@@ -2775,7 +2775,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             scope.setFocus(a.title, a.viewpoint);
             
             var isAnimated = false;
-            if (scope.thumbnail) scope.thumbnail.className = "sxsl-thumbnail-hide";
+            if (scope.thumbnail) {
+                scope.thumbnail.className = "sxsl-thumbnail-hide";
+                scope.thumbnail.src = ""
+            }
             
             var noSubjects = 0;
             if (a.subjects != undefined) a.subjects.forEach(function (sub) {
