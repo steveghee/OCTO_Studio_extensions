@@ -120,7 +120,7 @@ function sxslHelper(renderer, anchor) {
           var sub = a.subjects[subc];
 
           // semantic or resource references?  semantic references come from context
-          if (this.context != undefined) {
+          if (this.context != undefined && sub.contextId != undefined) {
 
             // idealy we will look these up from the context store  
             // work out the final context for this specific action
@@ -160,7 +160,7 @@ function sxslHelper(renderer, anchor) {
           var sub = anyans[subc];
           // idealy we will look these up from the context store  
           // work out the final context for this specific action
-          if (this.context != undefined) {
+          if (this.context != undefined && sub.contextId != undefined) {
             var fctx;
             let mctx = this.context[sub.contextId].models;
             if (this.context[sub.contextId].trackers != undefined) {
@@ -175,6 +175,9 @@ function sxslHelper(renderer, anchor) {
             }
             let asset = this.context[sub.contextId].assets[sub.assetId];
             this.annotations.push({ context: fctx, asset: asset, id: sub.assetId, ann:sub });
+          } else {
+            //no context, so is the resource defined inline?
+            this.annotations.push({ asset: sub, id: sub.resources[0].id, occurrenceIds: sub.occurrenceIds, tint:sub.tint });
           }
           if (sub.tint != undefined && sub.id != undefined) 
             this.variables[sub.id] = sub.tint;
@@ -213,16 +216,21 @@ function sxslHelper(renderer, anchor) {
             }
 
             asset = this.context[tool.contextId].assets[tool.assetId];
+          
+            this.tools.push({
+              name: tool.name,
+              id: tool.id,
+              mime: undefined, //not used at this point
+              text: getResourceText(tool.extras),
+              context: context,
+              asset: asset
+            });
+          } else {
+            //no context, so is the resource defined inline?
+            this.tools.push({ asset: tool, id: tool.resources[0].id, occurrenceIds: tool.occurrenceIds, tint:tool.tint });
           }
-          this.tools.push({
-            name: tool.name,
-            id: tool.id,
-            mime: undefined, //not used at this point
-            text: getResourceText(tool.extras),
-            context: context,
-            asset: asset
-          }
-          );
+
+          
         }
       }
     }

@@ -2076,7 +2076,23 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             debugLog('reusing POI', name);
             var me = scope.data.pois[name];
             
-            this.renderer.setProperties(name, { forceHidden: false });
+            //update the location (if set)
+            var locn = new Matrix4();
+            if (rot != undefined) locn.RotateFromEuler(rot[0], rot[1], rot[2], true);
+            if (pos != undefined) locn.Translate(pos[0], pos[1], pos[2]);
+            if (scope.data.context != undefined && scope.data.context.target.mimeType == "application/vnd.ptc.tracker.spatialtracker" && scope.data.context.target.rotation != undefined) 
+              //locn.RotateFromEuler(-90,0,0,true);
+              locn.RotateFromQuaternion(scope.data.context.target.rotation);
+            var tr = locn.ToPosEuler(true);
+            
+            scope.data.pois[name].pos   = tr.pos;
+            scope.data.pois[name].rot   = tr.rot;
+            scope.data.pois[name].scale = scale;
+            scope.renderer.setTranslation(name, tr.pos.X(), tr.pos.Y(), tr.pos.Z());
+            scope.renderer.setRotation(name, tr.rot.X(), tr.rot.Y(), tr.rot.Z());
+            scope.renderer.setScale(name, scale, scale, scale);
+            
+            this.renderer.setProperties(name, { forceHidden: false, shader: shader });
             
             //it must be the occurrences that have change - 
             //undo the old ones
@@ -2864,11 +2880,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             // like subjects, we can have 0 or more annotations
             //
             if (a.annotations != undefined) a.annotations.forEach(function (me) {
-              var sub = me.ann;
+              var sub = me;
               var res = me.asset.resources[0];
               var occurrenceIds = (res.occurrenceIds == undefined) ? me.occurrenceIds : res.occurrenceIds;
               var src = scope.data.anchor + res.modelUrl;                                                             //should it be action/sub/res or sub/res/action?
-              scope.addNamedPOI(me.id, src, undefined, undefined, 1, true, undefined, (res.composition == "partset" ? (sub.sceneName || res.sceneName || a.animation) : a.animation), occurrenceIds, false, scope.data.annotateshade);
+              var rotation = res.normal ? { normal: res.normal } : { quaternion : res.rotation || me.asset.rotation };
+              scope.addNamedPOI(me.id, src, res.translation || me.asset.translation, genEulerRotationFrom(rotation), 1, true, undefined, (res.composition == "partset" ? (sub.sceneName || res.sceneName || a.animation) : a.animation), occurrenceIds, false, scope.data.annotateshade);
               isAnimated = isAnimated || scope.data.pois[me.id].sequenceToLoad != undefined;
             })
             
@@ -2886,7 +2903,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 var res = me.asset.resources[0];  
                 var occurrenceIds = (res.occurrenceIds == undefined) ? me.occurrenceIds : res.occurrenceIds;
                 var src = scope.data.anchor + me.asset.resources[0].modelUrl;
-                scope.addNamedPOI(me.id, src, undefined, undefined, 1, false, undefined, (res.composition == "partset" ? (res.sceneName || a.animation) : a.animation), occurrenceIds, false, scope.data.toolshade);
+                var rotation = res.normal ? { normal: res.normal } : { quaternion : res.rotation || me.asset.rotation };
+                scope.addNamedPOI(me.id, src, res.translation || me.asset.translation, genEulerRotationFrom(rotation), 1, false, undefined, (res.composition == "partset" ? (me.sceneName || res.sceneName || a.animation) : a.animation), occurrenceIds, false, scope.data.toolshade);
                 isAnimated = isAnimated || scope.data.pois[me.id].sequenceToLoad != undefined;
               }
 
