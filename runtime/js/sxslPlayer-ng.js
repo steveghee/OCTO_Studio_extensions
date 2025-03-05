@@ -1826,9 +1826,20 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         // this example also shows that if we succeed in creating the shape, we can create something else e.g. we can add an image
         // (see above)
         //
-        function genrotation(normal) {
-          if (normal == undefined)
-            return [0, 0, 0];
+        function genEulerRotationFrom(orientation) {
+            
+          if (orientation == undefined) return [0,0,0];
+          if (orientation.normal == undefined) {
+              
+            //is it a quaternion?
+            if (orientation.quaternion == undefined)  
+              return [0, 0, 0];
+            
+            // it a quaternion - convert to euler
+            var q   = new Quat().Set4a(orientation.quaternion); //this should be an array
+            var rot = new Matrix4().RotateFromQuaternion(q).ToPosEuler(true).rot;
+            return rot.v;
+          }
 
           //otherwise
           var up = new Vector4().Set3a(normal);
@@ -2795,7 +2806,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 if (res.mimeType == "application/vnd.ptc.pvz" || res.mimeType == "model/gltf-binary") {
 
                   var src = scope.data.anchor + (res.composition == "partset" ? res.modelUrl : res.url);
-                  scope.addNamedPOI(assetId, src, res.translation, genrotation(res.normal), 1, true, undefined, (res.composition == "partset" ? (sub.sceneName || res.sceneName || a.animation) : a.animation), occurrenceIds, true, shade);
+                  var rotation = res.normal ? { normal: res.normal } : { quaternion : res.rotation };
+                  scope.addNamedPOI(assetId, src, res.translation, genEulerRotationFrom(rotation), 1, true, undefined, (res.composition == "partset" ? (sub.sceneName || res.sceneName || a.animation) : a.animation), occurrenceIds, true, shade);
                   isAnimated = isAnimated || scope.data.pois[assetId].sequenceToLoad != undefined;
                   if (occurrenceIds != undefined) noSubjects += occurrenceIds.length; else noSubjects += 1;
                 }
@@ -2817,7 +2829,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   }
                 }
                 else if (res.mimeType == "application/vnd.ptc.poi") {
-                  scope.addNamedPOI(res.id, 'extensions/images/diamond.pvz', res.translation, genrotation(res.normal), 0.1, false, undefined, undefined, ["/"], true, shade);
+                  scope.addNamedPOI(res.id, 'extensions/images/diamond.pvz', res.translation, genEulerRotationFrom({normal:res.normal}), 0.1, false, undefined, undefined, ["/"], true, shade);
                   scope.data.pois[res.id].view = res.view; // if defined, can be used for focus setting later  
                 }
                 else if (res.mimeType == "application/vnd.ptc.partref") {
