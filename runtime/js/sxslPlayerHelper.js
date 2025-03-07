@@ -95,7 +95,8 @@ function sxslHelper(renderer, anchor) {
 
     // we can have procedure, step and action=level contexts, so these get passed down
     this.context = a.contexts != undefined && a.contexts.length > 0 ? a.contexts[0] : s.context;
-
+    this.workstate = a.workstate || s.workstate;
+    
     this.ack  = s.ack;
     this.type = a.type;
     this.details   = a.details != undefined ? new p.helper.sxslInput(a.details) : undefined; //a.details
@@ -253,7 +254,7 @@ function sxslHelper(renderer, anchor) {
     }
     
     this.viewpoint = getViewpoint(a.viewpoint != undefined ? a.viewpoint : s.viewpoint, this.context);
-    this.sceneName = a.sceneName != undefined ? a.sceneName : s.sceneName; // if defined, use this to drive the background context (model/occluder)
+    this.sceneName = a.sceneName || a.workstate || s.sceneName; // if defined, use this to drive the background context (model/occluder)
     this.id = a.id;
     var cc = [];
     for(v in this.variables) { cc[v] = this.variables[v] };
@@ -316,13 +317,16 @@ function sxslHelper(renderer, anchor) {
     this.title = getResourceText(s.title, p.variables);
     this.intro = getResourceText(s.introduction, p.variables);
     this.outro = getResourceText(s.conclusion, p.variables);
-    this.sceneName = p.sceneName != undefined ? p.sceneName : s.sceneName; //optional
     this.viewpoint = s.viewpoint;
     this.annotations = s.annotations;
+    this.workstation = s.workstation;
     
-    // we can have processoressordure, step and action=level contexts, so we capture and pass these down
+    // we can have procedure, step and action=level contexts, so we capture and pass these down
     this.context = s.contexts != undefined && s.contexts.length > 0 ? s.contexts[0] : c;
     this.ack = s.acknowledgement != undefined ? s.acknowledgement : undefined;
+    
+    this.workstate   = s.workstate; // scenename/workstate can be used to drive per-step tracking and visuals
+    this.sceneName   = s.sceneName || s.workstate; //optional - can be used to set context
 
     //pointers back to the master
     this.base = s; // actual step definition

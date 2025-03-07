@@ -201,7 +201,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
                   //add the contextual model, if defined
                   if (scope.data.context.model != undefined)
-                    scope.addNamedPOI('context', scope.data.context.model, undefined, undefined, scope.data.context.scale, false, scope.data.context);
+                    scope.addNamedPOI('context', scope.data.context.model, undefined, undefined, scope.data.context.scale, false, scope.data.context, scope.data.context.sceneName);
 
 
                 }
@@ -396,7 +396,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 hideCapture();
                 
                 if (scope.data.context.model != undefined)  // start (or stop) any scene-based override
-                  scope.animateNamedPOI('context', action.sceneName, scope.data.context);
+                  scope.animateNamedPOI('context', action.sceneName || scope.data.context.sceneName, scope.data.context);
               });
 
               registerEvent('actionEnd', function (evt, action) {
@@ -1070,6 +1070,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   contextual.mime = model.mimeType;
                   contextual.scale = model.scale != undefined ? model.scale : 1;
                   contextual.tag = tag;
+                  contextual.sceneName = model.sceneName || model.workstate;
                   debugLog("using", tag);
                   break;
                 case "occlusion":
@@ -1077,12 +1078,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                     contextual.model = cscope.data.anchor + model.url;
                     contextual.scale = model.scale != undefined ? model.scale : 1;
                     contextual.mime = model.mimeType;
+                    contextual.sceneName = model.sceneName || model.workstate;
                     contextual.tag = tag;
                   }
                   debugLog("using", tag);
                   break;
                 case "heroes":
                   contextual.hero = cscope.data.anchor + model.url;
+                  contextual.sceneName = model.sceneName || model.workstate;
                   break;
               }
             });
@@ -2164,6 +2167,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               scope.data.pois[name].seqplayer = VF_ANG.NativeSequencerHelper(name, VF_ANG.nativeEventHandler, scope.renderer);
               
               debugLog('context loaded');
+              $timeout(function() { 
+                scope.$emit('modelLoaded',name); 
+              }, 1000);
             } else {
               scope.renderer.setProperties(name, { forceHidden:false, hidden: hide, shader: shader, occlude: false, phantom: false, decal: false });
               debugLog('asset loaded for',name);  
