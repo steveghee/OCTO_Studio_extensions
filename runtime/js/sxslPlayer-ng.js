@@ -396,7 +396,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 hideCapture();
                 
                 if (scope.data.context.model != undefined)  // start (or stop) any scene-based override
-                  scope.animateNamedPOI('context', action.sceneName || scope.data.context.sceneName, scope.data.context);
+                scope.animateNamedPOI('context', action.sceneName || scope.data.context.sceneName, scope.data.context);
+                
               });
 
               registerEvent('actionEnd', function (evt, action) {
@@ -1885,9 +1886,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             PTC.Structure.fromData(name, me.metadata).then( (structure) => {  
                                                            
               me.occurrenceIds.forEach(function(id) {
-                var loc = undefined;         
-                var ask = undefined;
-                                                          
+                var loc  = undefined;         
+                var ask  = undefined;
+                var gaze = {x:0,y:0,z:0};
+                var up   = {x:0,y:1,z:0};
                 try {
                   var p = { x:me.pos.X(), y:me.pos.Y(), z:me.pos.Z() };
                   var o = { x:me.rot.X(), y:me.rot.Y(), z:me.rot.Z() };  
@@ -1900,17 +1902,42 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 catch (err) { 
                   debugLog('no bounds for',id);
                 }
+              
+                //if there is a view defined, we might alter the endpoint location/gaze
+                if (me.view != undefined) {
+                    var lv = new Vector4().Set3o(loc);
+                    
+                    //override the location, if specified
+                    if (me.view.translation != undefined) {
+                      lv = new Vector4().Set3a(me.view.translation);
+                    }
+                  
+                    var gv = new Vector4().Set3o(gaze);
+                    if (me.view.direction != undefined) {
+                      gv = new Vector4().Set3a(me.view.direction);
+                      var uv = new Vector4().Set3o(up);
+                      var dp = gv.DotP(uv);
+                      if (Math.abs(dp) > 0.999999999) up = new Vector4().Set3(1,0,0).ToObject();
+                    }
+                    
+                    if (me.view.distanceThreshold != undefined) {
+                      lv = lv.Sub(gv.Clone().Scale(me.view.distanceThreshold))
+                    }
+                    
+                    loc = lv.ToObject();
+                    gaze = gv.ToObject();
+                }
                 scope.data.focus.push( { model: name, 
                                           path: id, 
                                       position: loc, 
-                                          gaze: {x:0,y:0,z:0}, 
-                                            up: {x:0,y:1,z:0},
+                                          gaze: gaze, 
+                                            up: up,
                                       metadata: ask,
                                          label: ask != undefined ? ask[0].value : undefined,
                                    _isSelected: false });
               });
 
-              scope.focusField = scope.data.focus;     
+              scope.focusField = scope.data.focus.map( (v,i) => { return v; });     
               scope.focusField.current = 0;
             });
 
@@ -1928,7 +1955,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                                      label: undefined,
                                _isSelected: false });
           
-            scope.focusField = scope.data.focus;     
+            scope.focusField = scope.data.focus.map( (v,i) => { return v; });     
             scope.focusField.current = 0;
 
           } else if (me != undefined && me.pos != undefined) {
@@ -1943,7 +1970,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                                      label: undefined,
                                _isSelected: false });
           
-            scope.focusField = scope.data.focus;     
+            scope.focusField = scope.data.focus.map( (v,i) => { return v; });     
             scope.focusField.current = 0;
 
           } else {
@@ -2015,7 +2042,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                                              opacity: isDigital ? 0.35 : 1, 
                                              decal: false 
                                          });
-                  for(key in scope.data.pois[name].metadata) {
+                  for(var key in scope.data.pois[name].metadata) {
                       scope.renderer.setProperties(name+'-'+key, {
                                              phantom: isDigital, 
                                              opacity: isDigital ? 0.35 : 1
@@ -2129,7 +2156,11 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           
             }
             
-            if (focal) scope.setFocus(name, me);
+            if (focal) {
+                scope.setFocus(name, me);
+                $timeout(function() { scope.$parent.$applyAsync(); },1000);
+            }
+
             return;
           }
 
@@ -2183,7 +2214,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               }, 1000);
             }
             
-            if (focal) scope.setFocus(name, scope.data.pois[name]);
+            if (focal) {
+              scope.setFocus(name, scope.data.pois[name]);
+              $timeout(function() { scope.$parent.$applyAsync(); },1000);
+            }
           },
           (err) => {
             // something went wrong
@@ -2806,6 +2840,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             //$scope.view.wdg.alternative.visible = false;
 
             scope.deactivatePOIs();
+            
             // set default viewpoint (if there is one)
             scope.setFocus(a.title, a.viewpoint);
             
@@ -2929,7 +2964,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             if (isAnimated) {
               scope.animatePOIs(true);
             }
-
 
             // deliver any references (images etc.) - if there are none, hide the viewer
             this.showReferences(a.refs);
