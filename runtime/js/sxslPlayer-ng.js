@@ -1845,8 +1845,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           }
 
           //otherwise
-          var up = new Vector4().Set3a(normal);
+          var up = new Vector4().Set3a(orientation.normal);
           var rg = new Vector4().Set3(1, 0, 0);
+          var dp = up.DotP(rg);
+          if (Math.abs(dp) > 0.999999999) rg = new Vector4().Set3(0,1,0);
           var gz = up.CrossP(rg);
           rg = up.CrossP(gz);
           var rot = new Matrix4().Set3V(rg, up, gz).ToPosEuler(true).rot;
