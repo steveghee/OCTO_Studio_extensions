@@ -1069,7 +1069,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 case "full":
                   contextual.model = cscope.data.anchor + model.url;
                   contextual.mime = model.mimeType;
-                  contextual.scale = model.scale != undefined ? model.scale : 1;
+                  contextual.scale = model.scale != undefined ? model.scale : [1,1,1];
                   contextual.tag = tag;
                   contextual.sceneName = model.sceneName || model.workstate;
                   debugLog("using", tag);
@@ -1077,7 +1077,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 case "occlusion":
                   if (contextual.tag === undefined || contextual.tag != "full") {
                     contextual.model = cscope.data.anchor + model.url;
-                    contextual.scale = model.scale != undefined ? model.scale : 1;
+                    contextual.scale = model.scale != undefined ? model.scale : [1,1,1];
                     contextual.mime = model.mimeType;
                     contextual.sceneName = model.sceneName || model.workstate;
                     contextual.tag = tag;
@@ -1323,7 +1323,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
                   // and the steps
                   scope.data.steplist = getSteps(proc);
-//we should wait                  startSxslPlayer();
                 }
               })
               .error(function (data, status, headers, config) {
@@ -2113,7 +2112,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             if (rot != undefined) locn.RotateFromEuler(rot[0], rot[1], rot[2], true);
             if (pos != undefined) locn.Translate(pos[0], pos[1], pos[2]);
             if (scope.data.context != undefined && scope.data.context.target.mimeType == "application/vnd.ptc.tracker.spatialtracker" && scope.data.context.target.rotation != undefined) 
-              //locn.RotateFromEuler(-90,0,0,true);
               locn.RotateFromQuaternion(scope.data.context.target.rotation);
             var tr = locn.ToPosEuler(true);
             
@@ -2122,7 +2120,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             scope.data.pois[name].scale = scale;
             scope.renderer.setTranslation(name, tr.pos.X(), tr.pos.Y(), tr.pos.Z());
             scope.renderer.setRotation(name, tr.rot.X(), tr.rot.Y(), tr.rot.Z());
-            scope.renderer.setScale(name, scale, scale, scale);
+            scope.renderer.setScale(name, scale[0], scale[1], scale[2]);
             
             this.renderer.setProperties(name, { forceHidden: false, shader: shader });
             
@@ -2190,7 +2188,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             scope.data.pois[name].scale = scale;
             scope.renderer.setTranslation(name, tr.pos.X(), tr.pos.Y(), tr.pos.Z());
             scope.renderer.setRotation(name, tr.rot.X(), tr.rot.Y(), tr.rot.Z());
-            scope.renderer.setScale(name, scale, scale, scale);
+            scope.renderer.setScale(name, scale[0], scale[1], scale[2]);
             
             if (context != undefined) {
               var isDigital = !(context.target.mimeType != "application/vnd.ptc.tracker.spatialtracker" || scope.data.physical);
@@ -2851,6 +2849,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             }
             
             var noSubjects = 0;
+            var unitScale = [1,1,1];
             if (a.subjects != undefined) a.subjects.forEach(function (sub) {
 
               var assetId = sub.name || sub.id;
@@ -2866,7 +2865,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
                   var src = scope.data.anchor + (res.composition == "partset" ? res.modelUrl : res.url);
                   var rotation = res.normal ? { normal: res.normal } : { quaternion : res.rotation };
-                  scope.addNamedPOI(assetId, src, res.translation, genEulerRotationFrom(rotation), 1, true, undefined, (res.composition == "partset" ? (sub.sceneName || res.sceneName || a.animation) : a.animation), occurrenceIds, true, shade);
+                  scope.addNamedPOI(assetId, src, res.translation, genEulerRotationFrom(rotation), res.scale || unitScale, true, undefined, (res.composition == "partset" ? (sub.sceneName || res.sceneName || a.animation) : a.animation), occurrenceIds, true, shade);
                   isAnimated = isAnimated || scope.data.pois[assetId].sequenceToLoad != undefined;
                   if (occurrenceIds != undefined) noSubjects += occurrenceIds.length; else noSubjects += 1;
                 }
@@ -2888,7 +2887,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   }
                 }
                 else if (res.mimeType == "application/vnd.ptc.poi") {
-                  scope.addNamedPOI(res.id, 'extensions/images/diamond.pvz', res.translation, genEulerRotationFrom({normal:res.normal}), 0.1, false, undefined, undefined, ["/"], true, shade);
+                  //note we scale this one down to 0.1
+                  scope.addNamedPOI(res.id, 'extensions/images/diamond.pvz', res.translation, genEulerRotationFrom({normal:res.normal}), [0.1, 0.1, 0.1], false, undefined, undefined, ["/"], true, shade);
                   scope.data.pois[res.id].view = res.view; // if defined, can be used for focus setting later  
                 }
                 else if (res.mimeType == "application/vnd.ptc.partref") {
@@ -2928,7 +2928,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               var occurrenceIds = (res.occurrenceIds == undefined) ? me.occurrenceIds : res.occurrenceIds;
               var src = scope.data.anchor + res.modelUrl;                                                             //should it be action/sub/res or sub/res/action?
               var rotation = res.normal ? { normal: res.normal } : { quaternion : res.rotation || me.asset.rotation };
-              scope.addNamedPOI(me.id, src, res.translation || me.asset.translation, genEulerRotationFrom(rotation), 1, true, undefined, (res.composition == "partset" ? (sub.sceneName || res.sceneName || a.animation) : a.animation), occurrenceIds, false, scope.data.annotateshade);
+              scope.addNamedPOI(me.id, src, res.translation || me.asset.translation, genEulerRotationFrom(rotation), res.scale || me.asset.scale || unitScale, true, undefined, (res.composition == "partset" ? (sub.sceneName || res.sceneName || a.animation) : a.animation), occurrenceIds, false, scope.data.annotateshade);
               isAnimated = isAnimated || scope.data.pois[me.id].sequenceToLoad != undefined;
             })
             
@@ -2947,7 +2947,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 var occurrenceIds = (res.occurrenceIds == undefined) ? me.occurrenceIds : res.occurrenceIds;
                 var src = scope.data.anchor + me.asset.resources[0].modelUrl;
                 var rotation = res.normal ? { normal: res.normal } : { quaternion : res.rotation || me.asset.rotation };
-                scope.addNamedPOI(me.id, src, res.translation || me.asset.translation, genEulerRotationFrom(rotation), 1, false, undefined, (res.composition == "partset" ? (me.sceneName || res.sceneName || a.animation) : a.animation), occurrenceIds, false, scope.data.toolshade);
+                scope.addNamedPOI(me.id, src, res.translation || me.asset.translation, genEulerRotationFrom(rotation), res.scale || me.asset.scale || unitScale, false, undefined, (res.composition == "partset" ? (me.sceneName || res.sceneName || a.animation) : a.animation), occurrenceIds, false, scope.data.toolshade);
                 isAnimated = isAnimated || scope.data.pois[me.id].sequenceToLoad != undefined;
               }
 
