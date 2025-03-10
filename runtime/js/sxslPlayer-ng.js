@@ -2380,7 +2380,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   var fext = ref.url.slice(ref.url.lastIndexOf('.'));
                   switch (fext) {
                     case ".png": ref.mime = "image/png"; break;
-                    case ".jpg": ref.mime = "image/jpg"; break;
+                    case ".jpg": ref.mime = "image/jpeg"; break;
                     case ".mp4": ref.mime = "video/mp4"; break;
                     case ".gif": ref.mime = "image/gif"; break;
                     default: break;
@@ -2401,6 +2401,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                     mergedBucket.push({type:ref.mime, html:`<img src="${ref.thumb != undefined ? ref.thumb : ref.url}" longdesc="${ref.url}" title="${ref.desc}" class="sxsl-preview-show"/>`});
                     break;
                     
+                  case "image/jpg": // handle an error in vpfx generator which is writing out this (incorrect) mime type
                   case "image/jpeg":
                   case "image/png":
                   case "image/gif":
@@ -2894,8 +2895,18 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 }
                 else if (res.mimeType == "application/vnd.ptc.partref") {
                   //TODO : how do we deal with gltf node referencing; thingview doesnt support it  
-                  //$scope.view.wdg.subjects.src = $scope.app.params.context.hero;
-                  //$scope.view.wdg.subjects.visible = true;
+                  var url = (res.composition == "partset" ? res.modelUrl : res.url);
+                  var src;
+                  if (url != undefined) 
+                    src = scope.data.anchor + url;
+                  else 
+                    src = scope.data.context.hero;
+                  var scene = undefined; //we dont support gltf scene/occurences in View today //sub.sceneName || res.sceneName || a.animation;
+                  var occurences = undefined;
+                  scope.addNamedPOI(assetId, src, undefined, undefined, unitScale, true, undefined, scene, occurences, true, shade);
+                  isAnimated = false;
+                  if (occurrenceIds != undefined) noSubjects += occurrenceIds.length; else noSubjects += 1;
+              
                 }
                 else if (res.mimeType == "application/vnd.ptc.autovalidation.area") {
                   //stepcheck autoalidation 
