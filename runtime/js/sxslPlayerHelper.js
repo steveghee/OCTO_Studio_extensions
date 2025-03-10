@@ -259,7 +259,8 @@ function sxslHelper(renderer, anchor) {
     var cc = [];
     for(v in this.variables) { cc[v] = this.variables[v] };
     for(v in p.variables) { cc[v] = p.variables[v] };
-    this.instruction = getResourceText(a.instructions, cc);
+    this.instruction    = getResourceText(a.instructions, cc);
+    this.qualifications = getResourceText(a.qualifications, cc);
 
     //pointer back to the master
     this.base = a;
