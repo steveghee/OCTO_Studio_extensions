@@ -844,6 +844,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               const t6vd = document.querySelector('div#viewPdf');
               t6vd.className = 'sxsl-preview-hide';
               break;
+            case 'image/jpg' : // handle an error in vpfx generator which is writing out this (incorrect) mime type
             case 'image/jpeg' :
             case 'image/png' :
               const t5i = document.querySelector('img#viewImage');
