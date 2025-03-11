@@ -122,7 +122,36 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           scope.data.events.push(ep); 
           //scope.$parent.$on(evt,fn);
         }
-
+        var selectModel = function (tag, res) {
+          //input can be here, occlude of full; if we cant find the specified, we fall back to full  
+          var model;  
+          if (scope.data.context.model[tag] != undefined)
+            model = scope.data.context.model[tag];
+          else // fallback to full 
+            model = scope.data.context.model != undefined ? scope.data.context.model["full"] : undefined;
+            
+          var url;
+          if (res != undefined)
+            url = res.modelUrl || res.url;
+            
+          var src = {};
+          if (url != undefined) {
+            src.url = scope.data.anchor + url;
+            src.translation = res.translation;  
+            src.rotation = res.rotation;  
+            src.scale = res.scale;  
+          }
+          else if (model != undefined) {
+            src.url = model.url;
+            src.translation = model.translation;  
+            src.rotation = model.rotation;  
+            src.scale = model.scale;  
+          }
+          else 
+            src = undefined;
+            
+          return src;
+        }
         var startSxslPlayer = function () {
 
           // can we start yet?  
@@ -200,9 +229,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   expandContract();
 
                   //add the contextual model, if defined
-                  if (scope.data.context.model != undefined)
-                    scope.addNamedPOI('context', scope.data.context.model, undefined, undefined, scope.data.context.scale, false, scope.data.context, scope.data.context.sceneName);
-
+                  var cmodel = selectModel("occlusion");
+                  if (cmodel != undefined) {
+                    scope.addNamedPOI('context', cmodel.url, cmodel.tranlation, cmodel.rotation, cmodel.scale, false, scope.data.context, cmodel.sceneName);
+                  }
 
                 }
               });
@@ -1063,10 +1093,18 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           //
           // todo : should we allow useExternalContext setting and, if defined, we use existing 'model' as the context 
           //
-          var contextual = {};
+          var contextual = { model:[]} ;
           if (context.models != undefined) context.models.forEach(function (model) {
             if (model.tags != undefined) model.tags.forEach(function (tag) {
-              switch (tag) {
+              contextual.model[tag] = {};
+              contextual.model[tag].url         = cscope.data.anchor + model.url;                                                                                                    
+              contextual.model[tag].mime        = model.mimeType;
+              contextual.model[tag].translation = model.translation;
+              contextual.model[tag].rotation    = model.rotation;
+              contextual.model[tag].scale       = model.scale != undefined ? model.scale : [1,1,1];                                                                                         
+              contextual.model[tag].sceneName   = model.sceneName || model.workstate;
+              /*
+                switch (tag) {
                 case "full":
                   contextual.model = cscope.data.anchor + model.url;
                   contextual.mime = model.mimeType;
@@ -1090,6 +1128,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   contextual.sceneName = model.sceneName || model.workstate;
                   break;
               }
+              */
             });
           });
 
@@ -2865,9 +2904,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 
                 if (res.mimeType == "application/vnd.ptc.pvz" || res.mimeType == "model/gltf-binary") {
 
-                  var src = scope.data.anchor + (res.composition == "partset" ? res.modelUrl : res.url);
-                  var rotation = res.normal ? { normal: res.normal } : { quaternion : res.rotation };
-                  scope.addNamedPOI(assetId, src, res.translation, genEulerRotationFrom(rotation), res.scale || unitScale, true, undefined, (res.composition == "partset" ? (sub.sceneName || res.sceneName || a.animation) : a.animation), occurrenceIds, true, shade);
+                  var src = selectModel("heroes", res);
+                  var rotation = res.normal ? { normal: res.normal } : { quaternion : src.rotation };
+                  scope.addNamedPOI(assetId, src.url, src.translation, genEulerRotationFrom(rotation), src.scale || unitScale, true, undefined, sub.sceneName || res.sceneName || a.animation, occurrenceIds, true, shade);
                   isAnimated = isAnimated || scope.data.pois[assetId].sequenceToLoad != undefined;
                   if (occurrenceIds != undefined) noSubjects += occurrenceIds.length; else noSubjects += 1;
                 }
@@ -2895,15 +2934,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 }
                 else if (res.mimeType == "application/vnd.ptc.partref") {
                   //TODO : how do we deal with gltf node referencing; thingview doesnt support it  
-                  var url = (res.composition == "partset" ? res.modelUrl : res.url);
-                  var src;
-                  if (url != undefined) 
-                    src = scope.data.anchor + url;
-                  else 
-                    src = scope.data.context.hero;
+                  var src = selectModel("heroes", res);
                   var scene = undefined; //we dont support gltf scene/occurences in View today //sub.sceneName || res.sceneName || a.animation;
                   var occurences = undefined;
-                  scope.addNamedPOI(assetId, src, undefined, undefined, unitScale, true, undefined, scene, occurences, true, shade);
+                  scope.addNamedPOI(assetId, src.url, undefined, undefined, unitScale, true, undefined, scene, occurences, true, shade);
                   isAnimated = false;
                   if (occurrenceIds != undefined) noSubjects += occurrenceIds.length; else noSubjects += 1;
               
@@ -2938,9 +2972,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               var sub = me;
               var res = me.asset.resources[0];
               var occurrenceIds = (res.occurrenceIds == undefined) ? me.occurrenceIds : res.occurrenceIds;
-              var src = scope.data.anchor + res.modelUrl;                                                             //should it be action/sub/res or sub/res/action?
-              var rotation = res.normal ? { normal: res.normal } : { quaternion : res.rotation || me.asset.rotation };
-              scope.addNamedPOI(me.id, src, res.translation || me.asset.translation, genEulerRotationFrom(rotation), res.scale || me.asset.scale || unitScale, true, undefined, (res.composition == "partset" ? (sub.sceneName || res.sceneName || a.animation) : a.animation), occurrenceIds, false, scope.data.annotateshade);
+              var src = selectModel("heroes", res);
+              var rotation = res.normal ? { normal: res.normal } : { quaternion : src.rotation || me.asset.rotation };
+              scope.addNamedPOI(me.id, src.url, src.translation || me.asset.translation, genEulerRotationFrom(rotation), src.scale || me.asset.scale || unitScale, true, undefined, sub.sceneName || res.sceneName || a.animation, occurrenceIds, false, scope.data.annotateshade);
               isAnimated = isAnimated || scope.data.pois[me.id].sequenceToLoad != undefined;
             })
             
