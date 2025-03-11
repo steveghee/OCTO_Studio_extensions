@@ -2882,7 +2882,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                     expandContract(undefined,true);
                   }
                 }
-                else if (res.mimeType == "image/jpeg") {
+                else if (res.mimeType == "image/jpeg" || res.mimeType == "image/jpg") {
                   if (scope.thumbnail) {
                     scope.thumbnail.src = scope.data.anchor + res.url;;
                     expandContract(undefined,true);
