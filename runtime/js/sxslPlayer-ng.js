@@ -1103,32 +1103,6 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               contextual.model[tag].rotation    = model.rotation;
               contextual.model[tag].scale       = model.scale != undefined ? model.scale : [1,1,1];                                                                                         
               contextual.model[tag].sceneName   = model.sceneName || model.workstate;
-              /*
-                switch (tag) {
-                case "full":
-                  contextual.model = cscope.data.anchor + model.url;
-                  contextual.mime = model.mimeType;
-                  contextual.scale = model.scale != undefined ? model.scale : [1,1,1];
-                  contextual.tag = tag;
-                  contextual.sceneName = model.sceneName || model.workstate;
-                  debugLog("using", tag);
-                  break;
-                case "occlusion":
-                  if (contextual.tag === undefined || contextual.tag != "full") {
-                    contextual.model = cscope.data.anchor + model.url;
-                    contextual.scale = model.scale != undefined ? model.scale : [1,1,1];
-                    contextual.mime = model.mimeType;
-                    contextual.sceneName = model.sceneName || model.workstate;
-                    contextual.tag = tag;
-                  }
-                  debugLog("using", tag);
-                  break;
-                case "heroes":
-                  contextual.hero = cscope.data.anchor + model.url;
-                  contextual.sceneName = model.sceneName || model.workstate;
-                  break;
-              }
-              */
             });
           });
 
