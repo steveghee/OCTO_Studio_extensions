@@ -1895,7 +1895,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         // for the currently selected item
         //
         scope.setFocus = function(name, me) {
-          if (name != undefined && me != undefined && me.occurrenceIds != undefined) {
+          if (name != undefined && me != undefined && me.occurrenceIds != undefined && me.metadata != undefined) {
             PTC.Structure.fromData(name, me.metadata).then( (structure) => {  
                                                            
               me.occurrenceIds.forEach(function(id) {
