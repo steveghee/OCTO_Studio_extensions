@@ -56,29 +56,6 @@
 
 }
 
-.button-bar {
-  min-height: unset;
-  min-width: 260px;
-  flex: none;
-  border-radius: 8px;
-  overflow: hidden;
-  background-color: rgba(0,0,0,0.05);
-  box-shadow: unset;
-  padding: 2px;
-  .button {
-    border: unset;
-    min-height: unset;
-    line-height: 12px;
-    font-size: 12px;
-    border-radius: 8px;
-    padding: 6px 16px;
-    background-color: transparent;
-    &.selected {
-      background-color: white;
-    }
-  }
-}
-
 .button:hover {
   color: unset;
   text-decoration: unset;
