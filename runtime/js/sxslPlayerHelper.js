@@ -141,7 +141,8 @@ function sxslHelper(renderer, anchor) {
             this.subjects.push({ context: fctx, asset: asset, id: sub.assetId, occurrenceIds:sub.occurrenceIds, tint:sub.tint, name:sub.id });
           } else {
             //no context, so is the resource defined inline?
-            this.subjects.push({ asset: sub, id: sub.assetId, occurrenceIds: sub.occurrenceIds, tint:sub.tint, name:sub.id });
+            //note that direct assets may not have an id specifid; if note, we create one from the action id and an index
+            this.subjects.push({ asset: sub, id: sub.assetId || `${a.id}_s${subc}`, occurrenceIds: sub.occurrenceIds, tint:sub.tint, name:sub.id });
           }
           if (sub.tint != undefined && sub.id != undefined) {
             this.variables[sub.id] = sub.tint;
@@ -178,7 +179,8 @@ function sxslHelper(renderer, anchor) {
             this.annotations.push({ context: fctx, asset: asset, id: sub.assetId, ann:sub });
           } else {
             //no context, so is the resource defined inline?
-            this.annotations.push({ asset: sub, id: sub.resources[0].id, occurrenceIds: sub.occurrenceIds, tint:sub.tint });
+            //note that direct assets may not have an id specifid; if note, we create one from the action id and an index
+            this.annotations.push({ asset: sub, id: sub.resources[0].id || `${a.id}_a${subc}`, occurrenceIds: sub.occurrenceIds, tint:sub.tint });
           }
           if (sub.tint != undefined && sub.id != undefined) 
             this.variables[sub.id] = sub.tint;
@@ -228,10 +230,9 @@ function sxslHelper(renderer, anchor) {
             });
           } else {
             //no context, so is the resource defined inline?
-            this.tools.push({ asset: tool, id: tool.resources[0].id, occurrenceIds: tool.occurrenceIds, tint:tool.tint });
+            //note that direct assets may not have an id specifid; if note, we create one from the action id and an index
+            this.tools.push({ asset: tool, id: tool.resources[0].id || `${a.id}_t${subc}`, occurrenceIds: tool.occurrenceIds, tint:tool.tint });
           }
-
-          
         }
       }
     }
