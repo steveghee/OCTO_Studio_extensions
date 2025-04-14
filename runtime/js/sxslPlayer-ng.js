@@ -2876,7 +2876,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                 // inherit any subject occurences IF we dont have any ourselves                                                      
                 var occurrenceIds = (res.occurrenceIds == undefined) ? sub.occurrenceIds : res.occurrenceIds;
                 
-                if (res.mimeType == "application/vnd.ptc.pvz" || res.mimeType == "model/gltf-binary") {
+                if (res.mimeType == "application/vnd.ptc.pvz" || 
+                    res.mimeType == "application/pvz" || 
+                    res.mimeType == "model/gltf-binary") {
 
                   var src = selectModel("heroes", res);
                   var rotation = res.normal ? { normal: res.normal } : { quaternion : src.rotation };
