@@ -35,5 +35,6 @@ exports.runtimeAngularModulesRequires = ["groupy-ng",
                                          "multiline3D-ng",
                                          "list3D-ng",
                                          "progress3D-ng",
-                                         "zoi-ng"
+                                         "zoi-ng",
+                                         "snooze-ng"
                                         ];
