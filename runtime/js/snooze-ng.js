@@ -40,7 +40,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         //
         var init = function() {
           scope.data.loc = { pos: undefined, gaze:undefined, prev:undefined, d:1 };
-          scope.data.countdown = scope.data.timeout;
+          //max countdown is 10 seconds
+          scope.data.countdown = scope.data.timeout > 10 ? 10 : scope.data.timeout;
           scope.data.gameover  = false;
           
           // start the watcher ...
@@ -61,7 +62,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           if (scope.data.counter != undefined) {
             $interval.cancel(scope.data.counter);
             scope.data.counter   = undefined;
-            scope.data.countdown = scope.data.timeout;
+            scope.data.countdown = scope.data.timeout > 10 ? 10 : scope.data.timeout;
             firecancel = true;
           }
           
@@ -97,7 +98,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               
             //we're pending the countdown, but not yet...
             //console.log(scope.data.loc.d);
-            scope.data.killswitch = $timeout(prepareToDie, 5000); // 5 second
+            scope.data.killswitch = $timeout(prepareToDie, scope.data.timeout * 1000); // N seconds
 
           } else if (scope.data.loc.d > 0.001) {
 
