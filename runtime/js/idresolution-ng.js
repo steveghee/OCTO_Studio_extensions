@@ -29,7 +29,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             var src = `/ExperienceService/id-resolution/resolutions?key=${scope.data.urn}`;
       
             $http.get(src)
-                 .success(function(data, status, headers, config) {
+            .then(function(response) {
+                  var data = response.data;  //also available are status, headers, config
                           
                    //should we format this to be usable as a data table?
                    var resolved = {};
@@ -48,8 +49,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                    if (keys.length > 0) scope.$parent.fireEvent('resolved');
                    else                 scope.$parent.fireEvent('unresolved');
              
-                 })
-                 .error(function(data, status, headers, config) {
+                 },
+                 function(error) {
+                   var data = error.data
+                   // status, headers, config) 
                    if (data.resolutions!=undefined && data.resolutions.length  >0) { //preview can fail due to cross origin issues, but still return a value resolution)
                      var resolved = {};
                    
@@ -71,7 +74,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                      scope.resultField = [];     
                      scope.$parent.fireEvent('failed');
                    }
-                 });
+                 }
+             );
+              
           } else {
             scope.resultField = [];
           }

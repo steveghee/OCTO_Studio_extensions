@@ -92,6 +92,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             scope.data.loc.d = q.Sub(scope.data.loc.prev).Length();
             
           scope.data.loc.prev = q;
+          scope.$parent.$emit('snoozer',scope.data.loc.d);
           
           // looks like we stopped moving?
           if (scope.data.killswitch == undefined && scope.data.loc.d < 0.001) {
@@ -116,6 +117,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           //fire 'countingdown' event here  
           console.log(scope.data.countdown, "seconds");
           $timeout(function() {
+            scope.$parent.$emit('counter',scope.data.countdown);
             scope.$parent.fireEvent('countingdown');
           },10);
       
@@ -124,6 +126,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             scope.data.countdown -= 1;
             console.log(scope.data.countdown, "seconds");
             $timeout(function() {
+              scope.$parent.$emit('counter',scope.data.countdown);
               scope.$parent.fireEvent('countingdown');
             },10);
                 

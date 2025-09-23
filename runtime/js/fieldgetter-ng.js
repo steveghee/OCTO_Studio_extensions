@@ -27,15 +27,14 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         
         function getData() {
             
-          if (scope.data.src != undefined) $http.get(scope.data.src)
-               .success(function(data, status, headers, config) {
-                       
-                  scope.resultField = (scope.data.field != undefined && scope.data.field.length > 0) ? data[scope.data.field] : data;
-              
-               })
-               .error(function(data, status, headers, config) {
-                 console.log(status);           
-               });
+          if (scope.data.src != undefined) 
+            $http.get(scope.data.src)
+                 .then(function(success) {
+                   var data = success.data;
+                   scope.resultField = (scope.data.field != undefined && scope.data.field.length > 0) ? data[scope.data.field] : data;
+                 }, function(error) {
+                   console.log(error.status);           
+                 });
         }
         
         scope.$watch('srcField', function () {

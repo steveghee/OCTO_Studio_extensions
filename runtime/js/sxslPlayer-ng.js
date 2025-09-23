@@ -1326,8 +1326,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             if (scope.helper) scope.helper.anchor = scope.data.anchor;
 
             $http.get(scope.data.src)
-              .success(function (data, status, headers, config) {
-
+            .then(function (success) {
+                var data = success.data // status, headers, config)
                 if (data != undefined) {
                   var proc = scope.data.sxsl = data;
 
@@ -1338,8 +1338,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                   // and the steps
                   scope.data.steplist = getSteps(proc);
                 }
-              })
-              .error(function (data, status, headers, config) {
+              }, function (error) {
+                var status = error.status //data,status,headers,config)
                 debugLog(status);
               });
           } else if (scope.data.src != undefined && scope.data.src.length > 0) {
